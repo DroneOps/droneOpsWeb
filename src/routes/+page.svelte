@@ -1,17 +1,4 @@
-<script>
-  import Navbar from '$lib/Navbar.svelte';
-  import Hero from '$lib/Hero.svelte';
-  import MissionSection from '$lib/MissionSection.svelte';
-  import ResourcesSection from '$lib/ResourcesSection.svelte';
-  import Footer from '$lib/Footer.svelte';
-</script>
-
-<div class="flex min-h-screen w-full flex-col bg-white">
-  <Navbar />
-  <main class="flex flex-col">
-    <Hero />
-    <MissionSection />
-    <ResourcesSection />
-  </main>
-  <Footer />
-</div>
+<main class="min-h-screen bg-slate-900 text-white p-8">
+  <h1 class="text-4xl font-bold text-center">DroneOps Web</h1>
+  <p class="text-center text-slate-400 mt-2">Pega tu HTML aquí abajo cuando tu compa lo tenga listo.</p>
+</main>
