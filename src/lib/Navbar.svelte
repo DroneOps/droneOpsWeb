@@ -4,6 +4,7 @@
 	function toggleMenu() {
 		menuAbierto = !menuAbierto;
 	}
+
 </script>
 
 <nav class="navbar">
@@ -20,19 +21,19 @@
 		<a href="/comunidad" on:click={() => menuAbierto = false}>Comunidad</a>
 
 		<!-- este boton solo se ve en cel-->
-		<button class="btn-miembros btn-miembros-movil">
+		<a href="/iniciar_sesion" class="btn-miembros btn-miembros-movil">
 			Acceso Miembros
-		</button>
+		</a>
 	</div>
 
 	<div class="actions">
-		<button class="btn-miembros">
+		<a href="/iniciar_sesion" class="btn-miembros">
 			Acceso Miembros
 			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
 				<circle cx="12" cy="7" r="4"/>
 				<path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/>
 			</svg>
-		</button>
+		</a>
 	</div>
 
 	<!-- boton hamburguesa, solo visible en cel -->
