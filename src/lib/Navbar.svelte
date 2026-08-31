@@ -15,7 +15,7 @@
 	</div>
 
 	<div class="nav-links" class:abierto={menuAbierto}>
-		<a href="/" on:click={() => menuAbierto = false}>Inicio</a>
+		<a href="/inicio" on:click={() => menuAbierto = false}>Inicio</a>
 		<a href="/objetivo" on:click={() => menuAbierto = false}>Objetivo</a>
 		<a href="/por-hacer" on:click={() => menuAbierto = false}>Por hacer</a>
 		<a href="/comunidad" on:click={() => menuAbierto = false}>Comunidad</a>
