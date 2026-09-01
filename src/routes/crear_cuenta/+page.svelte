@@ -1,4 +1,6 @@
 <script lang="ts">
+    import singupder from '$lib/assets/singup-der.png'
+    import singupizq from '$lib/assets/singup-izq.png'
 	interface RegisterForm {
 		nombre: string;
 		apellidos: string;
@@ -27,7 +29,7 @@
 
 <main class="signup-container">
 	<div class="left-banner">
-		<img src="singup-izq.png" alt="DroneOps izq" />
+		<img src={singupizq} alt="DroneOps izq" />
 	</div>
 
 	<div class="form-section">
@@ -105,25 +107,19 @@
 	</div>
 
 	<div class="right-banner">
-		<img src="singup-der.png" alt="DroneOps Der" />
+		<img src={singupder} alt="DroneOps Der" />
 	</div>
 </main>
 
 <style>
 	/* Se eliminaron :global(*) y :global(body) */
 
-	header {
-		background-color: #1a1c23;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 12px 32px;
-		height: 60px;
-	}
+
+	
 
 	.signup-container {
 		display: flex;
-		width: 100vw;
+		width: 99.05vw;
 		height: calc(100vh - 60px);
 		background-color: #ffffff;
 	}

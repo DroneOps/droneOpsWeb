@@ -40,6 +40,6 @@
 
 	.contenido-principal {
 		padding-top: 70px; 
-		margin-bottom: 90px; /*No se nota*/
+		margin-bottom: 0px; /*No se nota*/
 	}
 </style>
