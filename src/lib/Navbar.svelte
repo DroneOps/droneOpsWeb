@@ -16,7 +16,7 @@
     </div>
 
     <div class="nav-links" class:abierto={menuAbierto}>
-        <a href="/" on:click={() => menuAbierto = false}>Inicio</a>
+        <a href="/inicio" on:click={() => menuAbierto = false}>Inicio</a>
         <a href="/objetivo" on:click={() => menuAbierto = false}>Objetivo</a>
         
         <!-- Muestra 'Por hacer' solo si el usuario inició sesión -->
