@@ -1,31 +1,14 @@
-
-<html lang="es">
-<head>
+<script>
+  let showSoftware = false;
+  let showControl = false;
+  let showDocumentacion = false;
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DroneOps-Iniciar-Sesión</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <header> 
-     <div class="brand-logo">
-      <a href="http://127.0.0.1:5500/Inicio/inicio.html">
-       <img src="navbar-logo.png" alt="Logo DroneOps" class="topbar-logo">
-      </a>
-     </div>
-        <nav class="nabvar-buttons">
-         <a href="http://127.0.0.1:5500/Inicio/inicio.html">
-          <button type="submit" class="btn-inicio">Inicio</button>
-         </a>
-         <button type="submit" class="btn-objetivo">Objetivo</button>
-         <button type="submit" class="hacer">Por Hacer</button>
-         <button type="submit" class="btn-comunidad">Comunidad</button>
-        </nav>
-         <a href="http://127.0.0.1:5500/Iniciar%20sesion/iniciar-sesion.html">
-          <button type="submit" class="btn-access">Acceso Miembros</button>
-         </a>
-    </header>
+    <header></header>
     <main>
+    <div class="fondo">
     <div class="seccion-bienvenida">
        <img src="hero-badge.png" alt="hero" class="hero">
        <h1 class="txt-principal">¡Bienvenido a la central de <br>DroneOps!</h1>  
@@ -36,7 +19,7 @@
         <a href="http://127.0.0.1:5500/Crear%20Cuenta/crear-cuenta.html">
          <button type="submit" class="btn-unete">Únete</button>
         </a>
-        <a href="#">
+        <a href="/iniciar_sesion">
          <button type="submit" class="por-hacer">Por hacer</button>
         </a>
        </div>
@@ -56,7 +39,7 @@
             <img src="mission-right.png" alt="Competencias internacionales" class="mission-right">
         </div>
         <div class="Drone">
-            <img src="Drone.jpg" alt="Drone photo" class="Drone-photo">
+            <img src="Drone.jpg" alt="Drone" class="Drone">
         </div>
        </div>
        <div>
@@ -66,50 +49,41 @@
          En DroneOps fundamentamos nuestras operaciones en ingeniería de control, visión artificial y simulación avanzada. 
          Compartimos nuestra base de conocimiento y guías<br> de desarrollo para el equipo y la comunidad.
         </p>
-         <div>
-          <button type="button" class="software" id="btn-software-1">&#9660;Software Base y Simulación</button>
-             <p id="texto-software-1" style="display: none;" class="txt-software">
-             Este es el texto que se desplegará al hacer clic.
-             </p>
-         </div>
-         <div>
-          <button type="button" class="control" id="btn-control-1">&#9660;Control, Estimación y Posicionamiento</button>
-             <p id="texto-control-1" style="display: none;" class="txt-control">
-             Este es el texto que se desplegará al hacer clic.
-             </p>
-         </div>
-         <div>
-          <button type="button" class="documentacion" id="btn-documentacion-1">&#9660;Documentación Oficial y Librerías</button>
-             <p id="texto-documentacion-1" style="display: none;" class="txt-documentacion">
-             Este es el texto que se desplegará al hacer clic.
-             </p>
-         </div>
-         <p class="a" style="visibility: hidden;">a</p>
-       <div class="all-footer">
-        <div class="footer">
-         <img src="navbar-logo.png" alt="logo abajo" class="footer-logo">
-        </div>
-        <p class="grupo">Grupo de tecnología y robótica aérea de vanguardia. <br>Diseñando autonomía, rompiendo barreras internacionales.</p>
-        <p class="asociasion">Asociación de Robótica de la Universidad</p>
-        <p class="guion">▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔</p>
-        <div class="aso-right">
-        <p>© 2026 DroneOps. Todos los derechos reservados</p>
-        <p class="TEC">Instituto Tecnológico y de Estudios Superiores de Monterrey, Campus Guadalajara · TEC</p>
-        </div>
-        <div class="comunidad">
-        <p class="comunidad-txt">COMUNIDAD</p>
-        <a href="https://github.com/DroneOps">
-            <img src="icon-github.png" class="git-icon"><button type="submit" class="btn-github">GitHub</button>
-        </a><br>
-        <a href="https://www.instagram.com/droneops.gdl/">
-            <img src="icon-instagram.png" class="ig-icon"><button type="submit" class="btn-ig">Instagram</button>
-        </a>
-        </div>
+    <div>
+ <button type="button" class="software" on:click={() => showSoftware = !showSoftware}>
+   &#9660;Software Base y Simulación
+ </button>
+ {#if showSoftware}
+    <p class="txt-software">
+      Este es el texto que se desplegará al hacer clic.
+    </p>
+ {/if}
+</div>
+
+<div>
+ <button type="button" class="control" on:click={() => showControl = !showControl}>
+   &#9660;Control, Estimación y Posicionamiento
+ </button>
+ {#if showControl}
+    <p class="txt-control">
+      Este es el texto que se desplegará al hacer clic.
+    </p>
+ {/if}
+</div>
+
+<div>
+ <button type="button" class="documentacion" on:click={() => showDocumentacion = !showDocumentacion}>
+   &#9660;Documentación Oficial y Librerías
+ </button>
+ {#if showDocumentacion}
+    <p class="txt-documentacion">
+      Este es el texto que se desplegará al hacer clic.
+    </p>
+ {/if}
+</div>
        </div>
+    </div>
     </main>
-    <script src="inicio.js" defer></script>
-</body>
-</html>
 <style>
 * {
 box-sizing: border-box;
@@ -130,71 +104,6 @@ flex-direction: column;
 margin: 0;
 padding: 0;
 background-color: transparent;
-}
-header {
-background-color: #1a1c23;
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 12px 32px;
-height: 60px;
-}
-.topbar-logo {
-height: 28px;
-display: block;
-}
-.brand-logo {
-background-color: #1a1a1e;
-color: #ffffff;
-padding: 12px 24px;
-display: flex;
-align-items: center;
-height: 48px;
-}
-header button {
-background: transparent;
-border: none;
-color: #9ca3af; 
-font-size: 14px;
-font-weight: 500;
-cursor: pointer;
-margin: 0 16px;
-transition: color 0.2s ease;
-}
-.navbar-buttons {
-display: flex;
-gap: 24px;
-}
-header button:hover {
-color: #ffffff;
-}
-.btn-access {
-border: 1px solid #2d3748 !important;
-border-radius: 6px;
-padding: 8px 16px;
-color: #ffffff !important;
-margin-left: auto;
-}
-.btn-access:hover {
-background-color: rgba(255, 255, 255, 0.05);
-}
-header a,
-.topbar a,
-.navbar-buttons a {
-text-decoration: none !important;
-outline: none !important;
-}
-header button,
-.topbar button,
-.navbar-buttons button {
-text-decoration: none !important;
-outline: none !important;
-border-bottom: none !important;
-}
-header button::after,
-.topbar button::after,
-.btn-inicio::after {
-display: none !important;
 }
 .hero {
 margin-top: 130px;    /* Empuja hacia abajo */
@@ -274,7 +183,7 @@ margin-left: 140px;  /* Empuja hacia la derecha */
 margin-bottom: 0px; /* Empuja el contenido de abajo */  
 font-size: 32px;
 }
-.Drone-photo {
+.Drone {
 position: absolute;
 top: 700px;     /* Distancia desde la parte superior de la pantalla */
 right: 175px;   /* Pegada a la derecha */
@@ -368,89 +277,7 @@ margin-top: 15px;    /* Empuja hacia abajo */
 margin-left: 100px;  /* Empuja hacia la derecha */
 margin-bottom: 0px; /* Empuja el contenido de abajo */
 }
-.a {
-margin-top: 200px;    /* Empuja hacia abajo */
-margin-left: 0px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */   
-}
-.all-footer {
-background-color: #0b0f19; /* Este color oscuro solo afectará esta caja */
-color: #ffffff;            /* Cambia el texto interno a blanco */
-width: 100%;               /* Ocupa todo el ancho de la pantalla */
-padding: 40px 60px 20px;   /* Espaciado interno para que no quede apretado */
-box-sizing: border-box;    /* Evita que el padding deforme el ancho */
-}
-.footer-logo {
-margin-top: 0px;    /* Empuja hacia abajo */
-margin-left: 50px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */
-}
-.grupo {
-margin-top: 15px;    /* Empuja hacia abajo */
-margin-left: 50px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */   
-}
-.asociasion {
-margin-top: 20px;    /* Empuja hacia abajo */
-margin-left: 50px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */  
-color:#7c3aed;    
-}
-.aso-right {
-margin-top: 20px;    /* Empuja hacia abajo */
-margin-left: 50px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */
-display: flex;
-justify-content: space-between; /* Empuja un texto a cada extremo */
-align-items: center;            /* Los nivela a la misma altura vertical */ 
-gap:1
-}
-.TEC {
-margin-right: 80px; /* Incrementa este número para recorrerlo más a la izquierda */
-}
-.guion {
-margin-top:75px;
-margin-left: 50px;
-}
-.comunidad {
-  /* Mueve X px a la derecha (positivo) o izquierda (negativo) y Y px abajo */
-  transform: translate(1170px, -260px); 
-  display: flex;
-  flex-direction: column;
-  gap: 0px; /* Aumenta este número para separar más los elementos entre sí */
-}
-.comunidad-txt {
-margin-top: 0px;    /* Empuja hacia abajo */
-margin-left: 0px;  /* Empuja hacia la derecha */
-margin-bottom: 20px; /* Empuja el contenido de abajo */
-}
-.btn-github {
-margin: 100px;
-margin-bottom: 0px;
-background: transparent;
-border: none;
-color: #9ca3af; 
-font-size: 14px;
-font-weight: 500;
-cursor: pointer;
-margin: 0 16px;
-transition: color 0.2s ease;
-}
-.btn-ig {
-margin-bottom: 0px;
-background: transparent;
-border: none;
-color: #9ca3af; 
-font-size: 14px;
-font-weight: 500;
-cursor: pointer;
-margin: 0 16px;
-transition: color 0.2s ease;
-}
-.git-icon {
-transform: translate(10px, 4px);
-}
-.ig-icon {
-transform: translate(10px, 4px);
+.fondo {
+background-color: #ffffff;
 }
 </style>
