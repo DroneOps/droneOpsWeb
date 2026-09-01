@@ -1,283 +1,171 @@
-<script>
-  let showSoftware = false;
-  let showControl = false;
-  let showDocumentacion = false;
+<script lang="ts">
+	import insanosImg from '$lib/assets/Insanos.jpg';
+	import droneImg from '$lib/assets/Drone.jpg';
+
+	let openSection = $state<number | null>(null);
+
+	function toggle(id: number) {
+		openSection = openSection === id ? null : id;
+	}
 </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DroneOps-Iniciar-Sesión</title>
-    <header></header>
-    <main>
-    <div class="fondo">
-    <div class="seccion-bienvenida">
-       <img src="hero-badge.png" alt="hero" class="hero">
-       <h1 class="txt-principal">¡Bienvenido a la central de <br>DroneOps!</h1>  
-       <p class="somos">Somos un equipo apasionado por la tecnología robótica, la innovación y la captura de <br>datos desde las alturas. 
-                Diseñamos, operamos y optimizamos soluciones con drones para <br>llevar cualquier proyecto al siguiente nivel.
-       </p>
-       <div class="unete-hacer">
-        <a href="http://127.0.0.1:5500/Crear%20Cuenta/crear-cuenta.html">
-         <button type="submit" class="btn-unete">Únete</button>
-        </a>
-        <a href="/iniciar_sesion">
-         <button type="submit" class="por-hacer">Por hacer</button>
-        </a>
-       </div>
-        <div>
-            <img src="Insanos.jpg" alt="gods" class="sigmas">
-        </div>
-    </div>
-       <div>
-        <p class="nuestro-objetivo">Nuestro Objetivo</p>
-        <h2 class="competencias-tittle">Competencias internacionales</h2>
-        <p class="competencias-txt">
-         En DroneOps, nos proyectamos hacia el futuro de la industria <br>aérea no tripulada. 
-         Transformamos la perspectiva de los proyectos <br>mediante tecnología de vanguardia, precisión técnica y máxima 
-         seguridad operativa.
-        </p>
-        <div class="competencias">
-            <img src="mission-right.png" alt="Competencias internacionales" class="mission-right">
-        </div>
-        <div class="Drone">
-            <img src="Drone.jpg" alt="Drone" class="Drone">
-        </div>
-       </div>
-       <div>
-        <p class="aprendizaje">Aprendizaje y medios</p>
-        <h2 class="recursos-y-documentacion">Recursos y documentación</h2>
-        <p class="aprendizaje-txt">
-         En DroneOps fundamentamos nuestras operaciones en ingeniería de control, visión artificial y simulación avanzada. 
-         Compartimos nuestra base de conocimiento y guías<br> de desarrollo para el equipo y la comunidad.
-        </p>
-    <div>
- <button type="button" class="software" on:click={() => showSoftware = !showSoftware}>
-   &#9660;Software Base y Simulación
- </button>
- {#if showSoftware}
-    <p class="txt-software">
-      Este es el texto que se desplegará al hacer clic.
-    </p>
- {/if}
-</div>
 
-<div>
- <button type="button" class="control" on:click={() => showControl = !showControl}>
-   &#9660;Control, Estimación y Posicionamiento
- </button>
- {#if showControl}
-    <p class="txt-control">
-      Este es el texto que se desplegará al hacer clic.
-    </p>
- {/if}
-</div>
+<!-- Contenedor estirado a 1440px de ancho -->
+<div class="mx-auto max-w-[1440px] px-8 sm:px-12 py-10 space-y-32 text-slate-900">
+	<!-- 1. SECCIÓN HERO -->
+	<section class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center pt-4">
+		<!-- Texto (Ocupa 7 columnas para extender el título como Figma) -->
+		<div class="lg:col-span-7 space-y-6">
+			<!-- Badge Superior -->
+			<div class="inline-flex items-center gap-2 rounded-full border border-purple-300 bg-purple-50/80 px-4 py-1.5 text-xs font-semibold tracking-wider text-purple-700 uppercase">
+				<span class="h-2 w-2 rounded-full bg-purple-600"></span>
+				Competidores Internacionales 2026
+			</div>
 
-<div>
- <button type="button" class="documentacion" on:click={() => showDocumentacion = !showDocumentacion}>
-   &#9660;Documentación Oficial y Librerías
- </button>
- {#if showDocumentacion}
-    <p class="txt-documentacion">
-      Este es el texto que se desplegará al hacer clic.
-    </p>
- {/if}
-</div>
-       </div>
-    </div>
-    </main>
-<style>
-* {
-box-sizing: border-box;
-margin: 0;
-padding: 0;
-font-family: Arial, Helvetica, sans-serif;
-}
-html, body {
-  max-width: 100%;
-  overflow-x: hidden;
-  margin: 0;
-  padding: 0;
-}
+			<!-- Título Principal en 2 líneas -->
+			<h1 class="text-4xl sm:text-5xl lg:text-[56px] font-extrabold tracking-tight text-slate-950 leading-[1.15]">
+				¡Bienvenido a la central de <br class="hidden sm:inline" /> DroneOps!
+			</h1>
 
-body {
-display: flex;
-flex-direction: column;
-margin: 0;
-padding: 0;
-background-color: transparent;
-}
-.hero {
-margin-top: 130px;    /* Empuja hacia abajo */
-margin-left: 100px;  /* Empuja hacia la derecha */
-margin-bottom: 40px; /* Empuja el contenido de abajo */   
-}
-.txt-principal {
-color: rgb(0, 0, 0);
-margin-top: 0px;    /* Empuja hacia abajo */
-margin-left: 100px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */
-font-size: 50px;
-font-family: "Poppins", Arial, sans-serif;
-}
-.somos {
-margin-top: 45px;    /* Empuja hacia abajo */
-margin-left: 100px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */ 
-}
-/* Limpieza base para los dos botones */
-.btn-unete, 
-.por-hacer {
-padding: 10px 20px;       /* Relleno interno: [arriba/abajo] [izquierda/derecha] */
-border-radius: 10px;      /* Bordes redondeados */
-font-weight: bold;        /* Texto en negrita */
-font-size: 14px;          /* Tamaño del texto */
-cursor: pointer;          /* Muestra la manita al pasar el mouse */
-transition: all 0.2s;     /* Suaviza los efectos de animación */
-}
-.btn-unete {
-background-color: #7c3aed; /* Color de fondo morado */
-color: #ffffff;            /* Texto blanco */
-border: none;              /* Quitamos el borde por defecto */
-}
-.por-hacer {
-background-color: transparent; /* Fondo transparente */
-color: #1e293b;                /* Texto oscuro */
-border: 1px solid #1e293b;     /* Borde: [grosor] [estilo] [color] */
-}
-.unete-hacer {
-margin-top: 30px;    /* Empuja hacia abajo */
-margin-left: 100px;  /* Empuja hacia la derecha */
-margin-bottom: 150px; /* Empuja el contenido de abajo */ 
-display: flex;
-gap: 12px; /* Cambia 12px por el espacio que quieras entre ellos */
-}
-/* 2. Movemos la foto como si fuera una pegatina flotante */
-.sigmas {
-position: absolute;
-top: 150px;     /* Distancia desde la parte superior de la pantalla */
-right: 50px;   /* Pegada a la derecha */
-width: 600px;  /* Tamaño fijo para que no estorbe */
-height: auto;
-}
-.nuestro-objetivo {
-color:#7c3aed;
-margin-top: 0px;    /* Empuja hacia abajo */
-margin-left: 140px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */ 
-}
-.competencias-tittle {
-color:#000000;
-margin-top: 10px;    /* Empuja hacia abajo */
-margin-left: 140px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */  
-font-size: 32px;  
-}
-.competencias-txt {
-margin-top: 15px;    /* Empuja hacia abajo */
-margin-left: 140px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */ 
-}
-.competencias {
-color:#000000;
-margin-top: 60px;    /* Empuja hacia abajo */
-margin-left: 140px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */  
-font-size: 32px;
-}
-.Drone {
-position: absolute;
-top: 700px;     /* Distancia desde la parte superior de la pantalla */
-right: 175px;   /* Pegada a la derecha */
-width: 450px;  /* Tamaño fijo para que no estorbe */
-height: auto;
-}
-.aprendizaje {
-color:#7c3aed;
-margin-top: 60px;    /* Empuja hacia abajo */
-margin-left: 100px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */  
-}
-.aprendizaje {
-color:#7c3aed;
-margin-top: 60px;    /* Empuja hacia abajo */
-margin-left: 100px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */  
-}
-.recursos-y-documentacion {
-color:#000000;
-margin-top: 10px;    /* Empuja hacia abajo */
-margin-left: 100px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */ 
-font-size: 32px;     
-}
-.aprendizaje-txt {
-margin-top: 15px;    /* Empuja hacia abajo */
-margin-left: 100px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */   
-}
-.software {
-margin-top: 15px;    /* Empuja hacia abajo */
-margin-left: 100px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */ 
-width: 82%;                /* Ocupa todo el ancho de su contenedor */
-background-color: #e0e0e0;  /* Color gris claro de fondo */
-color: #000000;             /* Texto en color negro */
-font-weight: bold;          /* Texto en negrita */
-font-size: 28px;            /* Tamaño de la letra */
-padding: 36px 48px;         /* Espaciado interno (arriba/abajo e izquierda/derecha) */
-border: none;               /* Quita el borde feo por defecto */
-border-radius: 20px;        /* Redondea bastante las esquinas */
-text-align: left;           /* Alinea el texto a la izquierda */
-cursor: pointer;            /* Muestra la manita al pasar el mouse */
-box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15); /* Sombra suave gris inferior */
-}
-.txt-software {
-margin-top: 15px;    /* Empuja hacia abajo */
-margin-left: 100px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */     
-}
-.control {
-margin-top: 15px;    /* Empuja hacia abajo */
-margin-left: 100px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */ 
-width: 82%;                /* Ocupa todo el ancho de su contenedor */
-background-color: #e0e0e0;  /* Color gris claro de fondo */
-color: #000000;             /* Texto en color negro */
-font-weight: bold;          /* Texto en negrita */
-font-size: 28px;            /* Tamaño de la letra */
-padding: 36px 48px;         /* Espaciado interno (arriba/abajo e izquierda/derecha) */
-border: none;               /* Quita el borde feo por defecto */
-border-radius: 20px;        /* Redondea bastante las esquinas */
-text-align: left;           /* Alinea el texto a la izquierda */
-cursor: pointer;            /* Muestra la manita al pasar el mouse */
-box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15); /* Sombra suave gris inferior */
-}
-.txt-control {
-margin-top: 15px;    /* Empuja hacia abajo */
-margin-left: 100px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */
-}
-.documentacion {
-margin-top: 15px;    /* Empuja hacia abajo */
-margin-left: 100px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */ 
-width: 82%;                /* Ocupa todo el ancho de su contenedor */
-background-color: #e0e0e0;  /* Color gris claro de fondo */
-color: #000000;             /* Texto en color negro */
-font-weight: bold;          /* Texto en negrita */
-font-size: 28px;            /* Tamaño de la letra */
-padding: 36px 48px;         /* Espaciado interno (arriba/abajo e izquierda/derecha) */
-border: none;               /* Quita el borde feo por defecto */
-border-radius: 20px;        /* Redondea bastante las esquinas */
-text-align: left;           /* Alinea el texto a la izquierda */
-cursor: pointer;            /* Muestra la manita al pasar el mouse */
-box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15); /* Sombra suave gris inferior */
-}
-.txt-documentacion {
-margin-top: 15px;    /* Empuja hacia abajo */
-margin-left: 100px;  /* Empuja hacia la derecha */
-margin-bottom: 0px; /* Empuja el contenido de abajo */
-}
-.fondo {
-background-color: #ffffff;
-}
-</style>
+			<!-- Descripción -->
+			<p class="text-base sm:text-lg text-slate-600 max-w-2xl leading-relaxed">
+				Somos un equipo apasionado por la tecnología robótica, la innovación y la captura de datos desde las alturas. Diseñamos, operamos y optimizamos soluciones con drones para llevar cualquier proyecto al siguiente nivel.
+			</p>
+
+			<!-- Botones -->
+			<div class="flex items-center gap-4 pt-2">
+				<a href="/crear-cuenta" class="rounded-xl bg-purple-600 px-7 py-3 font-bold text-white shadow-md hover:bg-purple-700 transition-colors">
+					Únete
+				</a>
+				<a href="/por-hacer" class="rounded-xl border border-slate-400 bg-transparent px-7 py-3 font-bold text-slate-800 hover:bg-slate-100 transition-colors">
+					Por hacer
+				</a>
+			</div>
+		</div>
+
+		<!-- Imagen sin marco blanco flotante (5 columnas) -->
+		<div class="lg:col-span-5 flex justify-center lg:justify-end">
+			<img
+				src={insanosImg}
+				alt="Equipo DroneOps"
+				class="w-full max-w-xl rounded-[32px] object-cover shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100"
+			/>
+		</div>
+	</section>
+
+	<!-- 2. SECCIÓN NUESTRO OBJETIVO -->
+	<section class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+		<div class="lg:col-span-7 space-y-6">
+			<div>
+				<span class="text-sm font-bold uppercase tracking-wider text-purple-600">Nuestro Objetivo</span>
+				<h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1">Competencias internacionales</h2>
+			</div>
+
+			<p class="text-slate-600 leading-relaxed max-w-2xl">
+				En DroneOps, nos proyectamos hacia el futuro de la industria aérea no tripulada. Transformamos la perspectiva de los proyectos mediante tecnología de vanguardia, precisión técnica y máxima seguridad operativa.
+			</p>
+
+			<div class="space-y-4 pt-2 max-w-2xl">
+				<div class="rounded-2xl border border-purple-200 bg-purple-50/60 p-6 relative">
+					<div class="flex items-center justify-between">
+						<h3 class="text-xl font-extrabold text-purple-950">TMR</h3>
+						<span class="rounded-full border border-purple-300 bg-purple-100 px-3 py-0.5 text-xs font-bold text-purple-700 uppercase">
+							En Progreso
+						</span>
+					</div>
+					<p class="text-xs text-slate-500 mt-1">Torneo Mexicano de Robótica (TMR)</p>
+					<p class="text-sm text-slate-700 mt-3">
+						La competencia de robótica aérea más grande de México, organizada por la federación mexicana de robótica.
+					</p>
+				</div>
+
+				<div class="rounded-2xl border border-purple-200 bg-purple-50/60 p-6 relative">
+					<div class="flex items-center justify-between">
+						<h3 class="text-xl font-extrabold text-purple-950">IMAV 2026</h3>
+						<span class="rounded-full border border-purple-300 bg-purple-100 px-3 py-0.5 text-xs font-bold text-purple-700 uppercase">
+							En Progreso
+						</span>
+					</div>
+					<p class="text-xs text-slate-500 mt-1">International Micro Air Vehicle Competition</p>
+					<p class="text-sm text-slate-700 mt-3">
+						Navegación autónoma de enjambres en entornos outdoor complejos sin soporte de GPS externo.
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="lg:col-span-5 flex justify-center lg:justify-end">
+			<img
+				src={droneImg}
+				alt="Drone DroneOps"
+				class="w-full max-w-md rounded-[32px] object-cover shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100"
+			/>
+		</div>
+	</section>
+
+	<!-- 3. RECURSOS Y DOCUMENTACIÓN -->
+	<section class="space-y-6">
+		<div>
+			<span class="text-sm font-bold uppercase tracking-wider text-purple-600">Aprendizaje y Medios</span>
+			<h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1">Recursos y documentación</h2>
+			<p class="text-slate-600 mt-2 max-w-3xl">
+				En DroneOps fundamentamos nuestras operaciones en ingeniería de control, visión artificial y simulación avanzada. Compartimos nuestra base de conocimiento y guías de desarrollo para el equipo y la comunidad.
+			</p>
+		</div>
+
+		<div class="space-y-4 pt-4">
+			<div class="rounded-3xl bg-stone-200/80 overflow-hidden shadow-sm transition-all">
+				<button
+					type="button"
+					onclick={() => toggle(1)}
+					class="w-full p-6 sm:p-8 text-left font-bold text-xl sm:text-2xl text-slate-900 flex items-center gap-4 hover:bg-stone-300/80 transition-colors"
+				>
+					<span class={`transform transition-transform duration-200 text-slate-700 text-sm ${openSection === 1 ? 'rotate-180' : ''}`}>
+						▼
+					</span>
+					Software Base y Simulación
+				</button>
+				{#if openSection === 1}
+					<div class="p-6 sm:p-8 pt-0 text-slate-700">
+						Entornos de desarrollo, guías de simulación con ROS2, Gazebo, PX4 y herramientas de software base para el control de enjambres.
+					</div>
+				{/if}
+			</div>
+
+			<div class="rounded-3xl bg-stone-200/80 overflow-hidden shadow-sm transition-all">
+				<button
+					type="button"
+					onclick={() => toggle(2)}
+					class="w-full p-6 sm:p-8 text-left font-bold text-xl sm:text-2xl text-slate-900 flex items-center gap-4 hover:bg-stone-300/80 transition-colors"
+				>
+					<span class={`transform transition-transform duration-200 text-slate-700 text-sm ${openSection === 2 ? 'rotate-180' : ''}`}>
+						▼
+					</span>
+					Control, Estimación y Posicionamiento
+				</button>
+				{#if openSection === 2}
+					<div class="p-6 sm:p-8 pt-0 text-slate-700">
+						Documentación sobre algoritmos de control PID, filtros de Kalman, Odometría Visual Inercial (VIO) y navegación sin GPS.
+					</div>
+				{/if}
+			</div>
+
+			<div class="rounded-3xl bg-stone-200/80 overflow-hidden shadow-sm transition-all">
+				<button
+					type="button"
+					onclick={() => toggle(3)}
+					class="w-full p-6 sm:p-8 text-left font-bold text-xl sm:text-2xl text-slate-900 flex items-center gap-4 hover:bg-stone-300/80 transition-colors"
+				>
+					<span class={`transform transition-transform duration-200 text-slate-700 text-sm ${openSection === 3 ? 'rotate-180' : ''}`}>
+						▼
+					</span>
+					Documentación Oficial y Librerías
+				</button>
+				{#if openSection === 3}
+					<div class="p-6 sm:p-8 pt-0 text-slate-700">
+						Acceso a repositorios oficiales de GitHub, diagramas esquemáticos de hardware y manuales de usuario.
+					</div>
+				{/if}
+			</div>
+		</div>
+	</section>
+</div>
