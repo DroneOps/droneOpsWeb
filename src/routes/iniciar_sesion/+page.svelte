@@ -8,7 +8,6 @@
 
 	// Recibir la respuesta de la acción (+page.server.ts)
 	let { form }: { form?: LoginForm } = $props(); // En Svelte 5
-	// Si usas Svelte 4, reemplaza la línea anterior por: export let form: LoginForm | undefined;
 </script>
 
 <h1>Iniciar Sesión</h1>

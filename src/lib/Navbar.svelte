@@ -1,6 +1,7 @@
 <script>
     import { page } from '$app/stores';
     $: user = $page.data.user;
+    $: nombre = $page.data.nombreUsuario;
     let menuAbierto = false;
 
     function toggleMenu() {
@@ -29,8 +30,11 @@
         <!-- Botón móvil: Cambia entre Acceso Miembros o Nombre de Usuario -->
         {#if user}
             <span class="user-display user-display-movil">
-                {user.user_metadata?.name || user.email}
+                {nombre || user.email}
             </span>
+            <form action="/cerrar_sesion" method="POST" class="btn-miembros-movil" style="margin-top: 10px;">
+                <button type="submit" class="btn-salir-movil" on:click={() => menuAbierto = false}>Cerrar Sesión</button>
+            </form>
         {:else}
             <a href="/iniciar_sesion" class="btn-miembros btn-miembros-movil" on:click={() => menuAbierto = false}>
                 Acceso Miembros
@@ -41,12 +45,18 @@
     <!-- Botón Escritorio: Cambia entre Acceso Miembros o Nombre de Usuario -->
     <div class="actions">
         {#if user}
-            <div class="user-badge">
-                <span class="user-email">{user.user_metadata?.name || user.email}</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <circle cx="12" cy="7" r="4"/>
-                    <path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/>
-                </svg>
+            <div class="user-badge-container">
+                <div class="user-badge">
+                    <span class="user-email">{nombre || user.email}</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="7" r="4"/>
+                        <path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/>
+                    </svg>
+                </div>
+                <!-- Formulario para cerrar sesión -->
+                <form action="/cerrar_sesion" method="POST">
+                    <button type="submit" class="btn-salir">Salir</button>
+                </form>
             </div>
         {:else}
             <a href="/iniciar_sesion" class="btn-miembros">
@@ -205,5 +215,36 @@
             justify-content: center;
             width: 100%;
         }
+    }
+    .user-badge-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .btn-salir {
+        background: transparent;
+        border: 1px solid #ef4444; /* Rojo para denotar salida */
+        border-radius: 6px;
+        color: #ef4444;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-salir:hover {
+        background-color: rgba(239, 68, 68, 0.1);
+    }
+
+    .btn-salir-movil {
+        background: transparent;
+        border: 1px solid #ef4444;
+        color: #ef4444;
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
     }
 </style>
