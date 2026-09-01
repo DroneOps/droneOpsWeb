@@ -33,7 +33,7 @@
 
 			<!-- Botones -->
 			<div class="flex items-center gap-4 pt-2">
-				<a href="/crear-cuenta" class="rounded-xl bg-purple-600 px-7 py-3 font-bold text-white shadow-md hover:bg-purple-700 transition-colors">
+				<a href="/crear_cuenta" class="rounded-xl bg-purple-600 px-7 py-3 font-bold text-white shadow-md hover:bg-purple-700 transition-colors">
 					Únete
 				</a>
 				<a href="/por-hacer" class="rounded-xl border border-slate-400 bg-transparent px-7 py-3 font-bold text-slate-800 hover:bg-slate-100 transition-colors">
