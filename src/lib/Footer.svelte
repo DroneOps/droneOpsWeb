@@ -8,9 +8,9 @@
 				Grupo de tecnología y robótica aérea de vanguardia.<br />
 				Diseñando autonomía, rompiendo barreras internacionales.
 			</p>
-			<a href="/asociacion" class="link-asociacion">
+			<p class="link-asociacion">
 				Asociación de Robótica de la Universidad
-			</a>
+			</p>
 		</div>
 
 		<div class="footer-comunidad">
@@ -81,10 +81,6 @@
 		font-family: monospace;
 		font-size: 0.85rem;
 		text-decoration: none;
-	}
-
-	.link-asociacion:hover {
-		text-decoration: underline;
 	}
 
 	.footer-comunidad h3 {

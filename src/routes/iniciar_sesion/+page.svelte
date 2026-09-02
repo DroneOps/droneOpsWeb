@@ -54,7 +54,7 @@
 			<button type="submit" class="btn-login">Iniciar sesión</button>
 
 			<p class="welcome-text">
-				Bienvenido al acceso <span class="admin-tag">admin</span>
+				Bienvenido al acceso exlusivo  <span class="admin-tag">miembros</span>
 			</p>
 		</form>
 	</div>
