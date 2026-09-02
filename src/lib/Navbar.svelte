@@ -17,8 +17,8 @@
     </div>
 
     <div class="nav-links" class:abierto={menuAbierto}>
-        <a href="/inicio" on:click={() => menuAbierto = false}>Inicio</a>
-        <a href="/objetivo" on:click={() => menuAbierto = false}>Objetivo</a>
+        <a href="/" on:click={() => menuAbierto = false}>Inicio</a>
+        <a href="/#objetivo" on:click={() => menuAbierto = false}>Objetivo</a>
         
         <!-- Muestra 'Por hacer' solo si el usuario inició sesión -->
         {#if user}
@@ -36,8 +36,8 @@
                 <button type="submit" class="btn-salir-movil" on:click={() => menuAbierto = false}>Cerrar Sesión</button>
             </form>
         {:else}
-            <a href="/iniciar_sesion" class="btn-miembros btn-miembros-movil" on:click={() => menuAbierto = false}>
-                Acceso Miembros
+            <a href="/unete" class="btn-miembros btn-miembros-movil" on:click={() => menuAbierto = false}>
+                Colabora
             </a>
         {/if}
     </div>
@@ -59,8 +59,8 @@
                 </form>
             </div>
         {:else}
-            <a href="/iniciar_sesion" class="btn-miembros">
-                Acceso Miembros
+            <a href="/unete" class="btn-miembros">
+                Unirse al grupo
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <circle cx="12" cy="7" r="4"/>
                     <path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/>

@@ -1,163 +1,177 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import logoDO from '$lib/assets/logoDO.png';
 
 	type LoginForm = {
 		message?: string;
 		email?: string;
 	};
 
-	// Recibir la respuesta de la acción (+page.server.ts)
-	let { form }: { form?: LoginForm } = $props(); // En Svelte 5
+	let { form }: { form?: LoginForm } = $props();
 </script>
 
-<div class="login-container">
-	<div class="login-card">
-		<h1>Iniciar Sesión</h1>
+<main class="login-container">
+	<!-- Columna Izquierda: Imagen Banner -->
+	<div class="banner-section">
+		<img src={logoDO} alt="DroneOps Logo Ilustración" />
+	</div>
 
-		<!-- Mostrar mensaje de error si las credenciales fallan -->
+	<!-- Columna Derecha: Formulario con lógica Supabase -->
+	<div class="form-section">
+		<h1>Iniciar sesión en<br />DroneOps</h1>
+
+		<!-- Mensaje de error cuando falle la autenticación -->
 		{#if form?.message}
-			<div class="error-message">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<circle cx="12" cy="12" r="10"></circle>
-					<line x1="12" y1="8" x2="12" y2="12"></line>
-					<line x1="12" y1="16" x2="12.01" y2="16"></line>
-				</svg>
+			<div class="error-box">
 				<span>{form.message}</span>
 			</div>
 		{/if}
 
-		<form method="POST" use:enhance class="login-form">
-			<div class="form-group">
-				<label for="email">Correo electrónico</label>
-				<input 
-					type="email" // type email para validación automática
-					id="email" // id necesario para asociar el label con el input
-					name="email" // name necesario para que SvelteKit capture el valor del input
-					value={form?.email ?? ''} // Value para mantener el correo ingresado si hay un error
-					required 
-					placeholder="usuario@mail.com" // ejemplo si no hay nada puesto
+		<form method="POST" use:enhance>
+			<div class="input-group">
+				<label for="email">Correo electrónico:</label>
+				<input
+					type="email"
+					id="email"
+					name="email"
+					value={form?.email ?? ''}
+					required
+					autocomplete="email"
 				/>
 			</div>
 
-			<div class="form-group">
-				<label for="password">Contraseña</label>
-				<input 
-					type="password" 
-					id="password" 
-					name="password" 
-					required 
-					placeholder="••••••••" 
+			<div class="input-group">
+				<label for="password">Contraseña:</label>
+				<input
+					type="password"
+					id="password"
+					name="password"
+					required
+					autocomplete="current-password"
 				/>
 			</div>
 
-			<button type="submit" class="btn-submit">Entrar</button>
+			<button type="submit" class="btn-login">Iniciar sesión</button>
+
+			<p class="welcome-text">
+				Bienvenido al acceso <span class="admin-tag">admin</span>
+			</p>
 		</form>
 	</div>
-</div>
+</main>
 
 <style>
-	/* Contenedor principal para centrar la tarjeta en la pantalla */
+	/* Contenedor principal ajustado sin Header */
 	.login-container {
 		display: flex;
-		justify-content: center;
-		align-items: center;
-		min-height: calc(100vh - 160px); /* Ajusta según el alto de tu navbar y footer */
-		padding: 2rem;
-		background-color: #0d0f17; 
-	}
-
-	/* Estilos de la tarjeta de inicio de sesión */
-	.login-card {
-		background-color: #12151e;
-		border: 1px solid #1e2230;
-		border-radius: 12px;
-		padding: 2.5rem;
 		width: 100%;
-		max-width: 400px;
-		box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+		height: calc(100vh - 60px);
 	}
 
-	h1 {
-		color: #ffffff;
-		font-family: sans-serif;
-		font-size: 1.75rem;
-		margin-top: 0;
-		margin-bottom: 1.5rem;
-		text-align: center;
-		font-weight: 600;
+	/* Banner Izquierdo */
+	.banner-section {
+		width: 50%;
+		height: 100%;
+		background-color: #11052c;
 	}
 
-	/* Estilo amigable para los mensajes de error */
-	.error-message {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		background-color: rgba(239, 68, 68, 0.1);
-		color: #ef4444;
-		border: 1px solid #ef4444;
-		padding: 0.75rem 1rem;
-		border-radius: 8px;
-		margin-bottom: 1.5rem;
-		font-size: 0.9rem;
-		font-family: sans-serif;
+	.banner-section img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
 	}
 
-	.login-form {
+	/* Sección de Formulario Derecha */
+	.form-section {
+		width: 50%;
+		height: 100%;
 		display: flex;
 		flex-direction: column;
-		gap: 1.25rem;
+		justify-content: center;
+		padding-left: 100px;
+		background-color: #ffffff;
+		color: #000000;
 	}
 
-	.form-group {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
+	.form-section h1 {
+		font-size: 38px;
+		font-weight: 500;
+		margin-bottom: 25px;
+		line-height: 1.15;
+		color: #000000;
+		font-family: Arial, Helvetica, sans-serif;
 	}
 
-	label {
-		color: #94a3b8;
-		font-family: sans-serif;
-		font-size: 0.9rem;
+	/* Alerta de Error de Autenticación */
+	.error-box {
+		width: 380px;
+		background-color: #fef2f2;
+		border: 1px solid #f87171;
+		color: #dc2626;
+		padding: 10px 14px;
+		border-radius: 4px;
+		margin-bottom: 15px;
+		font-size: 13px;
+		font-family: Arial, Helvetica, sans-serif;
 	}
 
-	/* Estilo de los inputs para contrastar correctamente con el fondo oscuro */
-	input {
-		background-color: #0a0d14;
-		border: 1px solid #2e3548;
-		color: #ffffff;
-		border-radius: 8px;
-		padding: 0.75rem 1rem;
-		font-size: 1rem;
-		font-family: sans-serif;
-		transition: border-color 0.2s, box-shadow 0.2s;
-		outline: none;
+	/* Campos de Entrada */
+	.input-group {
+		margin-bottom: 20px;
 	}
 
-	input::placeholder {
-		color: #475569;
+	.input-group label {
+		display: block;
+		font-size: 14px;
+		margin-bottom: 8px;
+		color: #222222;
+		font-family: Arial, Helvetica, sans-serif;
 	}
 
-	input:focus {
-		border-color: #7c3aed;
-		box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
-	}
-
-	/* Botón principal siguiendo la paleta morada de DroneOps */
-	.btn-submit {
-		background-color: #7c3aed;
-		color: #ffffff;
+	.input-group input {
+		width: 380px;
+		height: 38px;
+		background-color: #d9d9d9;
 		border: none;
-		border-radius: 8px;
-		padding: 0.75rem;
-		font-size: 1rem;
-		font-family: sans-serif;
-		font-weight: 600;
-		cursor: pointer;
-		margin-top: 0.5rem;
-		transition: background-color 0.2s;
+		outline: none;
+		padding: 0 12px;
+		font-size: 14px;
+		border-radius: 2px;
+		color: #000000;
 	}
 
-	.btn-submit:hover {
-		background-color: #6d28d9;
+	/* Botón de Submit Morado */
+	.btn-login {
+		width: 380px;
+		height: 42px;
+		background-color: #8a2be2;
+		color: #ffffff;
+		font-size: 15px;
+		font-weight: bold;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		margin-top: 10px;
+		margin-bottom: 16px;
+		transition: background-color 0.2s ease;
+		font-family: Arial, Helvetica, sans-serif;
+	}
+
+	.btn-login:hover {
+		background-color: #7322c2;
+	}
+
+	/* Texto de bienvenida estilizado */
+	.welcome-text {
+		font-size: 13px;
+		color: #555555;
+		font-family: Arial, Helvetica, sans-serif;
+	}
+
+	.admin-tag {
+		color: #8a2be2;
+		font-weight: 800;
+		letter-spacing: 0.5px;
 	}
 </style>
