@@ -1,10 +1,10 @@
 <script lang="ts">
-	import qr from '$lib/assets/qr.png';
+	import qr from '$lib/assets/qr.jpeg';
 
 	// TODO: reemplaza esto con el link real de invitación de tu
 	// comunidad de WhatsApp (el mismo que generó el QR). Así, quien
 	// entre desde el celular puede tocar la tarjeta en vez de escanear.
-	const enlaceWhatsApp = 'https://chat.whatsapp.com/TU-ENLACE-AQUI';
+	const enlaceWhatsApp = 'https://chat.whatsapp.com/CdYv0uXS63zClFUHgB4njt?s=qt&p=a&mlu=4&ilr=4';
 </script>
 
 <div class="page-container">
