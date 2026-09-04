@@ -442,6 +442,7 @@
 					</div>
 				{/if}
 			</div>
+		</div>
 		<div class="space-y-3 sm:space-y-4 pt-2 sm:pt-4">
 			<!-- BOTÓN DESPLEGABLE 3: Drones -->
 			<div class="rounded-2xl sm:rounded-3xl bg-stone-200/80 overflow-hidden shadow-sm transition-all">
