@@ -2,6 +2,8 @@
 	import { enhance } from '$app/forms';
 	import logoDO from '$lib/assets/logoDO.png';
 
+	let mostrarPassword = $state(false);
+
 	type LoginForm = {
 		message?: string;
 		email?: string;
@@ -42,13 +44,36 @@
 
 			<div class="input-group">
 				<label for="password">Contraseña:</label>
-				<input
-					type="password"
-					id="password"
-					name="password"
-					required
-					autocomplete="current-password"
-				/>
+				<div class="password-container">
+					<input
+						type={mostrarPassword ? 'text' : 'password'}
+						id="password"
+						name="password"
+						required
+						autocomplete="current-password"
+					/>
+					<button
+						type="button"
+						class="btn-toggle-password"
+						onclick={() => (mostrarPassword = !mostrarPassword)}
+						aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+						aria-pressed={mostrarPassword}
+					>
+						{#if mostrarPassword}
+							<!-- ojo tachado: la contraseña está visible -->
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+								<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.4 20.4 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a20.5 20.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+								<line x1="1" y1="1" x2="23" y2="23" />
+							</svg>
+						{:else}
+							<!-- ojo abierto: la contraseña está oculta -->
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+								<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+								<circle cx="12" cy="12" r="3" />
+							</svg>
+						{/if}
+					</button>
+				</div>
 			</div>
 
 			<button type="submit" class="btn-login">Iniciar sesión</button>
@@ -139,6 +164,37 @@
 		font-size: 14px;
 		border-radius: 2px;
 		color: #000000;
+		box-sizing: border-box;
+	}
+
+	/* Contenedor de la contraseña + botón de mostrar/ocultar */
+	.password-container {
+		position: relative;
+		width: 380px;
+	}
+
+	.password-container input {
+		width: 100%;
+		padding-right: 42px;
+	}
+
+	.btn-toggle-password {
+		position: absolute;
+		top: 50%;
+		right: 10px;
+		transform: translateY(-50%);
+		background: none;
+		border: none;
+		padding: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #555555;
+		cursor: pointer;
+	}
+
+	.btn-toggle-password:hover {
+		color: #8a2be2;
 	}
 
 	/* Botón de Submit Morado */
