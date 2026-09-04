@@ -382,7 +382,7 @@
 								onclick={() => toggleSub('vision-computacional')}
 								class="w-full px-4 py-3 text-left font-semibold text-sm sm:text-base text-slate-800 flex items-center gap-2 hover:bg-stone-300 transition-colors"
 							>
-								<span class={`transform transition-transform duration-200 text-xs ${openSubSections.has('OptiTrack') ? 'rotate-180' : ''}`}>
+								<span class={`transform transition-transform duration-200 text-xs ${openSubSections.has('vision-computacional') ? 'rotate-180' : ''}`}>
 									▼
 								</span>
 								Visión Computacional
@@ -442,16 +442,14 @@
 					</div>
 				{/if}
 			</div>
-		</div>
-		<div class="space-y-3 sm:space-y-4 pt-2 sm:pt-4">
-			<!-- BOTÓN DESPLEGABLE 3: Drones -->
+		<!-- BOTÓN DESPLEGABLE 3: Drones -->
 			<div class="rounded-2xl sm:rounded-3xl bg-stone-200/80 overflow-hidden shadow-sm transition-all">
 				<button
 					type="button"
 					onclick={() => toggle(3)}
 					class="w-full p-5 sm:p-8 text-left font-bold text-lg sm:text-2xl text-slate-900 flex items-center gap-3 sm:gap-4 hover:bg-stone-300/80 transition-colors"
 				>
-					<span class={`transform transition-transform duration-200 text-slate-700 text-xs sm:text-sm ${openSections.has(1) ? 'rotate-180' : ''}`}>
+					<span class={`transform transition-transform duration-200 text-slate-700 text-xs sm:text-sm ${openSections.has(3) ? 'rotate-180' : ''}`}>
 						▼
 					</span>
 					Drones
