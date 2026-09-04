@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
 	import insanosImg from '$lib/assets/Insanos.jpg';
-	import droneImg from '$lib/assets/Drone.jpg';
+	import droneImg from '$lib/assets/Drone.jpeg';
 
 	// Usamos SvelteSet para permitir múltiples secciones principales abiertas a la vez
 	let openSections = $state(new SvelteSet<number>());
