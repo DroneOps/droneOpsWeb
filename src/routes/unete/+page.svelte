@@ -1,5 +1,5 @@
 <script lang="ts">
-	import qr from '$lib/assets/qr.jpeg';
+	import qr from '$lib/assets/qr.jpg';
 
 	// TODO: reemplaza esto con el link real de invitación de tu
 	// comunidad de WhatsApp (el mismo que generó el QR). Así, quien
