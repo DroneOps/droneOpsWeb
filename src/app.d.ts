@@ -5,6 +5,8 @@ declare global {
     interface Locals {
       supabase: SupabaseClient
       user: User | null
+      isAdmin: boolean
+      nombreAdmin: string | null
     }
   }
 }

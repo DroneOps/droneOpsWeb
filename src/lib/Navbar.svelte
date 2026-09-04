@@ -36,8 +36,8 @@
                 <button type="submit" class="btn-salir-movil" on:click={() => menuAbierto = false}>Cerrar Sesión</button>
             </form>
         {:else}
-            <a href="/unete" class="btn-miembros btn-miembros-movil" on:click={() => menuAbierto = false}>
-                Colabora
+            <a href="/iniciar_sesion" class="btn-miembros btn-miembros-movil" on:click={() => menuAbierto = false}>
+                Iniciar sesión
             </a>
         {/if}
     </div>

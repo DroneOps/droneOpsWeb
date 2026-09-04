@@ -54,7 +54,7 @@
 			<button type="submit" class="btn-login">Iniciar sesión</button>
 
 			<p class="welcome-text">
-				Bienvenido al acceso exlusivo  <span class="admin-tag">miembros</span>
+				Bienvenido al acceso exclusivo para <span class="admin-tag">miembros</span>
 			</p>
 		</form>
 	</div>
@@ -65,7 +65,7 @@
 	.login-container {
 		display: flex;
 		width: 100%;
-		height: calc(100vh - 60px);
+		height: calc(100vh - 70px);
 	}
 
 	/* Banner Izquierdo */
