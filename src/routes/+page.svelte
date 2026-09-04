@@ -1,11 +1,28 @@
 <script lang="ts">
+	import { SvelteSet } from 'svelte/reactivity';
 	import insanosImg from '$lib/assets/Insanos.jpg';
 	import droneImg from '$lib/assets/Drone.jpg';
 
-	let openSection = $state<number | null>(null);
+	// Usamos SvelteSet para permitir múltiples secciones principales abiertas a la vez
+	let openSections = $state(new SvelteSet<number>());
 
 	function toggle(id: number) {
-		openSection = openSection === id ? null : id;
+		if (openSections.has(id)) {
+			openSections.delete(id);
+		} else {
+			openSections.add(id);
+		}
+	}
+
+	// Set para subsecciones
+	let openSubSections = $state(new SvelteSet<string | number>());
+
+	function toggleSub(id: string | number) {
+		if (openSubSections.has(id)) {
+			openSubSections.delete(id);
+		} else {
+			openSubSections.add(id);
+		}
 	}
 </script>
 
@@ -113,56 +130,381 @@
 		</div>
 
 		<div class="space-y-3 sm:space-y-4 pt-2 sm:pt-4">
+			<!-- BOTÓN DESPLEGABLE 1: TUTORIALES -->
 			<div class="rounded-2xl sm:rounded-3xl bg-stone-200/80 overflow-hidden shadow-sm transition-all">
 				<button
 					type="button"
 					onclick={() => toggle(1)}
 					class="w-full p-5 sm:p-8 text-left font-bold text-lg sm:text-2xl text-slate-900 flex items-center gap-3 sm:gap-4 hover:bg-stone-300/80 transition-colors"
 				>
-					<span class={`transform transition-transform duration-200 text-slate-700 text-xs sm:text-sm ${openSection === 1 ? 'rotate-180' : ''}`}>
+					<span class={`transform transition-transform duration-200 text-slate-700 text-xs sm:text-sm ${openSections.has(1) ? 'rotate-180' : ''}`}>
 						▼
 					</span>
-					Software Base y Simulación
+					Tutoriales
 				</button>
-				{#if openSection === 1}
-					<div class="p-5 sm:p-8 pt-0 text-xs sm:text-base text-slate-700">
-						Entornos de desarrollo, guías de simulación con ROS2, Gazebo, PX4 y herramientas de software base para el control de enjambres.
+
+				{#if openSections.has(1)}
+					<div class="p-5 sm:p-8 pt-0 text-xs sm:text-base text-slate-700 flex flex-col gap-4">
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<!-- TARJETA VIDEO 1 -->
+							<div class="flex flex-col gap-2">
+								<p class="font-semibold text-slate-900 text-sm sm:text-base">
+									Instalar Ubuntu en Dual Boot
+								</p>
+								<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-md">
+									<iframe
+										class="absolute top-0 left-0 w-full h-full"
+										src="https://www.youtube.com/embed/wIj7sHK0SkQ?si=X7sqnuJ-42Fdixnt" 
+										title="Instalar Ubuntu" 
+										frameborder="0" 
+										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+										referrerpolicy="strict-origin-when-cross-origin" 
+										allowfullscreen>
+									</iframe>
+								</div>
+							</div>
+
+							<!-- TARJETA VIDEO 2 -->
+							<div class="flex flex-col gap-2">
+								<p class="font-semibold text-slate-900 text-sm sm:text-base">
+									Simulación de drone dinámico
+								</p>
+								<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-md">
+									<iframe 
+										class="absolute top-0 left-0 w-full h-full"
+										src="https://www.youtube.com/embed/2BhyKyzKAbM?si=AFIvXKjpyQt2Uc21" 
+										title="YouTube video player" 
+										frameborder="0" 
+										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+										referrerpolicy="strict-origin-when-cross-origin" 
+										allowfullscreen>
+									</iframe>
+								</div>
+							</div>
+
+							<!-- TARJETA VIDEO 3 -->
+							<div class="flex flex-col gap-2">
+								<p class="font-semibold text-slate-900 text-sm sm:text-base">
+									OptiTrack - Motive 3.0 | Quick Start Guide
+								</p>
+								<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-md">
+									<iframe 
+										class="absolute top-0 left-0 w-full h-full"
+										src="https://www.youtube.com/embed/HyrHhaRVOaM?si=YCb2xZwZioIkRyBS" 
+										title="YouTube video player" 
+										frameborder="0" 
+										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+										referrerpolicy="strict-origin-when-cross-origin" 
+										allowfullscreen>
+									</iframe>
+								</div>
+							</div>
+
+							<!-- TARJETA VIDEO 4 -->
+							<div class="flex flex-col gap-2">
+								<p class="font-semibold text-slate-900 text-sm sm:text-base">
+									OptiTrack Mo-Cap System Setup, Calibration and ROS Integration Tutorial
+								</p>
+								<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-md">
+									<iframe 
+										class="absolute top-0 left-0 w-full h-full"
+										src="https://www.youtube.com/embed/JvpxLf8VFvs?si=xirgSxEdHIUekpN8" 
+										title="YouTube video player" 
+										frameborder="0" 
+										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+										referrerpolicy="strict-origin-when-cross-origin" 
+										allowfullscreen>
+									</iframe>
+								</div>
+							</div>
+
+							<!-- TARJETA VIDEO 5 -->
+							<div class="flex flex-col gap-2">
+								<p class="font-semibold text-slate-900 text-sm sm:text-base">
+									Filtros de Kalman
+								</p>
+								<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-md">
+									<iframe 
+										class="absolute top-0 left-0 w-full h-full"
+										src="https://www.youtube.com/embed/mwn8xhgNpFY?si=MZBN3BQGxreNElQj" 
+										title="YouTube video player" 
+										frameborder="0" 
+										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+										referrerpolicy="strict-origin-when-cross-origin" 
+										allowfullscreen>
+									</iframe>
+								</div>
+							</div>
+						</div>
 					</div>
 				{/if}
 			</div>
 
+			<!-- BOTÓN DESPLEGABLE 2: DOCUMENTACIÓN -->
 			<div class="rounded-2xl sm:rounded-3xl bg-stone-200/80 overflow-hidden shadow-sm transition-all">
 				<button
 					type="button"
 					onclick={() => toggle(2)}
 					class="w-full p-5 sm:p-8 text-left font-bold text-lg sm:text-2xl text-slate-900 flex items-center gap-3 sm:gap-4 hover:bg-stone-300/80 transition-colors"
 				>
-					<span class={`transform transition-transform duration-200 text-slate-700 text-xs sm:text-sm ${openSection === 2 ? 'rotate-180' : ''}`}>
+					<span class={`transform transition-transform duration-200 text-slate-700 text-xs sm:text-sm ${openSections.has(2) ? 'rotate-180' : ''}`}>
 						▼
 					</span>
-					Control, Estimación y Posicionamiento
+					Documentación
 				</button>
-				{#if openSection === 2}
-					<div class="p-5 sm:p-8 pt-0 text-xs sm:text-base text-slate-700">
-						Documentación sobre algoritmos de control PID, filtros de Kalman, Odometría Visual Inercial (VIO) y navegación sin GPS.
+
+				{#if openSections.has(2)}
+					<div class="p-5 sm:p-8 pt-0 flex flex-col gap-3">
+						<!-- SUB-SECCIÓN 1: TELLO -->
+						<div class="rounded-xl bg-stone-300/50 overflow-hidden">
+							<button
+								type="button"
+								onclick={() => toggleSub('tello')}
+								class="w-full px-4 py-3 text-left font-semibold text-sm sm:text-base text-slate-800 flex items-center gap-2 hover:bg-stone-300 transition-colors"
+							>
+								<span class={`transform transition-transform duration-200 text-xs ${openSubSections.has('tello') ? 'rotate-180' : ''}`}>
+									▼
+								</span>
+								Tello
+							</button>
+
+							{#if openSubSections.has('tello')}
+								<div class="p-4 pt-2 flex flex-col gap-2 text-xs sm:text-sm">
+									<a 
+										href="https://dl-cdn.ryzerobotics.com/downloads/Tello/201806mul/Tello%20User%20Manual%20V1.0_ES.pdf" 
+										target="_blank" 
+										rel="noopener noreferrer"
+										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
+									>
+										<span>🔗</span>
+										<span class="font-medium underline">MANUAL DEL TELLO</span>
+									</a>
+
+									<a 
+										href="https://github.com/damiafuentes/DJITelloPy" 
+										target="_blank" 
+										rel="noopener noreferrer"
+										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
+									>
+										<span>🐙</span>
+										<span class="font-medium">GitHub - damiafuentes/DJITelloPy</span>
+									</a>
+								</div>
+							{/if}
+						</div>
+
+						<!-- SUB-SECCIÓN 2: ROS2 -->
+						<div class="rounded-xl bg-stone-300/50 overflow-hidden">
+							<button
+								type="button"
+								onclick={() => toggleSub('ros2')}
+								class="w-full px-4 py-3 text-left font-semibold text-sm sm:text-base text-slate-800 flex items-center gap-2 hover:bg-stone-300 transition-colors"
+							>
+								<span class={`transform transition-transform duration-200 text-xs ${openSubSections.has('ros2') ? 'rotate-180' : ''}`}>
+									▼
+								</span>
+								ROS2
+							</button>
+
+							{#if openSubSections.has('ros2')}
+								<div class="p-4 pt-2 flex flex-col gap-2 text-xs sm:text-sm">
+									<a 
+										href="https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html" 
+										target="_blank" 
+										rel="noopener noreferrer"
+										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
+									>
+										<span>🔗</span> 
+										<span class="font-medium">Ubuntu (deb packages) — ROS 2 Documentation</span>
+									</a>
+									<a 
+										href="https://ardupilot.org/dev/docs/ros2-gazebo.html" 
+										target="_blank" 
+										rel="noopener noreferrer"
+										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
+									>
+										<span>🌐</span> 
+										<span class="font-medium">ROS 2 with Gazebo — Dev documentation</span>
+									</a>
+									
+								</div>
+							{/if}
+						</div>
+						<!-- SUB-SECCIÓN 3: OptiTrack -->
+						<div class="rounded-xl bg-stone-300/50 overflow-hidden">
+							<button
+								type="button"
+								onclick={() => toggleSub('OptiTrack')}
+								class="w-full px-4 py-3 text-left font-semibold text-sm sm:text-base text-slate-800 flex items-center gap-2 hover:bg-stone-300 transition-colors"
+							>
+								<span class={`transform transition-transform duration-200 text-xs ${openSubSections.has('OptiTrack') ? 'rotate-180' : ''}`}>
+									▼
+								</span>
+								OptiTrack
+							</button>
+
+							{#if openSubSections.has('OptiTrack')}
+								<div class="p-4 pt-2 flex flex-col gap-2 text-xs sm:text-sm">
+									<a 
+										href="https://docs.optitrack.com" 
+										target="_blank" 
+										rel="noopener noreferrer"
+										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
+									>
+										<span>🌐</span> 
+										<span class="font-medium">OptiTrack Documentation | EXTERNAL OptiTrack Documentation</span>
+									</a>
+									<a 
+										href="https://docs.optitrack.com/developer-tools/natnet-sdk" 
+										target="_blank" 
+										rel="noopener noreferrer"
+										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
+									>
+										<span>🌐</span> 
+										<span class="font-medium">NatNet SDK | EXTERNAL OptiTrack Documentation</span>
+									</a>
+									<a 
+										href="https://github.com/L2S-lab/natnet_ros2/tree/main" 
+										target="_blank" 
+										rel="noopener noreferrer"
+										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
+									>
+										<span>🐙</span> 
+										<span class="font-medium">GitHub - ROS2 Driver for the NatNet</span>
+									</a>
+								</div>
+							{/if}
+						</div>
+						<!-- SUB-SECCIÓN 4: Visión Computacional -->
+						<div class="rounded-xl bg-stone-300/50 overflow-hidden">
+							<button
+								type="button"
+								onclick={() => toggleSub('vision-computacional')}
+								class="w-full px-4 py-3 text-left font-semibold text-sm sm:text-base text-slate-800 flex items-center gap-2 hover:bg-stone-300 transition-colors"
+							>
+								<span class={`transform transition-transform duration-200 text-xs ${openSubSections.has('OptiTrack') ? 'rotate-180' : ''}`}>
+									▼
+								</span>
+								Visión Computacional
+							</button>
+
+							{#if openSubSections.has('vision-computacional')}
+								<div class="p-4 pt-2 flex flex-col gap-2 text-xs sm:text-sm">
+									<a 
+										href="https://docs.opencv.org/4.13.0/dc/dbb/tutorial_py_calibration.html" 
+										target="_blank" 
+										rel="noopener noreferrer"
+										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
+									>
+										<span>🔗</span> 
+										<span class="font-medium">Calibración de Camara</span>
+									</a>
+								</div>
+							{/if}
+						</div>
+												<!-- SUB-SECCIÓN 5: REPOS -->
+						<div class="rounded-xl bg-stone-300/50 overflow-hidden">
+							<button
+								type="button"
+								onclick={() => toggleSub('repos')}
+								class="w-full px-4 py-3 text-left font-semibold text-sm sm:text-base text-slate-800 flex items-center gap-2 hover:bg-stone-300 transition-colors"
+							>
+								<span class={`transform transition-transform duration-200 text-xs ${openSubSections.has('repos') ? 'rotate-180' : ''}`}>
+									▼
+								</span>
+								REPOS
+							</button>
+
+							{#if openSubSections.has('repos')}
+								<div class="p-4 pt-2 flex flex-col gap-2 text-xs sm:text-sm">
+									<a 
+										href="https://github.com/rshum19/Crazyflie-CAD" 
+										target="_blank" 
+										rel="noopener noreferrer"
+										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
+									>
+										<span>🐙</span> 
+										<span class="font-medium">Crazyflie-CAD</span>
+									</a>
+									<a 
+										href="GitHub GitHub - L2S-lab/natnet_ros2: ROS 2 driver for the NatNet 4.…" 
+										target="_blank" 
+										rel="noopener noreferrer"
+										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
+									>
+										<span>🐙</span> 
+										<span class="font-medium">NatNet ROS2</span>
+									</a>
+									
+								</div>
+							{/if}
+						</div>
 					</div>
 				{/if}
 			</div>
-
+		<div class="space-y-3 sm:space-y-4 pt-2 sm:pt-4">
+			<!-- BOTÓN DESPLEGABLE 3: Drones -->
 			<div class="rounded-2xl sm:rounded-3xl bg-stone-200/80 overflow-hidden shadow-sm transition-all">
 				<button
 					type="button"
 					onclick={() => toggle(3)}
 					class="w-full p-5 sm:p-8 text-left font-bold text-lg sm:text-2xl text-slate-900 flex items-center gap-3 sm:gap-4 hover:bg-stone-300/80 transition-colors"
 				>
-					<span class={`transform transition-transform duration-200 text-slate-700 text-xs sm:text-sm ${openSection === 3 ? 'rotate-180' : ''}`}>
+					<span class={`transform transition-transform duration-200 text-slate-700 text-xs sm:text-sm ${openSections.has(1) ? 'rotate-180' : ''}`}>
 						▼
 					</span>
-					Documentación Oficial y Librerías
+					Drones
 				</button>
-				{#if openSection === 3}
-					<div class="p-5 sm:p-8 pt-0 text-xs sm:text-base text-slate-700">
-						Acceso a repositorios oficiales de GitHub, diagramas esquemáticos de hardware y manuales de usuario.
+
+				{#if openSections.has(3)}
+					<div class="p-5 sm:p-8 pt-0 text-xs sm:text-base text-slate-700 flex flex-col gap-4">
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<!-- TARJETA VIDEO 1 -->
+							<div class="flex flex-col gap-2">
+								<p class="font-semibold text-slate-900 text-sm sm:text-base">	
+								DJI TELLO - Tutorial and Quick Review
+								</p>
+								<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-md">
+								 <iframe 
+								    class="absolute top-0 left-0 w-full h-full"
+									src="https://www.youtube.com/embed/pn84aprnqkA?si=kLnWcO_sCkZIUMKh" 
+									title="YouTube video player" 
+									frameborder="0" 
+									allow="accelerometer; 
+									autoplay; clipboard-write; 
+									encrypted-media; gyroscope; 
+									picture-in-picture; 
+									web-share" 
+									referrerpolicy="strict-origin-when-cross-origin" 
+									allowfullscreen>
+								 </iframe>
+								</div>
+							</div>
+
+							<!-- TARJETA VIDEO 2 -->
+							<div class="flex flex-col gap-2">
+								<p class="font-semibold text-slate-900 text-sm sm:text-base">
+									Air Series | Full guide & Test Flight
+								</p>
+								<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-md">
+								 <iframe 
+									class="absolute top-0 left-0 w-full h-full"
+									src="https://www.youtube.com/embed/A3IiKlwFtwk?si=cIZyHvGwH5a0Pgm5" 
+									title="YouTube video player" 
+									frameborder="0" 
+									allow="accelerometer; 
+									autoplay; 
+									clipboard-write; 
+									encrypted-media; 
+									gyroscope; 
+									picture-in-picture; 
+									web-share" 
+									referrerpolicy="strict-origin-when-cross-origin" 
+									allowfullscreen>
+								 </iframe>
+								</div>
+							</div>
+						</div>
 					</div>
 				{/if}
 			</div>
