@@ -1,6 +1,6 @@
 <script lang="ts">
 	import insanosImg from '$lib/assets/Insanos.jpg';
-	import droneImg from '$lib/assets/Drone.jpg';
+	import droneImg from '$lib/assets/Drone.jpeg';
 
 	let openSection = $state<number | null>(null);
 
