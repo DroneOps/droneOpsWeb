@@ -427,7 +427,7 @@
 										<span class="font-medium">Crazyflie-CAD</span>
 									</a>
 									<a 
-										href="GitHub GitHub - L2S-lab/natnet_ros2: ROS 2 driver for the NatNet 4.…" 
+										href="https://github.com/L2S-lab/natnet_ros2" 
 										target="_blank" 
 										rel="noopener noreferrer"
 										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
