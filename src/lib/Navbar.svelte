@@ -101,6 +101,7 @@
         <!--Muestra la seccion si el usuario ha iniciado sesion-->
         {#if user}
             <a href="/por-hacer" on:click={() => menuAbierto = false}>Por hacer</a>
+            <a href="/inventario" on:click={() => menuAbierto = false}>Inventario</a>
         {/if}
         
         <a href="/comunidad" on:click={() => menuAbierto = false}>Comunidad</a>

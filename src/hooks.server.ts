@@ -49,8 +49,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// 4. CORREGIDO: Proteger tanto /por-hacer como /miembros
 	const esPorHacer = event.url.pathname.startsWith('/por-hacer')
 	const esMiembros = event.url.pathname.startsWith('/miembros')
+	const esInventario = event.url.pathname.startsWith('/inventario')
 
-	if (esPorHacer || esMiembros) {
+	if (esPorHacer || esMiembros || esInventario) {
 		// A. No ha iniciado sesión
 		if (!user) {
 			throw redirect(303, RUTA_LOGIN)
