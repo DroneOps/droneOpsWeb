@@ -27,14 +27,75 @@
         { id: 5, codigo: 'PZA-021', nombre: 'Kit Hélices 9.4"', descripcion: 'Repuesto original DJI',
           categoria: 'Piezas', estado: 'en_uso', cantidad: 12, ubicacion: 'Taller · Cajón C-03', foto_url: null }
     ]);
+
+    const categorias: Categoria[] = ['Herramientas', 'Electrónica', 'Drones', 'Visión', 'Piezas']
+    const categoriasActivas = new SvelteSet<Categoria>(categorias);
+    type FiltroEstado = 'todos' | 'en_uso' | 'libre';
+    let filtroEstado = $state<FiltroEstado>('todos');
+
+    function alternarCategoria(cat: Categoria) {
+        if (categoriasActivas.has(cat)) {
+            categoriasActivas.delete(cat);
+        } else {
+            categoriasActivas.add(cat);
+        }
+    }
+
+    let itemsFiltrados = $derived(
+        items.filter(item =>
+            categoriasActivas.has(item.categoria) &&
+            (filtroEstado === 'todos' || item.estado === filtroEstado)
+        )
+    );
+
+    let totalLibres = $derived(items.filter(i => i.estado === 'libre').length);
+    let totalEnUso = $derived(items.filter(i => i.estado === 'en_uso').length);
     
 </script>
+
+<div class="pagina-inventario">
+    <aside class="sidebar">
+        <p class="titulo-seccion">ITEMS</p>
+        {#each categorias as cat}
+            <label class="filtro">
+                <input
+                    type="checkbox"
+                    checked={categoriasActivas.has(cat)}
+                    onchange={() => alternarCategoria(cat)}
+                />
+                {cat}
+            </label>
+        {/each}
+        <hr class="separador" />
+
+        <p class="titulo-seccion">DISPONIBILIDAD</p>
+        <label class="opcion">
+            <input type="radio" name="estado" value="todos" bind:group={filtroEstado} />
+            Todos
+        </label>
+        <label class="opcion">
+            <input type="radio" name="estado" value="en_uso" bind:group={filtroEstado} />
+            En uso
+        </label>
+        <label class="opcion">
+            <input type="radio" name="estado" value="libre" bind:group={filtroEstado} />
+            Libre
+        </label>
+
+        <hr class="separador" />
+
+        <div class="resumen">
+            <p>Total de items: {items.length}</p>
+            <p><span class="punto verde"></span>Libres: {totalLibres}</p>
+            <p><span class="punto naranja"></span>En uso: {totalEnUso}</p>
+        </div>
+    </aside>
 
 <div class="inventario">
     <h1>INVENTARIO PRUEBA</h1>
 
     <div class="grid">
-        {#each items as item (item.id)}
+        {#each itemsFiltrados as item (item.id)}
             <article class="tarjeta">
                 <div class="imagen">
                     <span class="etiqueta"
@@ -69,7 +130,7 @@
         {/each}
     </div>
 </div>
-
+</div>
 <style>
     .inventario {
         color: #12151e;
@@ -170,13 +231,104 @@
     .etiqueta.electronica {
         background: #2563eb;
     }
+
     .etiqueta.vision {
         background: #047857;
     }
+
     .etiqueta.herramientas {
         background: #27064b;
     }
+
     .etiqueta.piezas {
         background: #c2410c;
+    }
+        .inventario {
+        flex: 1;
+        color: #12151e;
+        padding: 2rem;
+    }
+        .pagina-inventario {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .sidebar {
+        width: 220px;
+        flex-shrink: 0;
+        background: #0b0f19;
+        color: white;
+        padding: 1.5rem 1rem;
+    }
+
+    .titulo-seccion {
+        font-size: 0.7rem;
+        color: #6b7280;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.75rem;
+    }
+
+    .filtro {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #1c2230;
+        padding: 0.4rem 0.6rem;
+        border-radius: 6px;
+        margin-bottom: 0.4rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    .filtro input {
+        accent-color: #7c3aed;
+    }
+        .separador {
+        border: none;
+        border-top: 1px solid #1f2937;
+        margin: 1.25rem 0;
+    }
+
+    .opcion {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0.6rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        margin-bottom: 0.25rem;
+    }
+
+    .opcion:has(input:checked) {
+        background: #1c2230;
+    }
+
+    .opcion input {
+        accent-color: #7c3aed;
+    }
+
+    .resumen {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        font-size: 0.75rem;
+        color: #9aa3b2;
+    }
+
+    .punto {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 0.4rem;
+    }
+
+    .punto.verde {
+        background: #22c55e;
+    }
+
+    .punto.naranja {
+        background: #f59e0b;
     }
 </style>
