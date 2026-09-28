@@ -19,6 +19,14 @@
         foto_url: string | null;
     }
 
+    interface Uso {
+        id: number;
+        item_id: number;
+        usuario: string;
+        motivo: string;
+        fecha: string;
+    }
+
     // ===== Datos de prueba =====
     let items = $state<Item[]>([
         { id: 1, codigo: 'DRN-001', nombre: 'DJI Mavic 3 Pro', descripcion: 'Drone de inspección',
@@ -31,6 +39,15 @@
           categoria: 'Visión', estado: 'libre', cantidad: 1, ubicacion: 'Laboratorio 2 · Estantería A-02', foto_url: null },
         { id: 5, codigo: 'PZA-021', nombre: 'Kit Hélices 9.4"', descripcion: 'Repuesto original DJI',
           categoria: 'Piezas', estado: 'en_uso', cantidad: 12, ubicacion: 'Taller · Cajón C-03', foto_url: null }
+    ]);
+
+    let usos = $state<Uso[]>([
+        { id: 1, item_id: 1, usuario: 'Ana Martínez', motivo: 'Inspección',       fecha: '2026-09-24T09:30:00' },
+        { id: 2, item_id: 1, usuario: 'Luis Castro',  motivo: 'Calibración',      fecha: '2026-09-22T14:10:00' },
+        { id: 3, item_id: 1, usuario: 'Sofía Ruiz',   motivo: 'Mantenimiento',    fecha: '2026-09-18T09:45:00' },
+        { id: 4, item_id: 1, usuario: 'Ana Martínez', motivo: 'Práctica',         fecha: '2026-09-10T11:00:00' },
+        { id: 5, item_id: 2, usuario: 'Luis Castro',  motivo: 'Pruebas de vuelo', fecha: '2026-09-27T16:00:00' },
+        { id: 6, item_id: 5, usuario: 'Sofía Ruiz',   motivo: 'Reemplazo',        fecha: '2026-09-25T12:15:00' }
     ]);
 
     // ===== Filtros =====
@@ -79,6 +96,37 @@
             itemSeleccionado = item;
         }
     }
+
+    // ===== Historial =====
+    let usosSeleccionado = $derived.by(() => {
+        const seleccionado = itemSeleccionado;
+        if (!seleccionado) return [];
+
+        return usos
+            .filter(u => u.item_id === seleccionado.id)
+            .toSorted((a, b) => b.fecha.localeCompare(a.fecha));
+    });
+
+    function formatearFecha(fecha: string) {
+        return new Date(fecha).toLocaleString('es-MX', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function iniciales(nombre: string) {
+        return nombre
+            .split(' ')
+            .map(palabra => palabra[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase();
+    }
+
+    const coloresAvatar = ['#7c3aed', '#2563eb', '#047857', '#c2410c'];
 </script>
 
 <!-- Snippet: la imagen con etiqueta y estado (se usa en la tarjeta y en el panel) -->
@@ -174,12 +222,31 @@
                         </div>
                         <div class="dato">
                             <p class="titulo-seccion">ÚLTIMO USO</p>
-                            <p>Próximamente</p>
+                            <p>
+                                {usosSeleccionado.length > 0
+                                    ? formatearFecha(usosSeleccionado[0].fecha)
+                                    : 'Sin registros'}
+                            </p>
                         </div>
                     </div>
 
                     <p class="titulo-seccion">ÚLTIMOS USUARIOS</p>
-                    <p class="descripcion">Aquí irá el historial (siguiente paso).</p>
+                    <ul class="usuarios">
+                        {#each usosSeleccionado.slice(0, 3) as uso, i (uso.id)}
+                            <li class="usuario">
+                                <span class="avatar" style:background={coloresAvatar[i % coloresAvatar.length]}>
+                                    {iniciales(uso.usuario)}
+                                </span>
+                                <div>
+                                    <p class="usuario-nombre">{uso.usuario}</p>
+                                    <p class="usuario-fecha">{formatearFecha(uso.fecha)}</p>
+                                </div>
+                                <span class="usuario-motivo">{uso.motivo}</span>
+                            </li>
+                        {:else}
+                            <li class="descripcion">Este item aún no tiene registros de uso.</li>
+                        {/each}
+                    </ul>
                 </div>
             </section>
         {/if}
@@ -554,5 +621,54 @@
 
     .cerrar:hover {
         color: white;
+    }
+
+    /* ===== Historial ===== */
+    .usuarios {
+        background: #0b0f19;
+        border-radius: 8px;
+        padding: 0.25rem 0.75rem;
+        list-style: none;
+    }
+
+    .usuario {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #1f2937;
+    }
+
+    .usuario:last-child {
+        border-bottom: none;
+    }
+
+    .avatar {
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    .usuario-nombre {
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .usuario-fecha {
+        font-size: 0.7rem;
+        color: #6b7280;
+    }
+
+    .usuario-motivo {
+        margin-left: auto;
+        font-size: 0.75rem;
+        color: #9aa3b2;
     }
 </style>
