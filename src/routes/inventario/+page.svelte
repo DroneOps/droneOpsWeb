@@ -1,14 +1,18 @@
 <script lang="ts">
     import { SvelteSet } from 'svelte/reactivity';
+    import { invalidateAll } from '$app/navigation';
 
-    // ===== Tipos =====
+    // Recibir datos reales cargados desde +page.server.ts
+    let { data } = $props();
+
+    // ----- Tipos ----
     type Categoria = 'Drones' | 'Electrónica' | 'Visión' | 'Herramientas' | 'Piezas';
     type Estado = 'libre' | 'en_uso';
     type FiltroEstado = 'todos' | 'en_uso' | 'libre';
     type Orden = 'nombre' | 'categoria' | 'cantidad';
 
     interface Item {
-        id: number;
+        id: string; // Adaptado a UUID de PostgreSQL
         codigo: string;
         nombre: string;
         descripcion: string;
@@ -20,37 +24,18 @@
     }
 
     interface Uso {
-        id: number;
-        item_id: number;
+        id: string; // Adaptado a UUID
+        item_id: string;
         usuario: string;
         motivo: string;
         fecha: string;
     }
 
-    // ===== Datos de prueba =====
-    let items = $state<Item[]>([
-        { id: 1, codigo: 'DRN-001', nombre: 'DJI Mavic 3 Pro', descripcion: 'Drone de inspección',
-          categoria: 'Drones', estado: 'libre', cantidad: 2, ubicacion: 'Laboratorio 2 · Estantería A-04', foto_url: null },
-        { id: 2, codigo: 'ELC-012', nombre: 'Batería LiPo 6S', descripcion: '22000mAh, 44.4V',
-          categoria: 'Electrónica', estado: 'en_uso', cantidad: 8, ubicacion: 'Laboratorio 2 · Cajón B-01', foto_url: null },
-        { id: 3, codigo: 'HRR-003', nombre: 'Llave de Torque', descripcion: 'Calibrada 0.5-5 Nm',
-          categoria: 'Herramientas', estado: 'libre', cantidad: 3, ubicacion: 'Taller · Caja roja', foto_url: null },
-        { id: 4, codigo: 'VIS-007', nombre: 'Cámara Térmica', descripcion: 'FLIR Vue Pro 640',
-          categoria: 'Visión', estado: 'libre', cantidad: 1, ubicacion: 'Laboratorio 2 · Estantería A-02', foto_url: null },
-        { id: 5, codigo: 'PZA-021', nombre: 'Kit Hélices 9.4"', descripcion: 'Repuesto original DJI',
-          categoria: 'Piezas', estado: 'en_uso', cantidad: 12, ubicacion: 'Taller · Cajón C-03', foto_url: null }
-    ]);
+    // ---- Reactividad de datos cargados de Supabase ----
+    let items = $derived<Item[]>(data.items);
+    let usos = $derived<Uso[]>(data.usos);
 
-    let usos = $state<Uso[]>([
-        { id: 1, item_id: 1, usuario: 'Ana Martínez', motivo: 'Inspección',       fecha: '2026-09-24T09:30:00' },
-        { id: 2, item_id: 1, usuario: 'Luis Castro',  motivo: 'Calibración',      fecha: '2026-09-22T14:10:00' },
-        { id: 3, item_id: 1, usuario: 'Sofía Ruiz',   motivo: 'Mantenimiento',    fecha: '2026-09-18T09:45:00' },
-        { id: 4, item_id: 1, usuario: 'Ana Martínez', motivo: 'Práctica',         fecha: '2026-09-10T11:00:00' },
-        { id: 5, item_id: 2, usuario: 'Luis Castro',  motivo: 'Pruebas de vuelo', fecha: '2026-09-27T16:00:00' },
-        { id: 6, item_id: 5, usuario: 'Sofía Ruiz',   motivo: 'Reemplazo',        fecha: '2026-09-25T12:15:00' }
-    ]);
-
-    // ===== Filtros =====
+    // ---- Filtros ----
     const categorias: Categoria[] = ['Herramientas', 'Electrónica', 'Drones', 'Visión', 'Piezas'];
     const categoriasActivas = new SvelteSet<Categoria>(categorias);
     let filtroEstado = $state<FiltroEstado>('todos');
@@ -82,11 +67,11 @@
         });
     });
 
-    // ===== Contadores =====
+    // ---- Contadores ----
     let totalLibres = $derived(items.filter(i => i.estado === 'libre').length);
     let totalEnUso = $derived(items.filter(i => i.estado === 'en_uso').length);
 
-    // ===== Panel de detalle =====
+    // ---- Panel de detalle ----
     let itemSeleccionado = $state<Item | null>(null);
 
     function seleccionar(item: Item) {
@@ -97,7 +82,7 @@
         }
     }
 
-    // ===== Historial =====
+    // ---- Historial ----
     let usosSeleccionado = $derived.by(() => {
         const seleccionado = itemSeleccionado;
         if (!seleccionado) return [];
@@ -127,6 +112,141 @@
     }
 
     const coloresAvatar = ['#7c3aed', '#2563eb', '#047857', '#c2410c'];
+
+    // ===== Modales y Estado de Acciones =====
+    let mostrarModalAgregar = $state(false);
+    let mostrarModalPrestar = $state(false);
+    let cargandoAccion = $state(false);
+
+    // Formulario Crear Ítem
+    let nuevoNombre = $state('');
+    let nuevaDescripcion = $state('');
+    let nuevaUbicacion = $state('');
+    let nuevaCategoria = $state<Categoria>('Herramientas');
+    let nuevaCantidad = $state(1);
+    let archivoImagen = $state<FileList | null>(null);
+
+    // Formulario Prestar Ítem
+    let miembroSeleccionadoEmail = $state('');
+    let motivoUso = $state('');
+    let fechaLimite = $state('');
+
+    // ===== Funciones de Backend API =====
+    async function agregarItem(e: SubmitEvent) {
+        e.preventDefault();
+        cargandoAccion = true;
+
+        const formData = new FormData();
+        formData.append('nombre', nuevoNombre);
+        formData.append('descripcion', nuevaDescripcion);
+        formData.append('ubicacion', nuevaUbicacion);
+        formData.append('categoria', nuevaCategoria === 'Piezas' ? 'Piezas de servicio' : nuevaCategoria);
+        formData.append('cantidad', nuevaCantidad.toString());
+        
+        if (archivoImagen && archivoImagen[0]) {
+            formData.append('imagen', archivoImagen[0]);
+        }
+
+        const res = await fetch('/api/inventario/crear', {
+            method: 'POST',
+            body: formData
+        });
+
+        cargandoAccion = false;
+
+        if (res.ok) {
+            mostrarModalAgregar = false;
+            nuevoNombre = '';
+            nuevaDescripcion = '';
+            nuevaUbicacion = '';
+            archivoImagen = null;
+            await invalidateAll();
+        } else {
+            const err = await res.json();
+            alert(err.error || 'Error al agregar ítem');
+        }
+    }
+
+    async function prestarItem(e: SubmitEvent) {
+        e.preventDefault();
+        if (!itemSeleccionado) return;
+        cargandoAccion = true;
+
+        const res = await fetch('/api/inventario/prestar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                item_id: itemSeleccionado.id,
+                miembro_email: miembroSeleccionadoEmail,
+                motivo_uso: motivoUso,
+                fecha_limite: fechaLimite || null
+            })
+        });
+
+        cargandoAccion = false;
+
+        if (res.ok) {
+            mostrarModalPrestar = false;
+            miembroSeleccionadoEmail = '';
+            motivoUso = '';
+            fechaLimite = '';
+            itemSeleccionado = null;
+            await invalidateAll();
+        } else {
+            const err = await res.json();
+            alert(err.error || 'Error al registrar préstamo');
+        }
+    }
+
+    async function devolverItem() {
+        if (!itemSeleccionado) return;
+        const prestamoActivo = usosSeleccionado[0];
+        if (!prestamoActivo) return;
+
+        if (!confirm(`¿Confirmas la devolución de ${itemSeleccionado.nombre}?`)) return;
+
+        cargandoAccion = true;
+        const res = await fetch('/api/inventario/devolver', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                prestamo_id: prestamoActivo.id,
+                item_id: itemSeleccionado.id
+            })
+        });
+
+        cargandoAccion = false;
+
+        if (res.ok) {
+            itemSeleccionado = null;
+            await invalidateAll();
+        } else {
+            const err = await res.json();
+            alert(err.error || 'Error al devolver ítem');
+        }
+    }
+
+    async function eliminarItem() {
+        if (!itemSeleccionado) return;
+        if (!confirm(`¿Estás seguro de eliminar "${itemSeleccionado.nombre}"? Esta acción no se puede deshacer.`)) return;
+
+        cargandoAccion = true;
+        const res = await fetch('/api/inventario/eliminar', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: itemSeleccionado.id })
+        });
+
+        cargandoAccion = false;
+
+        if (res.ok) {
+            itemSeleccionado = null;
+            await invalidateAll();
+        } else {
+            const err = await res.json();
+            alert(err.error || 'Error al eliminar ítem');
+        }
+    }
 </script>
 
 <!-- Snippet: la imagen con etiqueta y estado (se usa en la tarjeta y en el panel) -->
@@ -154,7 +274,7 @@
 {/snippet}
 
 <div class="pagina-inventario">
-    <!-- ===== Barra lateral ===== -->
+    <!-- --- Barra lateral ---- -->
     <aside class="sidebar">
         <p class="titulo-seccion">ITEMS</p>
         {#each categorias as cat}
@@ -193,7 +313,7 @@
         </div>
     </aside>
 
-    <!-- ===== Contenido principal ===== -->
+    <!-- ---- Contenido principal ---- -->
     <div class="inventario">
         <!-- Panel de detalle -->
         {#if itemSeleccionado}
@@ -230,7 +350,24 @@
                         </div>
                     </div>
 
-                    <p class="titulo-seccion">ÚLTIMOS USUARIOS</p>
+                    <!-- Botones de Acción sobre Ítem Seleccionado -->
+                    <div class="acciones-detalle">
+                        {#if itemSeleccionado.estado === 'libre'}
+                            <button class="btn-accion prestar" onclick={() => mostrarModalPrestar = true}>
+                                📤 Prestar Ítem
+                            </button>
+                        {:else}
+                            <button class="btn-accion devolver" disabled={cargandoAccion} onclick={devolverItem}>
+                                📥 Marcar Devolución
+                            </button>
+                        {/if}
+
+                        <button class="btn-accion eliminar" disabled={cargandoAccion} onclick={eliminarItem}>
+                            🗑️ Eliminar
+                        </button>
+                    </div>
+
+                    <p class="titulo-seccion" style="margin-top: 1rem;">ÚLTIMOS USUARIOS</p>
                     <ul class="usuarios">
                         {#each usosSeleccionado.slice(0, 3) as uso, i (uso.id)}
                             <li class="usuario">
@@ -254,6 +391,10 @@
         <!-- Encabezado: título + buscador + ordenar -->
         <div class="encabezado">
             <h1>INVENTARIO</h1>
+
+            <button class="btn-agregar" onclick={() => mostrarModalAgregar = true}>
+                + AGREGAR ÍTEM
+            </button>
 
             <input
                 class="buscador"
@@ -301,8 +442,91 @@
     </div>
 </div>
 
+<!-- ===== Modal Agregar Ítem ===== -->
+{#if mostrarModalAgregar}
+    <div class="modal-overlay">
+        <div class="modal">
+            <h2>Agregar Nuevo Artículo</h2>
+            <form onsubmit={agregarItem}>
+                <label>Nombre del Ítem *
+                    <input type="text" bind:value={nuevoNombre} required placeholder="Ej. DJI Mavic 3 Pro" />
+                </label>
+
+                <label>Descripción
+                    <textarea bind:value={nuevaDescripcion} placeholder="Ej. Drone de inspección con cámara Hasselblad"></textarea>
+                </label>
+
+                <div class="fila">
+                    <label>Categoría
+                        <select bind:value={nuevaCategoria}>
+                            {#each categorias as cat}
+                                <option value={cat}>{cat}</option>
+                            {/each}
+                        </select>
+                    </label>
+
+                    <label>Cantidad
+                        <input type="number" min="1" bind:value={nuevaCantidad} required />
+                    </label>
+                </div>
+
+                <label>Ubicación en Laboratorio
+                    <input type="text" bind:value={nuevaUbicacion} placeholder="Ej. Laboratorio 2 · Estantería A-04" />
+                </label>
+
+                <label>Imagen del dispositivo
+                    <input type="file" accept="image/*" bind:files={archivoImagen} />
+                </label>
+
+                <div class="modal-acciones">
+                    <button type="button" class="btn-cancelar" onclick={() => mostrarModalAgregar = false}>Cancelar</button>
+                    <button type="submit" class="btn-guardar" disabled={cargandoAccion}>
+                        {cargandoAccion ? 'Guardando...' : 'Guardar Ítem'}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{/if}
+
+<!-- ===== Modal Prestar Ítem ===== -->
+{#if mostrarModalPrestar && itemSeleccionado}
+    <div class="modal-overlay">
+        <div class="modal">
+            <h2>Registrar Préstamo</h2>
+            <p class="subtitulo">Ítem: <strong>{itemSeleccionado.nombre}</strong></p>
+
+            <form onsubmit={prestarItem}>
+                <label>Miembro Solicitante *
+                    <select bind:value={miembroSeleccionadoEmail} required>
+                        <option value="" disabled selected>Selecciona un miembro...</option>
+                        {#each data.miembros as m}
+                            <option value={m.email}>{m.user} ({m.area})</option>
+                        {/each}
+                    </select>
+                </label>
+
+                <label>Motivo de Uso
+                    <input type="text" bind:value={motivoUso} placeholder="Ej. Pruebas de vuelo, Inspección..." />
+                </label>
+
+                <label>Fecha Límite de Entrega
+                    <input type="datetime-local" bind:value={fechaLimite} />
+                </label>
+
+                <div class="modal-acciones">
+                    <button type="button" class="btn-cancelar" onclick={() => mostrarModalPrestar = false}>Cancelar</button>
+                    <button type="submit" class="btn-guardar" disabled={cargandoAccion}>
+                        {cargandoAccion ? 'Registrando...' : 'Confirmar Préstamo'}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{/if}
+
 <style>
-    /* ===== Estructura general ===== */
+    /* ---- Estructura general ---- */
     .pagina-inventario {
         display: flex;
         min-height: 100vh;
@@ -325,7 +549,7 @@
         font-weight: 700;
     }
 
-    /* ===== Barra lateral ===== */
+    /* ----- Barra lateral ---- */
     .sidebar {
         width: 220px;
         flex-shrink: 0;
@@ -403,7 +627,7 @@
         background: #f59e0b;
     }
 
-    /* ===== Encabezado ===== */
+    /* ----- Encabezado ---- */
     .encabezado {
         display: flex;
         align-items: center;
@@ -411,6 +635,22 @@
         border-bottom: 2px solid #12151e;
         padding-bottom: 0.75rem;
         margin-bottom: 1.5rem;
+    }
+
+    .btn-agregar {
+        background: #7c3aed;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .btn-agregar:hover {
+        background: #6d28d9;
     }
 
     .buscador {
@@ -559,7 +799,7 @@
         grid-column: 1 / -1;
     }
 
-    /* ===== Panel de detalle ===== */
+    /* ---- Panel de detalle ----- */
     .detalle {
         display: flex;
         background: #12151e;
@@ -608,6 +848,25 @@
         font-size: 0.85rem;
     }
 
+    .acciones-detalle {
+        display: flex;
+        gap: 0.75rem;
+        margin: 1rem 0;
+    }
+
+    .btn-accion {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        cursor: pointer;
+    }
+
+    .btn-accion.prestar { background: #2563eb; color: white; }
+    .btn-accion.devolver { background: #16a34a; color: white; }
+    .btn-accion.eliminar { background: #dc2626; color: white; }
+
     .cerrar {
         position: absolute;
         top: 0.75rem;
@@ -623,7 +882,7 @@
         color: white;
     }
 
-    /* ===== Historial ===== */
+    /* ---- Historial ----- */
     .usuarios {
         background: #0b0f19;
         border-radius: 8px;
@@ -671,4 +930,59 @@
         font-size: 0.75rem;
         color: #9aa3b2;
     }
+
+    /* ===== Modales ===== */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.75);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+    }
+
+    .modal {
+        background: #12151e;
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 480px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal h2 { margin-top: 0; font-size: 1.25rem; }
+    .modal .subtitulo { color: #9aa3b2; font-size: 0.85rem; margin-bottom: 1rem; }
+
+    .modal form { display: flex; flex-direction: column; gap: 0.85rem; }
+
+    .modal label {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        font-size: 0.8rem;
+        color: #9aa3b2;
+    }
+
+    .modal input, .modal select, .modal textarea {
+        background: #1c2230;
+        border: 1px solid #2d3748;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+    }
+
+    .modal .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    .modal-acciones {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .btn-cancelar { background: #374151; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
+    .btn-guardar { background: #7c3aed; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 700; }
 </style>

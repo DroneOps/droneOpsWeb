@@ -33,7 +33,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if (user) {
 		const { data: admin, error: adminError } = await event.locals.supabase
 			.from('admins')
-			.select('email, user, es_superadmin') // <-- 1. CORREGIDO: agregamos es_superadmin aquí
+			.select('email, user, es_superadmin') 
 			.eq('email', user.email)
 			.maybeSingle()
 
@@ -46,7 +46,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		event.locals.esSuperAdmin = admin?.es_superadmin ?? false
 	}
 
-	// 4. CORREGIDO: Proteger tanto /por-hacer como /miembros
+	// 4. Proteger tanto /por-hacer como /miembros
 	const esPorHacer = event.url.pathname.startsWith('/por-hacer')
 	const esMiembros = event.url.pathname.startsWith('/miembros')
 	const esInventario = event.url.pathname.startsWith('/inventario')
@@ -60,7 +60,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		if (!event.locals.isAdmin) {
 			throw redirect(303, '/')
 		}
-		// C. Intenta entrar a /miembros pero NO es superadmin (ej. Omar, Yaya, Ricky)
+		// C. Intenta entrar a /miembros pero NO es superadmin 
 		if (esMiembros && !event.locals.esSuperAdmin) {
 			throw redirect(303, '/por-hacer')
 		}
