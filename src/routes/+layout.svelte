@@ -39,7 +39,7 @@
 	}
 
 	.contenido-principal {
-		padding-top: 70px; 
+		padding-top: 65px; 
 		margin-bottom: 0px; /*No se nota*/
 	}
 </style>
