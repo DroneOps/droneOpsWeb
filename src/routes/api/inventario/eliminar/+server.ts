@@ -4,8 +4,9 @@ import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 import { env } from '$env/dynamic/private';
 
 export const DELETE: RequestHandler = async ({ request, locals }) => {
-    if (!locals.user?.email) {
-        return json({ error: 'No autorizado' }, { status: 401 });
+    // Validar que exista usuario Y que sea SuperAdmin
+    if (!locals.user?.email || !locals.esSuperAdmin) {
+        return json({ error: 'Acceso denegado. Se requieren permisos de SuperAdmin.' }, { status: 403 });
     }
 
     try {

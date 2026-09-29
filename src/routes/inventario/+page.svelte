@@ -350,22 +350,24 @@
                         </div>
                     </div>
 
-                    <!-- Botones de Acción sobre Ítem Seleccionado -->
-                    <div class="acciones-detalle">
-                        {#if itemSeleccionado.estado === 'libre'}
-                            <button class="btn-accion prestar" onclick={() => mostrarModalPrestar = true}>
-                                📤 Prestar Ítem
-                            </button>
-                        {:else}
-                            <button class="btn-accion devolver" disabled={cargandoAccion} onclick={devolverItem}>
-                                📥 Marcar Devolución
-                            </button>
-                        {/if}
+                    <!-- Botones de Acción sobre Ítem Seleccionado (Solo visilbes para SuperAdmin) -->
+                    {#if data.esSuperAdmin}
+                        <div class="acciones-detalle">
+                            {#if itemSeleccionado.estado === 'libre'}
+                                <button class="btn-accion prestar" onclick={() => mostrarModalPrestar = true}>
+                                    Prestar Ítem
+                                </button>
+                            {:else}
+                                <button class="btn-accion devolver" disabled={cargandoAccion} onclick={devolverItem}>
+                                    Marcar Devolución
+                                </button>
+                            {/if}
 
-                        <button class="btn-accion eliminar" disabled={cargandoAccion} onclick={eliminarItem}>
-                            🗑️ Eliminar
-                        </button>
-                    </div>
+                            <button class="btn-accion eliminar" disabled={cargandoAccion} onclick={eliminarItem}>
+                                Eliminar
+                            </button>
+                        </div>
+                    {/if}
 
                     <p class="titulo-seccion" style="margin-top: 1rem;">ÚLTIMOS USUARIOS</p>
                     <ul class="usuarios">
@@ -392,9 +394,11 @@
         <div class="encabezado">
             <h1>INVENTARIO</h1>
 
-            <button class="btn-agregar" onclick={() => mostrarModalAgregar = true}>
-                + AGREGAR ÍTEM
-            </button>
+            {#if data.esSuperAdmin}
+                <button class="btn-agregar" onclick={() => mostrarModalAgregar = true}>
+                    + AGREGAR ÍTEM
+                </button>
+            {/if}
 
             <input
                 class="buscador"
@@ -443,7 +447,7 @@
 </div>
 
 <!-- ===== Modal Agregar Ítem ===== -->
-{#if mostrarModalAgregar}
+{#if mostrarModalAgregar && data.esSuperAdmin}
     <div class="modal-overlay">
         <div class="modal">
             <h2>Agregar Nuevo Artículo</h2>
@@ -490,7 +494,7 @@
 {/if}
 
 <!-- ===== Modal Prestar Ítem ===== -->
-{#if mostrarModalPrestar && itemSeleccionado}
+{#if mostrarModalPrestar && itemSeleccionado && data.esSuperAdmin}
     <div class="modal-overlay">
         <div class="modal">
             <h2>Registrar Préstamo</h2>
@@ -985,4 +989,88 @@
 
     .btn-cancelar { background: #374151; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
     .btn-guardar { background: #7c3aed; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 700; }
+
+    /* ===== RESPONSIVE (celular y tablets chicas) ===== */
+    @media (max-width: 768px) {
+        .pagina-inventario {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .sidebar > .filtro {
+            display: inline-flex;
+        }
+
+        .inventario {
+            padding: 1.25rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        .encabezado {
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .buscador {
+            max-width: 100%;
+            flex: 1 1 100%;
+            order: 3;
+        }
+
+        .ordenar {
+            margin-left: 0;
+            order: 4;
+        }
+
+        .btn-agregar {
+            order: 2;
+        }
+
+        .detalle {
+            flex-direction: column;
+        }
+
+        .detalle-izq {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .datos {
+            grid-template-columns: 1fr;
+        }
+
+        .acciones-detalle {
+            flex-direction: column;
+        }
+
+        .btn-accion {
+            width: 100%;
+        }
+
+        .usuario-motivo {
+            margin-left: 0;
+            width: 100%;
+        }
+
+        .grid {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.85rem;
+        }
+
+        .modal {
+            max-width: 100%;
+            margin: 0 1rem;
+        }
+
+        .modal .fila {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>

@@ -5,8 +5,8 @@ import { env } from '$env/dynamic/private';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
     // Validar sesión / permisos de SuperAdmin o Moderador
-    if (!locals.user?.email) {
-        return json({ error: 'No autorizado' }, { status: 401 });
+    if (!locals.user?.email || !locals.esSuperAdmin) {
+        return json({ error: 'Acceso denegado. Se requieren permisos de SuperAdmin.' }, { status: 403 });
     }
 
     try {
