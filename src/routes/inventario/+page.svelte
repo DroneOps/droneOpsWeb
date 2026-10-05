@@ -116,9 +116,10 @@
     // ===== Modales y Estado de Acciones =====
     let mostrarModalAgregar = $state(false);
     let mostrarModalPrestar = $state(false);
+    let mostrarModalEditar = $state(false);
     let cargandoAccion = $state(false);
 
-    // Formulario Crear Ítem
+    // Formulario Crear / Editar Ítem
     let nuevoNombre = $state('');
     let nuevaDescripcion = $state('');
     let nuevaUbicacion = $state('');
@@ -130,6 +131,18 @@
     let miembroSeleccionadoEmail = $state('');
     let motivoUso = $state('');
     let fechaLimite = $state('');
+
+    // Prellenar campos para editar
+    function abrirEditar() {
+        if (!itemSeleccionado) return;
+        nuevoNombre = itemSeleccionado.nombre;
+        nuevaDescripcion = itemSeleccionado.descripcion === 'Sin descripción' ? '' : itemSeleccionado.descripcion;
+        nuevaUbicacion = itemSeleccionado.ubicacion === 'Sin ubicación asignada' ? '' : itemSeleccionado.ubicacion;
+        nuevaCategoria = itemSeleccionado.categoria;
+        nuevaCantidad = itemSeleccionado.cantidad;
+        archivoImagen = null;
+        mostrarModalEditar = true;
+    }
 
     // ===== Funciones de Backend API =====
     async function agregarItem(e: SubmitEvent) {
@@ -164,6 +177,40 @@
         } else {
             const err = await res.json();
             alert(err.error || 'Error al agregar ítem');
+        }
+    }
+
+    async function editarItem(e: SubmitEvent) {
+        e.preventDefault();
+        if (!itemSeleccionado) return;
+        cargandoAccion = true;
+
+        const formData = new FormData();
+        formData.append('id', itemSeleccionado.id);
+        formData.append('nombre', nuevoNombre);
+        formData.append('descripcion', nuevaDescripcion);
+        formData.append('ubicacion', nuevaUbicacion);
+        formData.append('categoria', nuevaCategoria === 'Piezas' ? 'Piezas de servicio' : nuevaCategoria);
+        formData.append('cantidad', nuevaCantidad.toString());
+
+        if (archivoImagen && archivoImagen[0]) {
+            formData.append('imagen', archivoImagen[0]);
+        }
+
+        const res = await fetch('/api/inventario/editar', {
+            method: 'PUT',
+            body: formData
+        });
+
+        cargandoAccion = false;
+
+        if (res.ok) {
+            mostrarModalEditar = false;
+            itemSeleccionado = null;
+            await invalidateAll();
+        } else {
+            const err = await res.json();
+            alert(err.error || 'Error al editar ítem');
         }
     }
 
@@ -363,6 +410,10 @@
                                 </button>
                             {/if}
 
+                            <button class="btn-accion editar" onclick={abrirEditar}>
+                                Editar
+                            </button>
+
                             <button class="btn-accion eliminar" disabled={cargandoAccion} onclick={eliminarItem}>
                                 Eliminar
                             </button>
@@ -395,7 +446,14 @@
             <h1>INVENTARIO</h1>
 
             {#if data.esSuperAdmin}
-                <button class="btn-agregar" onclick={() => mostrarModalAgregar = true}>
+                <button class="btn-agregar" onclick={() => {
+                    nuevoNombre = '';
+                    nuevaDescripcion = '';
+                    nuevaUbicacion = '';
+                    nuevaCantidad = 1;
+                    archivoImagen = null;
+                    mostrarModalAgregar = true;
+                }}>
                     + AGREGAR ÍTEM
                 </button>
             {/if}
@@ -475,7 +533,7 @@
                 </div>
 
                 <label>Ubicación en Laboratorio
-                    <input type="text" bind:value={nuevaUbicacion} placeholder="Ej. Laboratorio 2 · Estantería A-04" />
+                    <input type="text" bind:value={nuevaUbicacion} placeholder="Ej. Laboratorio · Estantería A-04" />
                 </label>
 
                 <label>Imagen del dispositivo
@@ -486,6 +544,53 @@
                     <button type="button" class="btn-cancelar" onclick={() => mostrarModalAgregar = false}>Cancelar</button>
                     <button type="submit" class="btn-guardar" disabled={cargandoAccion}>
                         {cargandoAccion ? 'Guardando...' : 'Guardar Ítem'}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{/if}
+
+<!-- ===== Modal Editar Ítem ===== -->
+{#if mostrarModalEditar && itemSeleccionado && data.esSuperAdmin}
+    <div class="modal-overlay">
+        <div class="modal">
+            <h2>Editar Artículo</h2>
+            <form onsubmit={editarItem}>
+                <label>Nombre del Ítem *
+                    <input type="text" bind:value={nuevoNombre} required />
+                </label>
+
+                <label>Descripción
+                    <textarea bind:value={nuevaDescripcion}></textarea>
+                </label>
+
+                <div class="fila">
+                    <label>Categoría
+                        <select bind:value={nuevaCategoria}>
+                            {#each categorias as cat}
+                                <option value={cat}>{cat}</option>
+                            {/each}
+                        </select>
+                    </label>
+
+                    <label>Cantidad
+                        <input type="number" min="1" bind:value={nuevaCantidad} required />
+                    </label>
+                </div>
+
+                <label>Ubicación en Laboratorio
+                    <input type="text" bind:value={nuevaUbicacion} />
+                </label>
+
+                <label>Cambiar Imagen (Opcional)
+                    <input type="file" accept="image/*" bind:files={archivoImagen} />
+                </label>
+
+                <div class="modal-acciones">
+                    <button type="button" class="btn-cancelar" onclick={() => mostrarModalEditar = false}>Cancelar</button>
+                    <button type="submit" class="btn-guardar" disabled={cargandoAccion}>
+                        {cargandoAccion ? 'Actualizando...' : 'Guardar Cambios'}
                     </button>
                 </div>
             </form>
@@ -869,6 +974,7 @@
 
     .btn-accion.prestar { background: #2563eb; color: white; }
     .btn-accion.devolver { background: #16a34a; color: white; }
+    .btn-accion.editar { background: #d97706; color: white; }
     .btn-accion.eliminar { background: #dc2626; color: white; }
 
     .cerrar {
