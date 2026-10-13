@@ -1,7 +1,18 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
-	import insanosImg from '$lib/assets/Insanos.jpg';
+	import logoAncho from '$lib/assets/logo-prueba-colores.png';
+	import logoEmblema from '$lib/assets/logo-prueba-emblema.png';
 	import droneImg from '$lib/assets/Drone.jpeg';
+
+	// Logos de la franja bajo el hero (DE PRUEBA: reemplazar por los patrocinadores reales)
+	const logos = [
+		{ src: logoAncho, alt: 'Logo de prueba 1', clase: 'h-14 sm:h-[72px]' },
+		{ src: logoEmblema, alt: 'Logo de prueba 2', clase: 'h-24 sm:h-[140px]' },
+		{ src: logoAncho, alt: 'Logo de prueba 3', clase: 'h-14 sm:h-[72px]' },
+		{ src: logoEmblema, alt: 'Logo de prueba 4', clase: 'h-24 sm:h-[140px]' },
+		{ src: logoAncho, alt: 'Logo de prueba 5', clase: 'h-14 sm:h-[72px]' },
+		{ src: logoEmblema, alt: 'Logo de prueba 6', clase: 'h-24 sm:h-[140px]' }
+	];
 
 	// Usamos SvelteSet para permitir múltiples secciones principales abiertas a la vez
 	let openSections = $state(new SvelteSet<number>());
@@ -28,46 +39,53 @@
 
 <!-- Espaciado entre secciones reducido en celular (space-y-12) y amplio en desktop (lg:space-y-32) -->
 <div class="mx-auto max-w-[1440px] px-6 sm:px-12 py-6 sm:py-10 space-y-12 sm:space-y-20 lg:space-y-32 text-slate-900">
-	<!-- 1. SECCIÓN HERO -->
-	<section class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-center pt-2 sm:pt-4">
-		<!-- Texto (Ocupa 7 columnas en desktop) -->
-		<div class="lg:col-span-7 space-y-4 sm:space-y-6">
-			<!-- Badge Superior -->
-			<div class="inline-flex items-center gap-2 rounded-full border border-purple-300 bg-purple-50/80 px-4 py-1.5 text-xs font-semibold tracking-wider text-purple-700 uppercase">
-				<span class="h-2 w-2 rounded-full bg-purple-600"></span>
-				Competidores de Robótica 2026
+	<!-- HERO + FRANJA DE LOGOS (agrupados para que queden juntos y se vean sin hacer scroll) -->
+	<div class="space-y-4 sm:space-y-8">
+		<!-- 1. SECCIÓN HERO -->
+		<section class="relative xl:flex xl:min-h-[420px] xl:items-center">
+			<!-- Texto (columna izquierda, por encima de las imágenes) -->
+			<div class="relative z-10 space-y-4 sm:space-y-6 xl:w-[60%]">
+				<!-- Badge Superior -->
+				<div class="inline-flex items-center gap-2 rounded-full border border-purple-400 bg-white px-4 py-1.5 font-mono text-xs font-semibold tracking-wider text-purple-700 uppercase">
+					<span class="h-2 w-2 rounded-full bg-purple-600"></span>
+					Competidores internacionales 2026
+				</div>
+
+				<!-- Título Principal -->
+				<h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-950 leading-tight">
+					¡Bienvenido a la central de <br class="hidden sm:inline" /> DroneOps!
+				</h1>
+
+				<!-- Descripción -->
+				<p class="text-base sm:text-lg text-slate-600 max-w-xl xl:max-w-[60%] leading-relaxed">
+					Somos un equipo apasionado por la tecnología robótica, la innovación y la captura de datos desde las alturas. Diseñamos, operamos y optimizamos soluciones con drones para llevar cualquier proyecto al siguiente nivel.
+				</p>
+
+				<!-- Botones -->
+				<div class="flex items-center gap-4 pt-2">
+					<a href="/unete" class="rounded-xl bg-purple-600 px-6 sm:px-7 py-3 font-bold text-white shadow-md hover:bg-purple-700 transition-colors">
+						Únete
+					</a>
+					<a href="/comunidad" class="rounded-xl border border-slate-400 bg-transparent px-6 sm:px-7 py-3 font-bold text-slate-800 hover:bg-slate-100 transition-colors">
+						Conócenos
+					</a>
+				</div>
 			</div>
 
-			<!-- Título Principal -->
-			<h1 class="text-3xl sm:text-5xl lg:text-[56px] font-extrabold tracking-tight text-slate-950 leading-tight lg:leading-[1.15]">
-				¡Bienvenido a la central de <br class="hidden sm:inline" /> DroneOps!
-			</h1>
-
-			<!-- Descripción -->
-			<p class="text-base sm:text-lg text-slate-600 max-w-2xl leading-relaxed">
-				Somos un equipo apasionado por la tecnología robótica, la innovación y la captura de datos desde las alturas. Diseñamos, operamos y optimizamos soluciones con drones para llevar cualquier proyecto al siguiente nivel.
-			</p>
-
-			<!-- Botones -->
-			<div class="flex items-center gap-4 pt-2">
-				<a href="/unete" class="rounded-xl bg-purple-600 px-6 sm:px-7 py-3 font-bold text-white shadow-md hover:bg-purple-700 transition-colors">
-					Únete
-				</a>
-				<a href="/comunidad" class="rounded-xl border border-slate-400 bg-transparent px-6 sm:px-7 py-3 font-bold text-slate-800 hover:bg-slate-100 transition-colors">
-					Conócenos
-				</a>
+			<!-- Imágenes encimadas (por ahora bloques de color; luego se cambian por fotos) -->
+			<div class="relative mt-8 aspect-[1048/603] w-full xl:absolute xl:right-0 xl:top-1/2 xl:mt-0 xl:w-[52%] xl:-translate-y-[45%]">
+				<div class="absolute right-0 top-0 h-[68%] w-[64%] bg-[#1f1f1f]"></div>
+				<div class="absolute bottom-0 left-0 h-[68%] w-[64%] bg-[#777777] xl:-left-[10%]"></div>
 			</div>
-		</div>
+		</section>
 
-		<!-- Imagen sin marco (5 columnas en desktop) -->
-		<div class="lg:col-span-5 flex justify-center lg:justify-end">
-			<img
-				src={insanosImg}
-				alt="Equipo DroneOps"
-				class="w-full max-w-xl rounded-2xl sm:rounded-[32px] object-cover shadow-[0_12px_30px_rgba(0,0,0,0.12)] sm:shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100"
-			/>
-		</div>
-	</section>
+		<!-- 1.1 FRANJA DE LOGOS (de prueba; reemplazar por patrocinadores reales) -->
+		<section class="flex flex-wrap items-center justify-between gap-x-8 gap-y-6">
+			{#each logos as logo}
+				<img src={logo.src} alt={logo.alt} class="w-auto object-contain {logo.clase}" />
+			{/each}
+		</section>
+	</div>
 
 	<!-- 2. SECCIÓN NUESTRO OBJETIVO -->
 	<section id="objetivo" class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-center scroll-mt-28 lg:scroll-mt-36">
