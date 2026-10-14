@@ -14,6 +14,26 @@
 		{ src: logoEmblema, alt: 'Logo de prueba 6', clase: 'h-24 sm:h-[140px]' }
 	];
 
+	// Carrusel de "¿Qué hacemos?" (Fotos de prueba con gatos B))
+	const slides = [
+		{ src: 'https://cataas.com/cat?width=1200&height=900&v=1', alt: 'Gato de prueba 1' },
+		{ src: 'https://cataas.com/cat?width=1200&height=900&v=2', alt: 'Gato de prueba 2' },
+		{ src: 'https://cataas.com/cat?width=1200&height=900&v=3', alt: 'Gato de prueba 3' },
+		{ src: 'https://cataas.com/cat?width=1200&height=900&v=4', alt: 'Gato de prueba 4' }
+	];
+	const SEGUNDOS_POR_FOTO = 4;
+	let slideActual = $state(0);
+
+	// Cambia de foto sola. Como lee slideActual, el temporizador se reinicia
+	// cada vez que cambia (también cuando alguien da clic en una franja).
+	$effect(() => {
+		const actual = slideActual;
+		const id = setTimeout(() => {
+			slideActual = (actual + 1) % slides.length;
+		}, SEGUNDOS_POR_FOTO * 1000);
+		return () => clearTimeout(id);
+	});
+
 	// Usamos SvelteSet para permitir múltiples secciones principales abiertas a la vez
 	let openSections = $state(new SvelteSet<number>());
 
@@ -86,6 +106,57 @@
 			{/each}
 		</section>
 	</div>
+
+	<!-- 1.2 SECCIÓN QUÉ HACEMOS (carrusel + texto) -->
+	<section class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+		<!-- Carrusel (izquierda): las fotos cambian solas y las franjas indican cuál se ve -->
+		<div
+			class="relative lg:col-span-7 aspect-[4/3] w-full overflow-hidden bg-[#1f1f1f]"
+			aria-roledescription="carrusel"
+			aria-label="Fotos de lo que hacemos en DroneOps"
+		>
+			{#each slides as slide, i}
+				<img
+					src={slide.src}
+					alt={slide.alt}
+					class={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${i === slideActual ? 'opacity-100' : 'opacity-0'}`}
+				/>
+			{/each}
+
+			<!-- Degradado oscuro abajo para que las franjas se vean sobre cualquier foto -->
+			<div class="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-[linear-gradient(to_top,rgba(0,0,0,0.55),transparent)]"></div>
+
+			<!-- Franjas: una por foto; la de la foto actual se ilumina -->
+			<div class="absolute inset-x-0 bottom-0 flex gap-3 px-6 pb-4 sm:gap-4 sm:px-8 sm:pb-6">
+				{#each slides as _, i}
+					<button
+						type="button"
+						onclick={() => (slideActual = i)}
+						aria-label={`Ver foto ${i + 1}`}
+						aria-current={i === slideActual}
+						class="group flex-1 py-2"
+					>
+						<span
+							class={`block h-0.5 w-full transition-colors duration-300 ${i === slideActual ? 'bg-white' : 'bg-white/30 group-hover:bg-white/60'}`}
+						></span>
+					</button>
+				{/each}
+			</div>
+		</div>
+
+		<!-- Texto (derecha) -->
+		<div class="lg:col-span-5 space-y-4 sm:space-y-6">
+			<h2 class="text-3xl sm:text-4xl xl:text-5xl font-extrabold tracking-tight text-slate-950 leading-tight lg:text-right">
+				¿Qué hacemos en <br class="hidden sm:inline" /> DroneOps?
+			</h2>
+			<p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+				Lorem veritatis cursus, ambientia stellarum nocte tranquilla refulget. Tempestates antique per silvas resonabant, et silentium profundum omnia tegebat. Nullus metus, nulla cura, sed cursus perpetuus fluminum ad mare festinans. Architectura mentis verba nova creat, paginas implet et spatium graphicum format, ut oculus lectoris formam potius quam sententiam intueatur.
+			</p>
+			<p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+				Lorem veritatis cursus, ambientia stellarum nocte tranquilla refulget. Tempestates antique per silvas resonabant, et silentium profundum omnia tegebat. Nullus metus, nulla cura, sed cursus perpetuus fluminum ad mare festinans. Architectura mentis verba nova creat, paginas implet et spatium graphicum format, ut oculus lectoris formam potius quam sententiam intueatur.
+			</p>
+		</div>
+	</section>
 
 	<!-- 2. SECCIÓN NUESTRO OBJETIVO -->
 	<section id="objetivo" class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-center scroll-mt-28 lg:scroll-mt-36">
