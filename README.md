@@ -192,5 +192,5 @@ Este proyecto fue construido de forma colaborativa. Cada integrante cubrió una 
 | Avatar | Nombre | Rol | Contribución | GitHub |
 |--------|--------|-----|---------------|--------|
 | <img src="https://github.com/Charlie1719.png" width="60"> | Carlos Eduardo Lopez Cuevas | Su rol fue ... | Implementó ... | [@Charlie1719](https://github.com/Charlie1719) |
-| <img src="https://github.com/JuanCarlosCA-007.png" width="60"> | Juan Carlos | Esto y esto | Desarrolló ... | [@JuanCarlosCA-007](https://github.com/JuanCarlosCA-007) |
+| <img src="https://github.com/JuanCarlosCA-007.png" width="60"> | Juan Carlos | Esto y esto | Desarrolló ... | [@ProAldanaxd]((https://github.com/ProAldanaxd)) |
 | <img src="https://github.com/RodRM6.png" width="60"> | Rodolfo | Esto y esto | Desarrolló ... | [@RodRM6](https://github.com/RodRM6) |
