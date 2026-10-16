@@ -176,8 +176,9 @@
 
 			<!-- Imágenes encimadas (por ahora bloques de color; luego se cambian por fotos) -->
 			<div class="relative mt-8 aspect-[1048/603] w-full xl:absolute xl:right-0 xl:top-1/2 xl:mt-0 xl:w-[52%] xl:-translate-y-[45%]">
-				<div class="absolute right-0 top-0 h-[68%] w-[64%] bg-[#1f1f1f]"></div>
-				<div class="absolute bottom-0 left-0 h-[68%] w-[64%] bg-[#777777] xl:-left-[10%]"></div>
+				<!-- Fotos DE PRUEBA con gatos: reemplazar por fotos reales del equipo -->
+				<img src="https://cataas.com/cat?width=900&height=600&v=9" alt="Foto de prueba 1" class="absolute right-0 top-0 h-[68%] w-[64%] bg-[#1f1f1f] object-cover" />
+				<img src="https://cataas.com/cat?width=900&height=600&v=10" alt="Foto de prueba 2" class="absolute bottom-0 left-0 h-[68%] w-[64%] bg-[#777777] object-cover xl:-left-[10%]" />
 			</div>
 		</section>
 
