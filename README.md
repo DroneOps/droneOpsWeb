@@ -213,7 +213,7 @@ Cambios de la branch respecto a `main`, del más antiguo al más reciente:
 | Commit | Fecha | Autor | Cambio |
 |--------|-------|-------|--------|
 | `21a5002` | 13 oct 2026 | Juan Carlos | Rediseño del hero del inicio: nuevo layout con texto a la izquierda y bloques de imagen encimados, y franja de logos de prueba debajo. Agrega `logo-prueba-colores.png` y `logo-prueba-emblema.png`. |
-| `b2c22b1` | 13 oct 2026 | ProAldanaxd | Actualiza el usuario de GitHub de Juan Carlos en la tabla de créditos del README. |
+| `b2c22b1` | 13 oct 2026 | Juan Carlos | Actualiza el usuario de GitHub de Juan Carlos en la tabla de créditos del README. |
 | `cdacf25` | 14 oct 2026 | Juan Carlos | Agrega la sección "¿Qué hacemos en DroneOps?" con un carrusel automático de fotos y franjas para navegar entre ellas. |
 | `9aa2b32` | 14 oct 2026 | Juan Carlos | Merge de la branch remota `rediseno-inicio` en la copia local (sin cambios propios). |
 
