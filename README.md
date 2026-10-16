@@ -47,10 +47,9 @@ La ruta `/` es la carta de presentación del equipo para patrocinadores y aspira
 4. **Nuestro objetivo (`#objetivo`):** tarjetas de competencias (TMR e IMAV 2026) con líneas para cambiar entre ellas y dos fotos por competencia. Las tarjetas se apilan en la misma celda para que la altura no cambie al alternar. Para agregar una competencia basta con añadir un objeto al arreglo `competencias`; las fotos actuales son **de prueba**.
 5. **Investigación (`#investigacion`):** sección que muestra que el grupo también investiga. Está escrita directamente en `+page.svelte` (los datos de los proyectos están en el `<script>` de la página) e incluye:
    - Una introducción con fondo oscuro de ancho completo y cuadrícula, con un panel que grafica la rutina cuadrada del proyecto Tello + OptiTrack (la trayectoria es ilustrativa) y la ley de control PI.
-   - **Proyectos destacados:** la investigación principal (control con restricciones de estado basado en cuaterniones y funciones de Lyapunov de barrera) con su gráfica, y tarjetas de Kalman-Navigation, Tello-Optitrack y la plataforma móvil Talos. Cada tarjeta enlaza a su repositorio en [github.com/DroneOps](https://github.com/DroneOps).
-   - Para agregar un proyecto, copia un objeto del arreglo `proyectos` y cambia sus datos; el ícono se elige con la propiedad `icono` (`mira`, `camara` o `rayo`).
+   - **Proyectos destacados:** la investigación principal es Kalman-Navigation (navegación con filtro de Kalman bajo oclusiones visuales), con una gráfica ilustrativa de cómo el filtro sigue estimando la posición mientras el marcador está oculto. Debajo hay tarjetas de Detección de sonido (Sound_Localization), Control de posición con OptiTrack (Tello-Optitrack) y Detección con cámara (Gate_tmr_color). Cada tarjeta enlaza a su repositorio en [github.com/DroneOps](https://github.com/DroneOps).
+   - Para agregar un proyecto, copia un objeto del arreglo `proyectos` y cambia sus datos; el ícono se elige con la propiedad `icono` (`sonido`, `camara` o `foto`).
    - Para que el fondo llegue a las orillas de la pantalla, la página aplica `overflow-x: clip` a `html` en su bloque `<style>`; esto evita un scroll horizontal de unos píxeles causado por la barra de scroll.
-6. **Recursos y documentación:** secciones desplegables de tutoriales en video, documentación (Tello, ROS 2, OptiTrack, visión computacional y repositorios) y drones.
 
 Archivos clave:
 - [src/routes/+page.svelte](src/routes/+page.svelte)
@@ -220,7 +219,7 @@ Cambios de la branch respecto a `main`, del más antiguo al más reciente:
 
 Cambios pendientes de commit:
 
-- **Inicio (`src/routes/+page.svelte`):** el badge del hero ahora dice "Grupo Estudiantil"; "Nuestro objetivo" pasa a ser un selector de competencias con fotos (se quitó la imagen fija `Drone.jpeg`), y se agrega la nueva sección de investigación debajo de "Competencias internacionales", descrita en "Página de inicio (rediseño)".
+- **Inicio (`src/routes/+page.svelte`):** el badge del hero ahora dice "Grupo Estudiantil"; "Nuestro objetivo" pasa a ser un selector de competencias con fotos (se quitó la imagen fija `Drone.jpeg`), y se agrega la nueva sección de investigación debajo de "Competencias internacionales", descrita en "Página de inicio (rediseño)". También se eliminó la sección "Recursos y documentación" (tutoriales, documentación y drones) junto con su estado de desplegables.
 - **Comunidad (`src/routes/comunidad/+page.svelte`):** corrección de nombres: "Hernán Abaunza González" (sin guion) y "Victor".
 - **README:** esta documentación.
 

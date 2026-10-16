@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { SvelteSet } from 'svelte/reactivity';
 	import logoAncho from '$lib/assets/logo-prueba-colores.png';
 	import logoEmblema from '$lib/assets/logo-prueba-emblema.png';
 
@@ -59,28 +58,6 @@
 	];
 	let competenciaActual = $state(0);
 
-	// Usamos SvelteSet para permitir múltiples secciones principales abiertas a la vez
-	let openSections = $state(new SvelteSet<number>());
-
-	function toggle(id: number) {
-		if (openSections.has(id)) {
-			openSections.delete(id);
-		} else {
-			openSections.add(id);
-		}
-	}
-
-	// Set para subsecciones
-	let openSubSections = $state(new SvelteSet<string | number>());
-
-	function toggleSub(id: string | number) {
-		if (openSubSections.has(id)) {
-			openSubSections.delete(id);
-		} else {
-			openSubSections.add(id);
-		}
-	}
-
 	// Sección "Investigación" del inicio: muestra que, además de competir, el grupo investiga.
 	// Los proyectos salen de los repositorios de github.com/DroneOps. Para agregar uno,
 	// copia un bloque { ... } en `proyectos` y cambia sus datos.
@@ -88,57 +65,74 @@
 	const GITHUB = 'https://github.com/DroneOps';
 
 	const principal = {
-		periodo: '2024–2025',
-		titulo: 'Control con restricciones de estado basado en cuaterniones',
+		periodo: '2026',
+		titulo: 'Navegación con filtro de Kalman bajo oclusiones visuales',
 		descripcion:
-			'Diseñamos leyes de control para que un cuadricóptero siga trayectorias sin salir de una región segura. La orientación se representa con cuaterniones y la restricción se garantiza con funciones de Lyapunov de barrera. También evaluamos versiones adaptativas con perturbaciones y trayectorias elípticas.',
-		etiquetas: ['MATLAB', 'C', 'Control no lineal', 'Cuaterniones'],
-		repo: 'quaternion-barrier-control'
+			'Sistema de estimación de estado y vuelo autónomo para micro drones. Combina la detección de marcadores ArUco en tiempo real con un filtro de Kalman que sigue prediciendo la posición del dron cuando pierde de vista el marcador, y un control PID en lazo cerrado que mantiene la posición y la trayectoria.',
+		etiquetas: ['Python', 'OpenCV', 'ArUco', 'Filtro de Kalman'],
+		repo: 'Kalman-Navigation'
 	};
 
 	const proyectos = [
 		{
 			anio: '2026',
-			titulo: 'Navegación con filtro de Kalman bajo oclusiones',
+			titulo: 'Detección de sonido',
 			descripcion:
-				'Seguimiento de marcadores ArUco con un filtro de Kalman que sigue estimando la posición del dron cuando pierde la referencia visual, con control PID en lazo cerrado.',
-			etiquetas: ['Python', 'OpenCV', 'ArUco'],
-			repo: 'Kalman-Navigation',
-			icono: 'mira'
+				'Localización acústica para el TMR 2026: el dron sobrevuela cada caja candidata en las mismas condiciones y compara la energía del sonido en la banda de voz (300–3000 Hz) para encontrar la que pide auxilio, aunque haya ruido de los rotores.',
+			etiquetas: ['ROS 2', 'ArduPilot', 'Audio'],
+			repo: 'Sound_Localization',
+			icono: 'sonido'
 		},
 		{
 			anio: '2026',
-			titulo: 'Control de posición con OptiTrack y ROS 2',
+			titulo: 'Control de posición con OptiTrack',
 			descripcion:
-				'Control PI de posición y orientación para un DJI Tello, retroalimentado por captura de movimiento. Incluye rutinas autónomas y diagnóstico por eje.',
+				'Control PI de posición y orientación para un DJI Tello, retroalimentado por captura de movimiento OptiTrack en ROS 2. Incluye rutinas autónomas y diagnóstico por eje.',
 			etiquetas: ['ROS 2', 'Python', 'OptiTrack'],
 			repo: 'Tello-Optitrack',
 			icono: 'camara'
 		},
 		{
 			anio: '2026',
-			titulo: 'Plataforma móvil Talos',
+			titulo: 'Detección con cámara',
 			descripcion:
-				'Carro con ESP32, giroscopio y PID de rumbo, controlado por Bluetooth: una base propia para experimentar con control en tierra.',
-			etiquetas: ['C++', 'ESP32', 'PID'],
-			repo: 'mobile_plataform',
-			icono: 'rayo'
+				'Visión por computadora para que un DJI Tello detecte compuertas verdes, estime su posición en 3D con PnP y las cruce de forma autónoma, con filtros de Kalman y control PID.',
+			etiquetas: ['Python', 'OpenCV', 'PnP'],
+			repo: 'Gate_tmr_color',
+			icono: 'foto'
 		}
 	];
 
 	// Trazos de los íconos (estilo Lucide, 24x24)
 	const iconos: Record<string, string> = {
-		mira: 'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20M22 12h-4M6 12H2M12 6V2M12 22v-4',
+		sonido: 'M2 10v3M6 6v11M10 3v18M14 8v7M18 5v13M22 10v3',
 		camara: 'm22 8-6 4 6 4V8ZM4 6h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z',
-		rayo: 'M13 2 3 14h9l-1 8 10-12h-9l1-8Z'
+		foto: 'M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3ZM12 10a3 3 0 1 0 0 6a3 3 0 1 0 0-6'
 	};
 
-	// Curva de la función de Lyapunov de barrera V(e) = ½·ln(k²/(k²−e²)), dibujada entre −k y k
-	const curvaBarrera = Array.from({ length: 81 }, (_, k) => {
-		const e = -0.985 + (1.97 * k) / 80;
-		const v = 0.5 * Math.log(1 / (1 - e * e));
-		return `${k === 0 ? 'M' : 'L'}${(260 + e * 220).toFixed(1)} ${(270 - v * 150).toFixed(1)}`;
-	}).join(' ');
+	// Gráfica del filtro de Kalman (ilustrativa): mediciones ArUco con ruido, estimación del filtro
+	// y su banda de incertidumbre, que crece mientras el marcador está oculto.
+	const OCLUSION = { inicio: 220, fin: 340 };
+	const posicionReal = (x: number) => 160 - 60 * Math.sin(((x - 30) / 460) * Math.PI * 1.6);
+	const incertidumbre = (x: number) =>
+		x < OCLUSION.inicio
+			? 7
+			: x <= OCLUSION.fin
+				? 7 + ((x - OCLUSION.inicio) / (OCLUSION.fin - OCLUSION.inicio)) * 28
+				: Math.max(7, 35 - (x - OCLUSION.fin) * 0.6);
+	const puntosX = Array.from({ length: 47 }, (_, i) => 30 + i * 10);
+	const desvio = (x: number) => (x > OCLUSION.inicio && x < OCLUSION.fin + 40 ? 6 : 0);
+	const estimacion = puntosX
+		.map((x, i) => `${i === 0 ? 'M' : 'L'}${x} ${(posicionReal(x) + desvio(x)).toFixed(1)}`)
+		.join(' ');
+	const bandaKalman =
+		puntosX.map((x, i) => `${i === 0 ? 'M' : 'L'}${x} ${(posicionReal(x) - incertidumbre(x)).toFixed(1)}`).join(' ') +
+		' ' +
+		[...puntosX].reverse().map((x) => `L${x} ${(posicionReal(x) + incertidumbre(x)).toFixed(1)}`).join(' ') +
+		' Z';
+	const mediciones = Array.from({ length: 24 }, (_, i) => 36 + i * 19)
+		.filter((x) => x < OCLUSION.inicio || x > OCLUSION.fin)
+		.map((x) => ({ x, y: posicionReal(x) + Math.sin(x * 12.9898) * 11 }));
 
 	// Trayectoria medida de la rutina cuadrada (ilustrativa): recorta un poco las esquinas de la referencia
 	const trayectoria =
@@ -383,21 +377,15 @@
 
 		<!-- Proyectos destacados -->
 		<div id="investigacion-proyectos" class="space-y-6 sm:space-y-8 scroll-mt-28 lg:scroll-mt-36">
-			<div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-				<div>
-					<span class="font-mono text-xs sm:text-sm font-bold uppercase tracking-wider text-purple-600">Proyectos destacados</span>
-					<h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 mt-1">Del modelo matemático al vuelo real</h2>
-					<p class="text-slate-600 mt-2 max-w-2xl text-sm sm:text-base">
-						Todo nuestro trabajo es abierto: puedes revisar el código, las pruebas y la documentación en GitHub.
-					</p>
-				</div>
-				<a href={GITHUB} target="_blank" rel="noopener noreferrer" class="shrink-0 self-start sm:self-auto rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-100 transition-colors">
+			<div class="flex items-center justify-between gap-4">
+				<span class="font-mono text-xs sm:text-sm font-bold uppercase tracking-wider text-purple-600">Proyectos destacados</span>
+				<a href={GITHUB} target="_blank" rel="noopener noreferrer" class="shrink-0 rounded-xl border border-slate-300 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-slate-800 hover:bg-slate-100 transition-colors">
 					Ver todo en GitHub →
 				</a>
 			</div>
 
 			<!-- Proyecto principal -->
-			<article class="grid grid-cols-1 lg:grid-cols-12 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+			<article class="grid grid-cols-1 lg:grid-cols-12 overflow-hidden rounded-3xl border border-slate-900 bg-white shadow-sm transition hover:border-purple-600 hover:shadow-md">
 				<div class="lg:col-span-6 space-y-4 sm:space-y-5 p-6 sm:p-10">
 					<span class="inline-flex items-center gap-2 rounded-full border border-purple-300 bg-purple-50 px-3 py-1 font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-purple-700">
 						<span class="h-1.5 w-1.5 rounded-full bg-purple-600"></span>
@@ -415,28 +403,32 @@
 					</a>
 				</div>
 
-				<!-- Gráfica de la función de Lyapunov de barrera -->
-				<figure class="lg:col-span-6 flex flex-col items-center justify-center gap-4 border-t lg:border-t-0 lg:border-l border-slate-200 bg-slate-50/70 p-6 sm:p-10">
-					<svg viewBox="0 0 520 300" class="w-full max-w-[520px]" role="img" aria-label="Función de Lyapunov de barrera">
-						<g stroke="#e2e8f0">
-							{#each [30, 70, 110, 150, 190, 230] as y}<line x1="20" y1={y} x2="500" y2={y} />{/each}
-						</g>
-						<rect x="40" y="0" width="440" height="270" fill="#7c3aed" fill-opacity="0.04" />
-						<line x1="20" y1="270" x2="500" y2="270" stroke="#94a3b8" stroke-width="1.5" />
-						<line x1="40" y1="0" x2="40" y2="290" stroke="#db2777" stroke-width="1.5" stroke-dasharray="6 6" />
-						<line x1="480" y1="0" x2="480" y2="290" stroke="#db2777" stroke-width="1.5" stroke-dasharray="6 6" />
-						<path d={curvaBarrera} fill="none" stroke="#7c3aed" stroke-opacity="0.15" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
-						<path d={curvaBarrera} fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-						<circle cx="260" cy="270" r="5" fill="#7c3aed" />
-					</svg>
-					<div class="flex w-full max-w-[480px] justify-between font-mono text-xs">
-						<span class="text-pink-600">−k_b</span><span class="text-slate-500">e = 0</span><span class="text-pink-600">k_b</span>
-					</div>
-					<code class="font-mono text-sm sm:text-base text-purple-700">V(e) = ½ · ln( k_b² / (k_b² − e²) )</code>
-					<figcaption class="max-w-md text-center text-xs sm:text-sm text-slate-500 leading-relaxed">
-						Función de Lyapunov de barrera: crece sin límite cuando el error se acerca a la frontera k_b, así el controlador nunca la cruza.
-					</figcaption>
-				</figure>
+				<!-- Gráfica del filtro de Kalman durante una oclusión -->
+			<figure class="lg:col-span-6 flex flex-col items-center justify-center gap-4 border-t lg:border-t-0 lg:border-l border-slate-200 bg-slate-50/70 p-6 sm:p-10">
+				<svg viewBox="0 0 520 300" class="w-full max-w-[520px]" role="img" aria-label="Estimación del filtro de Kalman mientras el marcador está oculto">
+					<g stroke="#e2e8f0">
+						{#each [30, 70, 110, 150, 190, 230, 270] as y}<line x1="20" y1={y} x2="500" y2={y} />{/each}
+					</g>
+					<rect x={OCLUSION.inicio} y="10" width={OCLUSION.fin - OCLUSION.inicio} height="270" fill="#db2777" fill-opacity="0.06" />
+					<line x1={OCLUSION.inicio} y1="10" x2={OCLUSION.inicio} y2="280" stroke="#db2777" stroke-width="1.5" stroke-dasharray="6 6" />
+					<line x1={OCLUSION.fin} y1="10" x2={OCLUSION.fin} y2="280" stroke="#db2777" stroke-width="1.5" stroke-dasharray="6 6" />
+					<text x={(OCLUSION.inicio + OCLUSION.fin) / 2} y="30" text-anchor="middle" fill="#db2777" font-size="13" font-family="ui-monospace, monospace">marcador oculto</text>
+					<path d={bandaKalman} fill="#7c3aed" fill-opacity="0.12" />
+					{#each mediciones as m}
+						<circle cx={m.x} cy={m.y} r="4" fill="#ffffff" stroke="#64748b" stroke-width="1.5" />
+					{/each}
+					<path d={estimacion} fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+				</svg>
+				<div class="flex flex-wrap justify-center gap-x-6 gap-y-2 font-mono text-xs text-slate-500">
+					<span class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full border-[1.5px] border-slate-500 bg-white"></span>Medición ArUco</span>
+					<span class="flex items-center gap-2"><span class="w-5 border-t-2 border-purple-600"></span>Estimación de Kalman</span>
+					<span class="flex items-center gap-2"><span class="h-2.5 w-5 rounded-sm bg-purple-600/15"></span>Incertidumbre</span>
+				</div>
+				<code class="font-mono text-sm sm:text-base text-purple-700">x̂ₖ = x̂ₖ⁻ + Kₖ (zₖ − H x̂ₖ⁻)</code>
+				<figcaption class="max-w-md text-center text-xs sm:text-sm text-slate-500 leading-relaxed">
+					Cuando el marcador sale de la vista no hay mediciones: el filtro sigue prediciendo la posición del dron y su incertidumbre crece hasta que lo vuelve a ver.
+				</figcaption>
+			</figure>
 			</article>
 
 			<!-- Otros proyectos -->
@@ -446,7 +438,7 @@
 						href="{GITHUB}/{p.repo}"
 						target="_blank"
 						rel="noopener noreferrer"
-						class="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-purple-300 hover:shadow-md"
+						class="group flex flex-col overflow-hidden rounded-2xl border border-slate-900 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-purple-600 hover:shadow-md"
 					>
 						<div class="flex items-center justify-between border-b border-slate-200 bg-slate-50/70 px-5 py-4">
 							<span class="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-100 text-purple-700">
@@ -469,397 +461,6 @@
 						</div>
 					</a>
 				{/each}
-			</div>
-		</div>
-	</section>
-
-	<!-- 3. RECURSOS Y DOCUMENTACIÓN -->
-	<section class="space-y-4 sm:space-y-6">
-		<div>
-			<span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-purple-600">Aprendizaje y Medios</span>
-			<h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 mt-1">Recursos y documentación</h2>
-			<p class="text-slate-600 mt-2 max-w-3xl text-sm sm:text-base">
-				En DroneOps fundamentamos nuestras operaciones en ingeniería de control, visión artificial y simulación avanzada. Compartimos nuestra base de conocimiento y guías de desarrollo para el equipo y la comunidad.
-			</p>
-		</div>
-
-		<div class="space-y-3 sm:space-y-4 pt-2 sm:pt-4">
-			<!-- BOTÓN DESPLEGABLE 1: TUTORIALES -->
-			<div class="rounded-2xl sm:rounded-3xl bg-stone-200/80 overflow-hidden shadow-sm transition-all">
-				<button
-					type="button"
-					onclick={() => toggle(1)}
-					class="w-full p-5 sm:p-8 text-left font-bold text-lg sm:text-2xl text-slate-900 flex items-center gap-3 sm:gap-4 hover:bg-stone-300/80 transition-colors"
-				>
-					<span class={`transform transition-transform duration-200 text-slate-700 text-xs sm:text-sm ${openSections.has(1) ? 'rotate-180' : ''}`}>
-						▼
-					</span>
-					Tutoriales
-				</button>
-
-				{#if openSections.has(1)}
-					<div class="p-5 sm:p-8 pt-0 text-xs sm:text-base text-slate-700 flex flex-col gap-4">
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-							<!-- TARJETA VIDEO 1 -->
-							<div class="flex flex-col gap-2">
-								<p class="font-semibold text-slate-900 text-sm sm:text-base">
-									Instalar Ubuntu en Dual Boot
-								</p>
-								<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-md">
-									<iframe
-										class="absolute top-0 left-0 w-full h-full"
-										src="https://www.youtube.com/embed/wIj7sHK0SkQ?si=X7sqnuJ-42Fdixnt" 
-										title="Instalar Ubuntu" 
-										frameborder="0" 
-										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-										referrerpolicy="strict-origin-when-cross-origin" 
-										allowfullscreen>
-									</iframe>
-								</div>
-							</div>
-
-							<!-- TARJETA VIDEO 2 -->
-							<div class="flex flex-col gap-2">
-								<p class="font-semibold text-slate-900 text-sm sm:text-base">
-									Simulación de drone dinámico
-								</p>
-								<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-md">
-									<iframe 
-										class="absolute top-0 left-0 w-full h-full"
-										src="https://www.youtube.com/embed/2BhyKyzKAbM?si=AFIvXKjpyQt2Uc21" 
-										title="YouTube video player" 
-										frameborder="0" 
-										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-										referrerpolicy="strict-origin-when-cross-origin" 
-										allowfullscreen>
-									</iframe>
-								</div>
-							</div>
-
-							<!-- TARJETA VIDEO 3 -->
-							<div class="flex flex-col gap-2">
-								<p class="font-semibold text-slate-900 text-sm sm:text-base">
-									OptiTrack - Motive 3.0 | Quick Start Guide
-								</p>
-								<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-md">
-									<iframe 
-										class="absolute top-0 left-0 w-full h-full"
-										src="https://www.youtube.com/embed/HyrHhaRVOaM?si=YCb2xZwZioIkRyBS" 
-										title="YouTube video player" 
-										frameborder="0" 
-										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-										referrerpolicy="strict-origin-when-cross-origin" 
-										allowfullscreen>
-									</iframe>
-								</div>
-							</div>
-
-							<!-- TARJETA VIDEO 4 -->
-							<div class="flex flex-col gap-2">
-								<p class="font-semibold text-slate-900 text-sm sm:text-base">
-									OptiTrack Mo-Cap System Setup, Calibration and ROS Integration Tutorial
-								</p>
-								<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-md">
-									<iframe 
-										class="absolute top-0 left-0 w-full h-full"
-										src="https://www.youtube.com/embed/JvpxLf8VFvs?si=xirgSxEdHIUekpN8" 
-										title="YouTube video player" 
-										frameborder="0" 
-										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-										referrerpolicy="strict-origin-when-cross-origin" 
-										allowfullscreen>
-									</iframe>
-								</div>
-							</div>
-
-							<!-- TARJETA VIDEO 5 -->
-							<div class="flex flex-col gap-2">
-								<p class="font-semibold text-slate-900 text-sm sm:text-base">
-									Filtros de Kalman
-								</p>
-								<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-md">
-									<iframe 
-										class="absolute top-0 left-0 w-full h-full"
-										src="https://www.youtube.com/embed/mwn8xhgNpFY?si=MZBN3BQGxreNElQj" 
-										title="YouTube video player" 
-										frameborder="0" 
-										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-										referrerpolicy="strict-origin-when-cross-origin" 
-										allowfullscreen>
-									</iframe>
-								</div>
-							</div>
-						</div>
-					</div>
-				{/if}
-			</div>
-
-			<!-- BOTÓN DESPLEGABLE 2: DOCUMENTACIÓN -->
-			<div class="rounded-2xl sm:rounded-3xl bg-stone-200/80 overflow-hidden shadow-sm transition-all">
-				<button
-					type="button"
-					onclick={() => toggle(2)}
-					class="w-full p-5 sm:p-8 text-left font-bold text-lg sm:text-2xl text-slate-900 flex items-center gap-3 sm:gap-4 hover:bg-stone-300/80 transition-colors"
-				>
-					<span class={`transform transition-transform duration-200 text-slate-700 text-xs sm:text-sm ${openSections.has(2) ? 'rotate-180' : ''}`}>
-						▼
-					</span>
-					Documentación
-				</button>
-
-				{#if openSections.has(2)}
-					<div class="p-5 sm:p-8 pt-0 flex flex-col gap-3">
-						<!-- SUB-SECCIÓN 1: TELLO -->
-						<div class="rounded-xl bg-stone-300/50 overflow-hidden">
-							<button
-								type="button"
-								onclick={() => toggleSub('tello')}
-								class="w-full px-4 py-3 text-left font-semibold text-sm sm:text-base text-slate-800 flex items-center gap-2 hover:bg-stone-300 transition-colors"
-							>
-								<span class={`transform transition-transform duration-200 text-xs ${openSubSections.has('tello') ? 'rotate-180' : ''}`}>
-									▼
-								</span>
-								Tello
-							</button>
-
-							{#if openSubSections.has('tello')}
-								<div class="p-4 pt-2 flex flex-col gap-2 text-xs sm:text-sm">
-									<a 
-										href="https://dl-cdn.ryzerobotics.com/downloads/Tello/201806mul/Tello%20User%20Manual%20V1.0_ES.pdf" 
-										target="_blank" 
-										rel="noopener noreferrer"
-										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
-									>
-										<span>🔗</span>
-										<span class="font-medium underline">MANUAL DEL TELLO</span>
-									</a>
-
-									<a 
-										href="https://github.com/damiafuentes/DJITelloPy" 
-										target="_blank" 
-										rel="noopener noreferrer"
-										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
-									>
-										<span>🐙</span>
-										<span class="font-medium">GitHub - damiafuentes/DJITelloPy</span>
-									</a>
-								</div>
-							{/if}
-						</div>
-
-						<!-- SUB-SECCIÓN 2: ROS2 -->
-						<div class="rounded-xl bg-stone-300/50 overflow-hidden">
-							<button
-								type="button"
-								onclick={() => toggleSub('ros2')}
-								class="w-full px-4 py-3 text-left font-semibold text-sm sm:text-base text-slate-800 flex items-center gap-2 hover:bg-stone-300 transition-colors"
-							>
-								<span class={`transform transition-transform duration-200 text-xs ${openSubSections.has('ros2') ? 'rotate-180' : ''}`}>
-									▼
-								</span>
-								ROS2
-							</button>
-
-							{#if openSubSections.has('ros2')}
-								<div class="p-4 pt-2 flex flex-col gap-2 text-xs sm:text-sm">
-									<a 
-										href="https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html" 
-										target="_blank" 
-										rel="noopener noreferrer"
-										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
-									>
-										<span>🔗</span> 
-										<span class="font-medium">Ubuntu (deb packages) — ROS 2 Documentation</span>
-									</a>
-									<a 
-										href="https://ardupilot.org/dev/docs/ros2-gazebo.html" 
-										target="_blank" 
-										rel="noopener noreferrer"
-										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
-									>
-										<span>🌐</span> 
-										<span class="font-medium">ROS 2 with Gazebo — Dev documentation</span>
-									</a>
-									
-								</div>
-							{/if}
-						</div>
-						<!-- SUB-SECCIÓN 3: OptiTrack -->
-						<div class="rounded-xl bg-stone-300/50 overflow-hidden">
-							<button
-								type="button"
-								onclick={() => toggleSub('OptiTrack')}
-								class="w-full px-4 py-3 text-left font-semibold text-sm sm:text-base text-slate-800 flex items-center gap-2 hover:bg-stone-300 transition-colors"
-							>
-								<span class={`transform transition-transform duration-200 text-xs ${openSubSections.has('OptiTrack') ? 'rotate-180' : ''}`}>
-									▼
-								</span>
-								OptiTrack
-							</button>
-
-							{#if openSubSections.has('OptiTrack')}
-								<div class="p-4 pt-2 flex flex-col gap-2 text-xs sm:text-sm">
-									<a 
-										href="https://docs.optitrack.com" 
-										target="_blank" 
-										rel="noopener noreferrer"
-										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
-									>
-										<span>🌐</span> 
-										<span class="font-medium">OptiTrack Documentation | EXTERNAL OptiTrack Documentation</span>
-									</a>
-									<a 
-										href="https://docs.optitrack.com/developer-tools/natnet-sdk" 
-										target="_blank" 
-										rel="noopener noreferrer"
-										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
-									>
-										<span>🌐</span> 
-										<span class="font-medium">NatNet SDK | EXTERNAL OptiTrack Documentation</span>
-									</a>
-									<a 
-										href="https://github.com/L2S-lab/natnet_ros2/tree/main" 
-										target="_blank" 
-										rel="noopener noreferrer"
-										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
-									>
-										<span>🐙</span> 
-										<span class="font-medium">GitHub - ROS2 Driver for the NatNet</span>
-									</a>
-								</div>
-							{/if}
-						</div>
-						<!-- SUB-SECCIÓN 4: Visión Computacional -->
-						<div class="rounded-xl bg-stone-300/50 overflow-hidden">
-							<button
-								type="button"
-								onclick={() => toggleSub('vision-computacional')}
-								class="w-full px-4 py-3 text-left font-semibold text-sm sm:text-base text-slate-800 flex items-center gap-2 hover:bg-stone-300 transition-colors"
-							>
-								<span class={`transform transition-transform duration-200 text-xs ${openSubSections.has('vision-computacional') ? 'rotate-180' : ''}`}>
-									▼
-								</span>
-								Visión Computacional
-							</button>
-
-							{#if openSubSections.has('vision-computacional')}
-								<div class="p-4 pt-2 flex flex-col gap-2 text-xs sm:text-sm">
-									<a 
-										href="https://docs.opencv.org/4.13.0/dc/dbb/tutorial_py_calibration.html" 
-										target="_blank" 
-										rel="noopener noreferrer"
-										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
-									>
-										<span>🔗</span> 
-										<span class="font-medium">Calibración de Camara</span>
-									</a>
-								</div>
-							{/if}
-						</div>
-												<!-- SUB-SECCIÓN 5: REPOS -->
-						<div class="rounded-xl bg-stone-300/50 overflow-hidden">
-							<button
-								type="button"
-								onclick={() => toggleSub('repos')}
-								class="w-full px-4 py-3 text-left font-semibold text-sm sm:text-base text-slate-800 flex items-center gap-2 hover:bg-stone-300 transition-colors"
-							>
-								<span class={`transform transition-transform duration-200 text-xs ${openSubSections.has('repos') ? 'rotate-180' : ''}`}>
-									▼
-								</span>
-								REPOS
-							</button>
-
-							{#if openSubSections.has('repos')}
-								<div class="p-4 pt-2 flex flex-col gap-2 text-xs sm:text-sm">
-									<a 
-										href="https://github.com/rshum19/Crazyflie-CAD" 
-										target="_blank" 
-										rel="noopener noreferrer"
-										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
-									>
-										<span>🐙</span> 
-										<span class="font-medium">Crazyflie-CAD</span>
-									</a>
-									<a 
-										href="https://github.com/L2S-lab/natnet_ros2" 
-										target="_blank" 
-										rel="noopener noreferrer"
-										class="flex items-center gap-2 text-slate-700 hover:text-blue-600 hover:underline transition-colors"
-									>
-										<span>🐙</span> 
-										<span class="font-medium">NatNet ROS2</span>
-									</a>
-									
-								</div>
-							{/if}
-						</div>
-					</div>
-				{/if}
-			</div>
-		<!-- BOTÓN DESPLEGABLE 3: Drones -->
-			<div class="rounded-2xl sm:rounded-3xl bg-stone-200/80 overflow-hidden shadow-sm transition-all">
-				<button
-					type="button"
-					onclick={() => toggle(3)}
-					class="w-full p-5 sm:p-8 text-left font-bold text-lg sm:text-2xl text-slate-900 flex items-center gap-3 sm:gap-4 hover:bg-stone-300/80 transition-colors"
-				>
-					<span class={`transform transition-transform duration-200 text-slate-700 text-xs sm:text-sm ${openSections.has(3) ? 'rotate-180' : ''}`}>
-						▼
-					</span>
-					Drones
-				</button>
-
-				{#if openSections.has(3)}
-					<div class="p-5 sm:p-8 pt-0 text-xs sm:text-base text-slate-700 flex flex-col gap-4">
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-							<!-- TARJETA VIDEO 1 -->
-							<div class="flex flex-col gap-2">
-								<p class="font-semibold text-slate-900 text-sm sm:text-base">	
-								DJI TELLO - Tutorial and Quick Review
-								</p>
-								<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-md">
-								 <iframe 
-								    class="absolute top-0 left-0 w-full h-full"
-									src="https://www.youtube.com/embed/pn84aprnqkA?si=kLnWcO_sCkZIUMKh" 
-									title="YouTube video player" 
-									frameborder="0" 
-									allow="accelerometer; 
-									autoplay; clipboard-write; 
-									encrypted-media; gyroscope; 
-									picture-in-picture; 
-									web-share" 
-									referrerpolicy="strict-origin-when-cross-origin" 
-									allowfullscreen>
-								 </iframe>
-								</div>
-							</div>
-
-							<!-- TARJETA VIDEO 2 -->
-							<div class="flex flex-col gap-2">
-								<p class="font-semibold text-slate-900 text-sm sm:text-base">
-									Air Series | Full guide & Test Flight
-								</p>
-								<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-md">
-								 <iframe 
-									class="absolute top-0 left-0 w-full h-full"
-									src="https://www.youtube.com/embed/A3IiKlwFtwk?si=cIZyHvGwH5a0Pgm5" 
-									title="YouTube video player" 
-									frameborder="0" 
-									allow="accelerometer; 
-									autoplay; 
-									clipboard-write; 
-									encrypted-media; 
-									gyroscope; 
-									picture-in-picture; 
-									web-share" 
-									referrerpolicy="strict-origin-when-cross-origin" 
-									allowfullscreen>
-								 </iframe>
-								</div>
-							</div>
-						</div>
-					</div>
-				{/if}
 			</div>
 		</div>
 	</section>
