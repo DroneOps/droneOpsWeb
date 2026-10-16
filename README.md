@@ -231,5 +231,5 @@ Este proyecto fue construido de forma colaborativa. Cada integrante cubrió una 
 | Avatar | Nombre | Rol | Contribución | GitHub |
 |--------|--------|-----|---------------|--------|
 | <img src="https://github.com/Charlie1719.png" width="60"> | Carlos Eduardo Lopez Cuevas | Su rol fue ... | Implementó ... | [@Charlie1719](https://github.com/Charlie1719) |
-| <img src="https://github.com/JuanCarlosCA-007.png" width="60"> | Juan Carlos | Esto y esto | Desarrolló ... | [@ProAldanaxd](https://github.com/ProAldanaxd) |
+| <img src="https://github.com/JuanCarlosCA-007.png" width="60"> | Juan Carlos | Desarrollar el diseño inicial de la parte de iniciar sesión, uno de los desarrolladores de la pagina de inicio inical, a su vez que actualizarla conforme surgian nuevos cambios, creador del diseño del apartado de inventario junto con Carlos Lopez, rediseño completo de la pagima de inicio. | [@ProAldanaxd](https://github.com/ProAldanaxd) |
 | <img src="https://github.com/RodRM6.png" width="60"> | Rodolfo | Esto y esto | Desarrolló ... | [@RodRM6](https://github.com/RodRM6) |
