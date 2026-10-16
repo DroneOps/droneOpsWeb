@@ -2,7 +2,6 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import logoAncho from '$lib/assets/logo-prueba-colores.png';
 	import logoEmblema from '$lib/assets/logo-prueba-emblema.png';
-	import droneImg from '$lib/assets/Drone.jpeg';
 
 	// Logos de la franja bajo el hero (DE PRUEBA: reemplazar por los patrocinadores reales)
 	const logos = [
@@ -34,6 +33,32 @@
 		return () => clearTimeout(id);
 	});
 
+	// Competencias de "Nuestro Objetivo" (fotos DE PRUEBA con gatos: reemplazar por fotos reales del TMR e IMAV)
+	// Para agregar otra competencia, copia un bloque { ... } y cambia sus datos: las líneas y las fotos se ajustan solas.
+	const competencias = [
+		{
+			nombre: 'TMR',
+			subtitulo: 'Torneo Mexicano de Robótica (TMR)',
+			descripcion: 'La competencia de robótica aérea más grande de México, organizada por la federación mexicana de robótica.',
+			estado: 'En Progreso',
+			fotos: [
+				{ src: 'https://cataas.com/cat?width=600&height=600&v=5', alt: 'Foto de prueba del TMR 1' },
+				{ src: 'https://cataas.com/cat?width=600&height=600&v=6', alt: 'Foto de prueba del TMR 2' }
+			]
+		},
+		{
+			nombre: 'IMAV 2026',
+			subtitulo: 'International Micro Air Vehicle Competition',
+			descripcion: 'Navegación autónoma de enjambres en entornos outdoor complejos sin soporte de GPS externo.',
+			estado: 'En Progreso',
+			fotos: [
+				{ src: 'https://cataas.com/cat?width=600&height=600&v=7', alt: 'Foto de prueba del IMAV 1' },
+				{ src: 'https://cataas.com/cat?width=600&height=600&v=8', alt: 'Foto de prueba del IMAV 2' }
+			]
+		}
+	];
+	let competenciaActual = $state(0);
+
 	// Usamos SvelteSet para permitir múltiples secciones principales abiertas a la vez
 	let openSections = $state(new SvelteSet<number>());
 
@@ -55,6 +80,69 @@
 			openSubSections.add(id);
 		}
 	}
+
+	// Sección "Investigación" del inicio: muestra que, además de competir, el grupo investiga.
+	// Los proyectos salen de los repositorios de github.com/DroneOps. Para agregar uno,
+	// copia un bloque { ... } en `proyectos` y cambia sus datos.
+
+	const GITHUB = 'https://github.com/DroneOps';
+
+	const principal = {
+		periodo: '2024–2025',
+		titulo: 'Control con restricciones de estado basado en cuaterniones',
+		descripcion:
+			'Diseñamos leyes de control para que un cuadricóptero siga trayectorias sin salir de una región segura. La orientación se representa con cuaterniones y la restricción se garantiza con funciones de Lyapunov de barrera. También evaluamos versiones adaptativas con perturbaciones y trayectorias elípticas.',
+		etiquetas: ['MATLAB', 'C', 'Control no lineal', 'Cuaterniones'],
+		repo: 'quaternion-barrier-control'
+	};
+
+	const proyectos = [
+		{
+			anio: '2026',
+			titulo: 'Navegación con filtro de Kalman bajo oclusiones',
+			descripcion:
+				'Seguimiento de marcadores ArUco con un filtro de Kalman que sigue estimando la posición del dron cuando pierde la referencia visual, con control PID en lazo cerrado.',
+			etiquetas: ['Python', 'OpenCV', 'ArUco'],
+			repo: 'Kalman-Navigation',
+			icono: 'mira'
+		},
+		{
+			anio: '2026',
+			titulo: 'Control de posición con OptiTrack y ROS 2',
+			descripcion:
+				'Control PI de posición y orientación para un DJI Tello, retroalimentado por captura de movimiento. Incluye rutinas autónomas y diagnóstico por eje.',
+			etiquetas: ['ROS 2', 'Python', 'OptiTrack'],
+			repo: 'Tello-Optitrack',
+			icono: 'camara'
+		},
+		{
+			anio: '2026',
+			titulo: 'Plataforma móvil Talos',
+			descripcion:
+				'Carro con ESP32, giroscopio y PID de rumbo, controlado por Bluetooth: una base propia para experimentar con control en tierra.',
+			etiquetas: ['C++', 'ESP32', 'PID'],
+			repo: 'mobile_plataform',
+			icono: 'rayo'
+		}
+	];
+
+	// Trazos de los íconos (estilo Lucide, 24x24)
+	const iconos: Record<string, string> = {
+		mira: 'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20M22 12h-4M6 12H2M12 6V2M12 22v-4',
+		camara: 'm22 8-6 4 6 4V8ZM4 6h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z',
+		rayo: 'M13 2 3 14h9l-1 8 10-12h-9l1-8Z'
+	};
+
+	// Curva de la función de Lyapunov de barrera V(e) = ½·ln(k²/(k²−e²)), dibujada entre −k y k
+	const curvaBarrera = Array.from({ length: 81 }, (_, k) => {
+		const e = -0.985 + (1.97 * k) / 80;
+		const v = 0.5 * Math.log(1 / (1 - e * e));
+		return `${k === 0 ? 'M' : 'L'}${(260 + e * 220).toFixed(1)} ${(270 - v * 150).toFixed(1)}`;
+	}).join(' ');
+
+	// Trayectoria medida de la rutina cuadrada (ilustrativa): recorta un poco las esquinas de la referencia
+	const trayectoria =
+		'M128 252 C122 200 126 110 132 64 C136 46 150 44 170 46 C240 50 320 44 372 48 C392 50 398 58 398 80 C396 150 402 200 396 238 C394 254 384 256 364 254 C300 250 220 258 150 256 C136 256 130 256 128 252 Z';
 </script>
 
 <!-- Espaciado entre secciones reducido en celular (space-y-12) y amplio en desktop (lg:space-y-32) -->
@@ -68,7 +156,7 @@
 				<!-- Badge Superior -->
 				<div class="inline-flex items-center gap-2 rounded-full border border-purple-400 bg-white px-4 py-1.5 font-mono text-xs font-semibold tracking-wider text-purple-700 uppercase">
 					<span class="h-2 w-2 rounded-full bg-purple-600"></span>
-					Competidores internacionales 2026
+					Grupo Estudiantil
 				</div>
 
 				<!-- Título Principal -->
@@ -158,11 +246,12 @@
 		</div>
 	</section>
 
-	<!-- 2. SECCIÓN NUESTRO OBJETIVO -->
+	<!-- 2. SECCIÓN NUESTRO OBJETIVO (competencias con líneas para cambiar entre ellas) -->
 	<section id="objetivo" class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-center scroll-mt-28 lg:scroll-mt-36">
-		<div class="lg:col-span-7 space-y-4 sm:space-y-6">
+		<!-- Texto y tarjeta de la competencia (izquierda) -->
+		<div class="lg:col-span-6 space-y-4 sm:space-y-6">
 			<div>
-				<span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-purple-600">Nuestro Objetivo</span>
+				<span class="font-mono text-xs sm:text-sm font-bold uppercase tracking-wider text-purple-600">Nuestro Objetivo</span>
 				<h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 mt-1">Competencias internacionales</h2>
 			</div>
 
@@ -170,41 +259,217 @@
 				En DroneOps, nos proyectamos hacia el futuro de la industria aérea no tripulada. Transformamos la perspectiva de los proyectos mediante tecnología de vanguardia, precisión técnica y máxima seguridad operativa.
 			</p>
 
-			<div class="space-y-3 sm:space-y-4 pt-1 sm:pt-2 max-w-2xl">
-				<div class="rounded-2xl border border-purple-200 bg-purple-50/60 p-5 sm:p-6 relative">
-					<div class="flex items-center justify-between">
-						<h3 class="text-lg sm:text-xl font-extrabold text-purple-950">TMR</h3>
-						<span class="rounded-full border border-purple-300 bg-purple-100 px-3 py-0.5 text-[10px] sm:text-xs font-bold text-purple-700 uppercase">
-							En Progreso
-						</span>
+			<!-- Tarjetas apiladas en la misma celda: la altura es la de la más grande, así nada "brinca" al cambiar -->
+			<div class="grid max-w-2xl">
+				{#each competencias as comp, i}
+					<div
+						aria-hidden={i !== competenciaActual}
+						class={`col-start-1 row-start-1 rounded-2xl border border-purple-300 bg-purple-50/60 p-5 sm:p-6 transition-opacity duration-300 ${i === competenciaActual ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+					>
+						<div class="flex items-center justify-between gap-3">
+							<h3 class="text-lg sm:text-xl font-extrabold text-purple-950">{comp.nombre}</h3>
+							<span class="rounded-full border border-purple-300 bg-purple-100 px-3 py-0.5 font-mono text-[10px] sm:text-xs font-bold text-purple-700 uppercase">
+								{comp.estado}
+							</span>
+						</div>
+						<p class="text-xs text-slate-500 mt-1">{comp.subtitulo}</p>
+						<p class="text-xs sm:text-sm text-slate-700 mt-2 sm:mt-3">{comp.descripcion}</p>
 					</div>
-					<p class="text-xs text-slate-500 mt-1">Torneo Mexicano de Robótica (TMR)</p>
-					<p class="text-xs sm:text-sm text-slate-700 mt-2 sm:mt-3">
-						La competencia de robótica aérea más grande de México, organizada por la federación mexicana de robótica.
-					</p>
-				</div>
+				{/each}
+			</div>
 
-				<div class="rounded-2xl border border-purple-200 bg-purple-50/60 p-5 sm:p-6 relative">
-					<div class="flex items-center justify-between">
-						<h3 class="text-lg sm:text-xl font-extrabold text-purple-950">IMAV 2026</h3>
-						<span class="rounded-full border border-purple-300 bg-purple-100 px-3 py-0.5 text-[10px] sm:text-xs font-bold text-purple-700 uppercase">
-							En Progreso
-						</span>
-					</div>
-					<p class="text-xs text-slate-500 mt-1">International Micro Air Vehicle Competition</p>
-					<p class="text-xs sm:text-sm text-slate-700 mt-2 sm:mt-3">
-						Navegación autónoma de enjambres en entornos outdoor complejos sin soporte de GPS externo.
-					</p>
-				</div>
+			<!-- Líneas para cambiar de competencia: una por competencia, la activa se ilumina -->
+			<div class="flex max-w-2xl justify-center gap-4">
+				{#each competencias as comp, i}
+					<button
+						type="button"
+						onclick={() => (competenciaActual = i)}
+						aria-label={`Ver ${comp.nombre}`}
+						aria-current={i === competenciaActual}
+						title={comp.nombre}
+						class="group w-24 py-3 sm:w-28"
+					>
+						<span
+							class={`block h-0.5 w-full transition-colors duration-300 ${i === competenciaActual ? 'bg-purple-600' : 'bg-slate-300 group-hover:bg-slate-400'}`}
+						></span>
+					</button>
+				{/each}
 			</div>
 		</div>
 
-		<div class="lg:col-span-5 flex justify-center lg:justify-end">
-			<img
-				src={droneImg}
-				alt="Drone DroneOps"
-				class="w-full max-w-md rounded-2xl sm:rounded-[32px] object-cover shadow-[0_12px_30px_rgba(0,0,0,0.12)] sm:shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100"
-			/>
+		<!-- Fotos (derecha): dos cuadros iguales; cambian según la competencia elegida -->
+		<div class="relative lg:col-span-6 aspect-[2/1] w-full">
+			{#each competencias as comp, i}
+				<div
+					class={`absolute inset-0 grid grid-cols-2 gap-4 sm:gap-6 transition-opacity duration-500 ${i === competenciaActual ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+				>
+					{#each comp.fotos as foto}
+						<img src={foto.src} alt={foto.alt} class="h-full w-full bg-[#1f1f1f] object-cover" />
+					{/each}
+				</div>
+			{/each}
+		</div>
+	</section>
+
+	<!-- 2.1 SECCIÓN INVESTIGACIÓN (debajo de "Competencias internacionales") -->
+	<section id="investigacion" class="space-y-12 sm:space-y-16 scroll-mt-28 lg:scroll-mt-36">
+		<!-- Intro: fondo oscuro con brillo morado; texto (izquierda) y gráfica de trayectoria (derecha).
+		     El margen calc(50% - 50vw) estira el fondo a todo el ancho de la pantalla, aunque el contenedor
+		     de la página mida 1440px; el contenido de adentro se vuelve a centrar con el mismo ancho. -->
+		<div class="relative mx-[calc(50%-50vw)] overflow-hidden bg-[#0b0f17] py-16 sm:py-24">
+		<div class="mx-auto max-w-[1440px] px-6 sm:px-12">
+			<!-- Cuadrícula de fondo -->
+			<div class="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:48px_48px]"></div>
+
+			<div class="relative grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+				<div class="lg:col-span-6 space-y-4 sm:space-y-6">
+					<div class="inline-flex items-center gap-2 rounded-full border border-purple-400/60 bg-purple-600/20 px-4 py-1.5 font-mono text-xs font-semibold tracking-wider text-purple-200 uppercase">
+						<span class="h-2 w-2 rounded-full bg-purple-300"></span>
+						Investigación y desarrollo
+					</div>
+					<h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+						Investigación
+					</h2>
+					<p class="text-base sm:text-lg text-slate-400 leading-relaxed max-w-xl">
+						En DroneOps desarrollamos control no lineal, estimación de estado y visión por computadora para drones autónomos. Nuestro código es abierto y lo validamos en vuelo real con captura de movimiento.
+					</p>
+					<div class="flex flex-wrap items-center gap-4 pt-2">
+						<a href="#investigacion-proyectos" class="rounded-xl bg-purple-600 px-6 sm:px-7 py-3 font-bold text-white shadow-lg shadow-purple-600/30 hover:bg-purple-700 transition-colors">
+							Ver proyectos
+						</a>
+						<a href={GITHUB} target="_blank" rel="noopener noreferrer" class="rounded-xl border border-white/20 bg-white/5 px-6 sm:px-7 py-3 font-bold text-white hover:bg-white/10 transition-colors">
+							Nuestro GitHub
+						</a>
+					</div>
+				</div>
+
+				<!-- Panel con la rutina cuadrada del proyecto Tello + OptiTrack -->
+				<figure class="lg:col-span-6 overflow-hidden rounded-2xl border border-white/10 bg-[#0f1623] shadow-[0_30px_80px_-10px_rgba(0,0,0,0.6)]">
+					<div class="flex items-center gap-2 border-b border-white/5 px-4 sm:px-5 py-3">
+						<span class="h-2.5 w-2.5 rounded-full bg-red-500/85"></span>
+						<span class="h-2.5 w-2.5 rounded-full bg-amber-500/85"></span>
+						<span class="h-2.5 w-2.5 rounded-full bg-green-500/85"></span>
+						<span class="ml-1 truncate font-mono text-xs text-slate-400">tello_control · rutina_cuadrada</span>
+						<span class="ml-auto rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 font-mono text-xs text-slate-300">ROS 2</span>
+					</div>
+					<svg viewBox="0 0 520 300" class="w-full" role="img" aria-label="Trayectoria del dron siguiendo una rutina cuadrada">
+						<g stroke="#ffffff" stroke-opacity="0.05" stroke-width="1">
+							{#each Array.from({ length: 13 }, (_, i) => 20 + i * 40) as x}<line x1={x} y1="10" x2={x} y2="290" />{/each}
+							{#each Array.from({ length: 7 }, (_, i) => 30 + i * 40) as y}<line x1="20" y1={y} x2="500" y2={y} />{/each}
+						</g>
+						<rect x="120" y="40" width="280" height="220" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6 6" />
+						<path d={trayectoria} fill="none" stroke="#8b5cf6" stroke-opacity="0.35" stroke-width="10" stroke-linejoin="round" />
+						<path d={trayectoria} fill="none" stroke="#c4b5fd" stroke-width="2.5" stroke-linejoin="round" />
+						{#each [[120, 40], [400, 40], [400, 260], [120, 260]] as [cx, cy]}
+							<circle {cx} {cy} r="5" fill="#0f1623" stroke="#94a3b8" stroke-width="1.5" />
+						{/each}
+						<circle cx="300" cy="46" r="15" fill="#a78bfa" fill-opacity="0.25" />
+						<circle cx="300" cy="46" r="6" fill="#ede9fe" />
+					</svg>
+					<figcaption class="space-y-3 border-t border-white/5 bg-white/[0.03] px-4 sm:px-5 py-4">
+						<div class="flex flex-wrap gap-x-6 gap-y-2 font-mono text-xs text-slate-400">
+							<span class="flex items-center gap-2"><span class="w-5 border-t-2 border-dashed border-slate-500"></span>Referencia</span>
+							<span class="flex items-center gap-2"><span class="w-5 border-t-2 border-purple-300"></span>Posición medida (OptiTrack)</span>
+						</div>
+						<div class="flex flex-wrap items-center justify-between gap-2">
+							<code class="font-mono text-sm text-purple-200">v[k] = Kp·e[k] + Ki·Σ e[j]·Δt</code>
+							<span class="font-mono text-xs text-slate-500">Control PI · Tello + OptiTrack</span>
+						</div>
+					</figcaption>
+				</figure>
+			</div>
+		</div>
+		</div>
+
+		<!-- Proyectos destacados -->
+		<div id="investigacion-proyectos" class="space-y-6 sm:space-y-8 scroll-mt-28 lg:scroll-mt-36">
+			<div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+				<div>
+					<span class="font-mono text-xs sm:text-sm font-bold uppercase tracking-wider text-purple-600">Proyectos destacados</span>
+					<h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 mt-1">Del modelo matemático al vuelo real</h2>
+					<p class="text-slate-600 mt-2 max-w-2xl text-sm sm:text-base">
+						Todo nuestro trabajo es abierto: puedes revisar el código, las pruebas y la documentación en GitHub.
+					</p>
+				</div>
+				<a href={GITHUB} target="_blank" rel="noopener noreferrer" class="shrink-0 self-start sm:self-auto rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-100 transition-colors">
+					Ver todo en GitHub →
+				</a>
+			</div>
+
+			<!-- Proyecto principal -->
+			<article class="grid grid-cols-1 lg:grid-cols-12 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+				<div class="lg:col-span-6 space-y-4 sm:space-y-5 p-6 sm:p-10">
+					<span class="inline-flex items-center gap-2 rounded-full border border-purple-300 bg-purple-50 px-3 py-1 font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-purple-700">
+						<span class="h-1.5 w-1.5 rounded-full bg-purple-600"></span>
+						Investigación principal · {principal.periodo}
+					</span>
+					<h3 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 leading-tight">{principal.titulo}</h3>
+					<p class="text-sm sm:text-base text-slate-600 leading-relaxed">{principal.descripcion}</p>
+					<div class="flex flex-wrap gap-2">
+						{#each principal.etiquetas as etiqueta}
+							<span class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-xs text-slate-700">{etiqueta}</span>
+						{/each}
+					</div>
+					<a href="{GITHUB}/{principal.repo}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 font-mono text-sm font-semibold text-purple-700 hover:underline">
+						DroneOps/{principal.repo} →
+					</a>
+				</div>
+
+				<!-- Gráfica de la función de Lyapunov de barrera -->
+				<figure class="lg:col-span-6 flex flex-col items-center justify-center gap-4 border-t lg:border-t-0 lg:border-l border-slate-200 bg-slate-50/70 p-6 sm:p-10">
+					<svg viewBox="0 0 520 300" class="w-full max-w-[520px]" role="img" aria-label="Función de Lyapunov de barrera">
+						<g stroke="#e2e8f0">
+							{#each [30, 70, 110, 150, 190, 230] as y}<line x1="20" y1={y} x2="500" y2={y} />{/each}
+						</g>
+						<rect x="40" y="0" width="440" height="270" fill="#7c3aed" fill-opacity="0.04" />
+						<line x1="20" y1="270" x2="500" y2="270" stroke="#94a3b8" stroke-width="1.5" />
+						<line x1="40" y1="0" x2="40" y2="290" stroke="#db2777" stroke-width="1.5" stroke-dasharray="6 6" />
+						<line x1="480" y1="0" x2="480" y2="290" stroke="#db2777" stroke-width="1.5" stroke-dasharray="6 6" />
+						<path d={curvaBarrera} fill="none" stroke="#7c3aed" stroke-opacity="0.15" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+						<path d={curvaBarrera} fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+						<circle cx="260" cy="270" r="5" fill="#7c3aed" />
+					</svg>
+					<div class="flex w-full max-w-[480px] justify-between font-mono text-xs">
+						<span class="text-pink-600">−k_b</span><span class="text-slate-500">e = 0</span><span class="text-pink-600">k_b</span>
+					</div>
+					<code class="font-mono text-sm sm:text-base text-purple-700">V(e) = ½ · ln( k_b² / (k_b² − e²) )</code>
+					<figcaption class="max-w-md text-center text-xs sm:text-sm text-slate-500 leading-relaxed">
+						Función de Lyapunov de barrera: crece sin límite cuando el error se acerca a la frontera k_b, así el controlador nunca la cruza.
+					</figcaption>
+				</figure>
+			</article>
+
+			<!-- Otros proyectos -->
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+				{#each proyectos as p}
+					<a
+						href="{GITHUB}/{p.repo}"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-purple-300 hover:shadow-md"
+					>
+						<div class="flex items-center justify-between border-b border-slate-200 bg-slate-50/70 px-5 py-4">
+							<span class="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-100 text-purple-700">
+								<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+									<path d={iconos[p.icono]} />
+								</svg>
+							</span>
+							<span class="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 font-mono text-xs text-slate-600">{p.anio}</span>
+						</div>
+						<div class="flex flex-1 flex-col gap-3 p-5 sm:p-6">
+							<span class="font-mono text-xs text-slate-400">DroneOps/{p.repo}</span>
+							<h3 class="text-lg sm:text-xl font-extrabold text-slate-900 leading-snug">{p.titulo}</h3>
+							<p class="text-sm text-slate-600 leading-relaxed">{p.descripcion}</p>
+							<div class="flex flex-wrap gap-2 pt-1">
+								{#each p.etiquetas as etiqueta}
+									<span class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-xs text-slate-700">{etiqueta}</span>
+								{/each}
+							</div>
+							<span class="mt-auto border-t border-slate-200 pt-4 font-mono text-sm font-semibold text-purple-700 group-hover:underline">Ver en GitHub →</span>
+						</div>
+					</a>
+				{/each}
+			</div>
 		</div>
 	</section>
 
@@ -599,3 +864,10 @@
 		</div>
 	</section>
 </div>
+
+<style>
+	/* 100vw incluye la barra de scroll: esto evita que el fondo de ancho completo cause scroll horizontal */
+	:global(html) {
+		overflow-x: clip;
+	}
+</style>

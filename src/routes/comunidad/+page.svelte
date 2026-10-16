@@ -18,7 +18,7 @@
 			</div>
 
 			<div class="info-lider">
-				<h2 class="nombre-lider">Hernán Abaunza-González</h2>
+				<h2 class="nombre-lider">Hernán Abaunza González</h2>
 				<h3 class="rol-lider">Líder</h3>
 				<div class="bio-lider">
 					<p>
@@ -47,7 +47,7 @@
 				</div>
 				<div class="tarjeta-miembro">
 					<img src={cuadro} alt="Mentor 2" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Viktor</h2>
+					<h2 class="nombre-miembro">Victor</h2>
 					<h3 class="rol-miembro">MENTOR</h3>
 				</div>
 			</div>
