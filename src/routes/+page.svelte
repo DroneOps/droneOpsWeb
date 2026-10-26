@@ -1,6 +1,13 @@
 <script lang="ts">
 	import logoAncho from '$lib/assets/logo-prueba-colores.png';
 	import logoEmblema from '$lib/assets/logo-prueba-emblema.png';
+	import fotoF450 from '$lib/assets/IMG_0112.jpg';
+	import fotoPiloto from '$lib/assets/IMG_0149.jpg';
+	import fotoControl from '$lib/assets/IMG_0183.jpg';
+	import fotoTello from '$lib/assets/IMG_0194.jpg';
+	import fotoTelloCamara from '$lib/assets/tello-camara.jpg';
+	import posterMexcir from '$lib/assets/mexcir-zacatecas.jpg';
+	import logoImav from '$lib/assets/imav-logo.jpg';
 
 	// Logos de la franja bajo el hero (DE PRUEBA: reemplazar por los patrocinadores reales)
 	const logos = [
@@ -14,10 +21,10 @@
 
 	// Carrusel de "¿Qué hacemos?" (Fotos de prueba con gatos B))
 	const slides = [
-		{ src: 'https://cataas.com/cat?width=1200&height=900&v=1', alt: 'Gato de prueba 1' },
-		{ src: 'https://cataas.com/cat?width=1200&height=900&v=2', alt: 'Gato de prueba 2' },
-		{ src: 'https://cataas.com/cat?width=1200&height=900&v=3', alt: 'Gato de prueba 3' },
-		{ src: 'https://cataas.com/cat?width=1200&height=900&v=4', alt: 'Gato de prueba 4' }
+		{ src: fotoF450, alt: 'Dron F450 de DroneOps con iluminación morada' },
+		{ src: fotoTelloCamara, alt: 'Cámara frontal de un DJI Tello sostenido en la mano' },
+		{ src: fotoControl, alt: 'Control de radio y un dron pequeño en manos de integrantes del equipo' },
+		{ src: fotoTello, alt: 'Dron DJI Tello de DroneOps' }
 	];
 	const SEGUNDOS_POR_FOTO = 4;
 	let slideActual = $state(0);
@@ -41,7 +48,7 @@
 			descripcion: 'La competencia de robótica aérea más grande de México, organizada por la federación mexicana de robótica.',
 			estado: 'En Progreso',
 			fotos: [
-				{ src: 'https://cataas.com/cat?width=600&height=600&v=5', alt: 'Foto de prueba del TMR 1' },
+				{ src: posterMexcir, alt: 'Póster de MEXCIR Zacatecas, Mexican Conference on Intelligent Robots' },
 				{ src: 'https://cataas.com/cat?width=600&height=600&v=6', alt: 'Foto de prueba del TMR 2' }
 			]
 		},
@@ -51,7 +58,8 @@
 			descripcion: 'Navegación autónoma de enjambres en entornos outdoor complejos sin soporte de GPS externo.',
 			estado: 'En Progreso',
 			fotos: [
-				{ src: 'https://cataas.com/cat?width=600&height=600&v=7', alt: 'Foto de prueba del IMAV 1' },
+				// logo: true = se muestra completo (sin recortar) dentro de su cuadro, sobre fondo blanco
+				{ src: logoImav, alt: 'Logo de IMAV, 16th International Micro Air Vehicle Conference and Competition', logo: true },
 				{ src: 'https://cataas.com/cat?width=600&height=600&v=8', alt: 'Foto de prueba del IMAV 2' }
 			]
 		}
@@ -174,11 +182,10 @@
 				</div>
 			</div>
 
-			<!-- Imágenes encimadas (por ahora bloques de color; luego se cambian por fotos) -->
+			<!-- Recuadro negro (arriba a la derecha) y foto encimada (abajo a la izquierda) -->
 			<div class="relative mt-8 aspect-[1048/603] w-full xl:absolute xl:right-0 xl:top-1/2 xl:mt-0 xl:w-[52%] xl:-translate-y-[45%]">
-				<!-- Fotos DE PRUEBA con gatos: reemplazar por fotos reales del equipo -->
-				<img src="https://cataas.com/cat?width=900&height=600&v=9" alt="Foto de prueba 1" class="absolute right-0 top-0 h-[68%] w-[64%] bg-[#1f1f1f] object-cover" />
-				<img src="https://cataas.com/cat?width=900&height=600&v=10" alt="Foto de prueba 2" class="absolute bottom-0 left-0 h-[68%] w-[64%] bg-[#777777] object-cover xl:-left-[10%]" />
+				<div class="absolute right-0 top-0 h-[68%] w-[64%] bg-[#1f1f1f]"></div>
+				<img src={fotoPiloto} alt="Integrante de DroneOps sosteniendo un dron" class="absolute bottom-0 left-0 h-[68%] w-[64%] bg-[#777777] object-cover xl:-left-[10%]" />
 			</div>
 		</section>
 
@@ -299,7 +306,14 @@
 					class={`absolute inset-0 grid grid-cols-2 gap-4 sm:gap-6 transition-opacity duration-500 ${i === competenciaActual ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
 				>
 					{#each comp.fotos as foto}
-						<img src={foto.src} alt={foto.alt} class="h-full w-full bg-[#1f1f1f] object-cover" />
+						{#if 'logo' in foto && foto.logo}
+							<!-- Logo: cabe completo en su cuadro, centrado sobre blanco -->
+							<div class="flex h-full w-full items-center justify-center border border-slate-200 bg-white p-3 sm:p-5">
+								<img src={foto.src} alt={foto.alt} class="max-h-full max-w-full object-contain" />
+							</div>
+						{:else}
+							<img src={foto.src} alt={foto.alt} class="h-full w-full bg-[#1f1f1f] object-cover" />
+						{/if}
 					{/each}
 				</div>
 			{/each}
