@@ -50,6 +50,16 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const esPorHacer = event.url.pathname.startsWith('/por-hacer')
 	const esMiembros = event.url.pathname.startsWith('/miembros')
 	const esInventario = event.url.pathname.startsWith('/inventario')
+	const esDocs = event.url.pathname.startsWith('/docs')
+
+	if (esDocs) {
+        if (!user) {
+            throw redirect(303, RUTA_LOGIN)
+        }
+        if (!event.locals.esSuperAdmin) {
+            throw redirect(303, '/por-hacer')
+        }
+    }
 
 	if (esPorHacer || esMiembros || esInventario) {
 		// A. No ha iniciado sesión

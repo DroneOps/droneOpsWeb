@@ -102,6 +102,7 @@
         {#if user}
             <a href="/por-hacer" on:click={() => menuAbierto = false}>Por hacer</a>
             <a href="/inventario" on:click={() => menuAbierto = false}>Inventario</a>
+            <a href="/docs/" data-sveltekit-reload on:click={() => menuAbierto = false}>Docs</a>
         {/if}
         
         <a href="/comunidad" on:click={() => menuAbierto = false}>Comunidad</a>
