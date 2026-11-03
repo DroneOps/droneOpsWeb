@@ -14,7 +14,6 @@ export type Face = { landmarks: Landmark[]; blendshapes: Blendshapes };
 
 const MODEL = "/mogops/face_landmarker.task";
 let instance: Promise<FaceLandmarker> | null = null;
-let mode: "IMAGE" | "VIDEO" = "IMAGE";
 
 function load(): Promise<FaceLandmarker> {
   instance ??= (async () => {
@@ -24,7 +23,7 @@ function load(): Promise<FaceLandmarker> {
       : { wasmLoaderPath: noSimdLoader, wasmBinaryPath: noSimdBinary };
     const options = (delegate: "GPU" | "CPU") => ({
       baseOptions: { modelAssetPath: MODEL, delegate },
-      runningMode: mode,
+      runningMode: "VIDEO" as const,
       numFaces: 1,
       outputFaceBlendshapes: true, // fuerza de cada expresión, para los bonos del modo meme
     });
@@ -37,15 +36,6 @@ function load(): Promise<FaceLandmarker> {
   return instance;
 }
 
-async function withMode(next: "IMAGE" | "VIDEO"): Promise<FaceLandmarker> {
-  const landmarker = await load();
-  if (mode !== next) {
-    mode = next;
-    await landmarker.setOptions({ runningMode: next });
-  }
-  return landmarker;
-}
-
 function firstFace(result: FaceLandmarkerResult): Face | null {
   const landmarks = result.faceLandmarks[0];
   if (!landmarks) return null;
@@ -53,12 +43,8 @@ function firstFace(result: FaceLandmarkerResult): Face | null {
   return { landmarks, blendshapes: Object.fromEntries(categories.map((c) => [c.categoryName, c.score])) };
 }
 
-export async function detectImage(image: HTMLImageElement): Promise<Face | null> {
-  return firstFace((await withMode("IMAGE")).detect(image));
-}
-
 export async function detectVideo(video: HTMLVideoElement, timestamp: number): Promise<Face | null> {
-  return firstFace((await withMode("VIDEO")).detectForVideo(video, timestamp));
+  return firstFace((await load()).detectForVideo(video, timestamp));
 }
 
 export const preloadLandmarker = () => load().then(() => undefined);
