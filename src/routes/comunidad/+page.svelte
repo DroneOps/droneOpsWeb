@@ -1,4 +1,5 @@
 <script lang="ts">
+    //Estas fotos van a cambiar pero asi quedara de momento
     import cuadro from '$lib/assets/cuadro.png';
     import lider from '$lib/assets/theLida.jfif';
     import grupo from '$lib/assets/DJI_D_RIRO.JPG.jpeg'
