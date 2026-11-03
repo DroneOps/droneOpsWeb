@@ -30,7 +30,6 @@
 	let modo = $state<'foto' | 'camara'>('foto');
 	let motor = $state<Engine>('geometry');
 	let mostrarPuntos = $state(false);
-	let sonido = $state(true);
 	let modelosListos = $state(false);
 	let errorModelos = $state<string | null>(null);
 	let errorCamara = $state<string | null>(null);
@@ -55,12 +54,11 @@
 
 	onMount(() => {
 		mostrarPuntos = leerAjuste('mogops.puntos', false);
-		sonido = leerAjuste('mogops.sonido', true);
 
 		const nuevo = new FaceAnalyzer(
 			(a) => (analysis = a),
 			() => {
-				if (sonido) boom();
+				boom();
 				cejaFlash = true;
 				clearTimeout(timerCeja);
 				timerCeja = window.setTimeout(() => (cejaFlash = false), 1200);
@@ -201,26 +199,16 @@
 			</div>
 
 			<div class="flex flex-wrap gap-2">
-				{#each [
-					{ id: 'puntos', texto: 'Puntos faciales', pista: '', on: mostrarPuntos },
-					{ id: 'sonido', texto: 'Sonido', pista: 'Boom al levantar una ceja', on: sonido }
-				] as t (t.id)}
-					<button
-						type="button"
-						role="switch"
-						aria-checked={t.on}
-						title={t.pista}
-						onclick={() => {
-							if (t.id === 'puntos') mostrarPuntos = alternar('mogops.puntos', !mostrarPuntos);
-							else sonido = alternar('mogops.sonido', !sonido);
-						}}
-						class={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm font-semibold transition-colors ${t.on ? 'border-purple-300 bg-purple-50 text-purple-800' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`}
-					>
-						<span class={`h-2 w-2 rounded-full ${t.on ? 'bg-purple-600' : 'bg-slate-300'}`}></span>
-						{t.texto}
-						{#if t.pista}<span class="hidden text-xs font-normal text-slate-500 sm:inline">{t.pista}</span>{/if}
-					</button>
-				{/each}
+				<button
+					type="button"
+					role="switch"
+					aria-checked={mostrarPuntos}
+					onclick={() => (mostrarPuntos = alternar('mogops.puntos', !mostrarPuntos))}
+					class={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm font-semibold transition-colors ${mostrarPuntos ? 'border-purple-300 bg-purple-50 text-purple-800' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`}
+				>
+					<span class={`h-2 w-2 rounded-full ${mostrarPuntos ? 'bg-purple-600' : 'bg-slate-300'}`}></span>
+					Puntos faciales
+				</button>
 			</div>
 
 			{#if modo === 'camara'}
