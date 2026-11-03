@@ -4,6 +4,7 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { scale } from 'svelte/transition';
 	import gigachadImg from '$lib/assets/gigachad.png';
+	import theRockImg from '$lib/assets/the-rock.png';
 	import { EMPTY, ENGINE_LABEL, FaceAnalyzer, headlineScore, MOG_THRESHOLD, type Analysis, type Engine } from '$lib/mogops/analysis';
 	import { percentileOf, pslFromScore, pslTier } from '$lib/mogops/display';
 	import { countsInOverall, GEOMETRY_ACCURACY, METRIC_KEYS, TRAITS, traitWeight } from '$lib/mogops/geometry';
@@ -65,7 +66,7 @@
 				sonidos?.boom();
 				cejaFlash = true;
 				clearTimeout(timerCeja);
-				timerCeja = window.setTimeout(() => (cejaFlash = false), 1200);
+				timerCeja = window.setTimeout(() => (cejaFlash = false), 1000);
 			}
 		);
 		analizador = nuevo;
@@ -273,10 +274,14 @@
 					<p class="absolute inset-x-6 text-center text-sm text-slate-400">Elige una foto de frente para empezar.</p>
 				{/if}
 
+				<!-- The Rock durante un segundo cada vez que se levanta una ceja -->
 				{#if cejaFlash}
-					<span class="absolute left-3 top-3 rounded-full bg-purple-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
-						Ceja levantada
-					</span>
+					<img
+						src={theRockImg}
+						alt="The Rock levantando una ceja"
+						transition:scale={{ duration: 150, start: 0.6 }}
+						class="pointer-events-none absolute left-2 top-2 w-1/4 max-w-[160px] rounded-xl border-2 border-white shadow-lg sm:left-4 sm:top-4"
+					/>
 				{/if}
 
 				<!-- Sello de Gigachad sobre la vista previa mientras la calificación esté en 8 o más -->
