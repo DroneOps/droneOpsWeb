@@ -2,6 +2,8 @@
 	// Autor: Miguel Tovar
 	import { onDestroy, onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { scale } from 'svelte/transition';
+	import gigachadImg from '$lib/assets/gigachad.png';
 	import { EMPTY, ENGINE_LABEL, FaceAnalyzer, headlineScore, MOG_THRESHOLD, type Analysis, type Engine } from '$lib/mogops/analysis';
 	import { percentileOf, pslFromScore, pslTier } from '$lib/mogops/display';
 	import { countsInOverall, GEOMETRY_ACCURACY, METRIC_KEYS, TRAITS, traitWeight } from '$lib/mogops/geometry';
@@ -27,7 +29,7 @@
 
 	// Estado del juego
 	let analysis = $state<Analysis>(EMPTY);
-	let modo = $state<'foto' | 'camara'>('foto');
+	let modo = $state<'foto' | 'camara'>('camara');
 	let motor = $state<Engine>('geometry');
 	let mostrarPuntos = $state(false);
 	let modelosListos = $state(false);
@@ -267,6 +269,16 @@
 					<span class="absolute left-3 top-3 rounded-full bg-purple-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
 						Ceja levantada
 					</span>
+				{/if}
+
+				<!-- Sello de Gigachad sobre la vista previa mientras la calificación esté en 8 o más -->
+				{#if gigachad}
+					<img
+						src={gigachadImg}
+						alt="Gigachad"
+						transition:scale={{ duration: 250, start: 0.5 }}
+						class="pointer-events-none absolute right-2 top-2 w-1/3 max-w-[220px] drop-shadow-lg sm:right-4 sm:top-4"
+					/>
 				{/if}
 			</div>
 
