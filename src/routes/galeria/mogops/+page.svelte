@@ -632,8 +632,7 @@
 			<span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-purple-600">Competencia</span>
 			<h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 mt-1">Ranking semanal</h2>
 			<p class="text-slate-600 mt-2 max-w-3xl text-sm sm:text-base">
-				Las mejores puntuaciones de los últimos 7 días. Cada dispositivo aparece una sola vez, con su mejor batalla, y cada registro
-				se borra 7 días después de guardarse.
+				Las mejores puntuaciones de los últimos 7 días.
 			</p>
 		</div>
 
