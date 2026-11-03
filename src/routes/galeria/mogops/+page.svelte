@@ -29,7 +29,6 @@
 	let analysis = $state<Analysis>(EMPTY);
 	let modo = $state<'foto' | 'camara'>('foto');
 	let motor = $state<Engine>('geometry');
-	let modoMeme = $state(true);
 	let mostrarPuntos = $state(false);
 	let sonido = $state(true);
 	let modelosListos = $state(false);
@@ -49,13 +48,12 @@
 	let timerCeja = 0;
 	let raf = 0;
 
-	const titular = $derived(headlineScore(analysis, motor, modoMeme));
+	const titular = $derived(headlineScore(analysis, motor, true));
 	const calificado = $derived(analysis.status === 'ready' || analysis.status === 'adjust');
 	const gigachad = $derived(calificado && titular !== null && titular >= MOG_THRESHOLD);
-	const bono = $derived(modoMeme && analysis[motor] !== null ? analysis.bonus : null);
+	const bono = $derived(analysis[motor] !== null ? analysis.bonus : null);
 
 	onMount(() => {
-		modoMeme = leerAjuste('mogops.meme', true);
 		mostrarPuntos = leerAjuste('mogops.puntos', false);
 		sonido = leerAjuste('mogops.sonido', true);
 
@@ -204,7 +202,6 @@
 
 			<div class="flex flex-wrap gap-2">
 				{#each [
-					{ id: 'meme', texto: 'Modo meme', pista: 'Puntos extra por caras de looksmaxxer', on: modoMeme },
 					{ id: 'puntos', texto: 'Puntos faciales', pista: '', on: mostrarPuntos },
 					{ id: 'sonido', texto: 'Sonido', pista: 'Boom al levantar una ceja', on: sonido }
 				] as t (t.id)}
@@ -214,8 +211,7 @@
 						aria-checked={t.on}
 						title={t.pista}
 						onclick={() => {
-							if (t.id === 'meme') modoMeme = alternar('mogops.meme', !modoMeme);
-							else if (t.id === 'puntos') mostrarPuntos = alternar('mogops.puntos', !mostrarPuntos);
+							if (t.id === 'puntos') mostrarPuntos = alternar('mogops.puntos', !mostrarPuntos);
 							else sonido = alternar('mogops.sonido', !sonido);
 						}}
 						class={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm font-semibold transition-colors ${t.on ? 'border-purple-300 bg-purple-50 text-purple-800' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`}
@@ -328,8 +324,7 @@
 
 			{#if gigachad}
 				<div class="rounded-2xl bg-purple-600 px-4 py-3 text-center text-white shadow-md animate-pulse">
-					<p class="text-lg font-extrabold uppercase tracking-wider">Modo Giga Chad</p>
-					<p class="text-xs text-purple-100">{MOG_THRESHOLD.toFixed(1)} o más. Estás mogueando.</p>
+					<p class="text-lg font-extrabold uppercase tracking-wider">Gigachad</p>
 				</div>
 			{/if}
 
