@@ -8,7 +8,7 @@
 	import { percentileOf, pslFromScore, pslTier } from '$lib/mogops/display';
 	import { countsInOverall, GEOMETRY_ACCURACY, METRIC_KEYS, TRAITS, traitWeight } from '$lib/mogops/geometry';
 	import { PSL_ACCURACY, PSL_IDEALS, PSL_LABELS } from '$lib/mogops/psl';
-	import { boom } from '$lib/mogops/sounds';
+	import { createSounds, type Sounds } from '$lib/mogops/sounds';
 
 	// Lee y guarda un ajuste en este navegador (puede estar bloqueado en modo privado)
 	function leerAjuste(clave: string, inicial: boolean): boolean {
@@ -46,6 +46,7 @@
 
 	// El analizador se crea solo en el navegador (MediaPipe no corre en el servidor)
 	let analizador = $state<FaceAnalyzer | null>(null);
+	let sonidos: Sounds | null = null;
 	let timerCeja = 0;
 	let raf = 0;
 
@@ -56,11 +57,12 @@
 
 	onMount(() => {
 		mostrarPuntos = leerAjuste('mogops.puntos', false);
+		sonidos = createSounds();
 
 		const nuevo = new FaceAnalyzer(
 			(a) => (analysis = a),
 			() => {
-				boom();
+				sonidos?.boom();
 				cejaFlash = true;
 				clearTimeout(timerCeja);
 				timerCeja = window.setTimeout(() => (cejaFlash = false), 1200);
@@ -97,8 +99,14 @@
 		if (typeof window === 'undefined') return;
 		cancelAnimationFrame(raf);
 		clearTimeout(timerCeja);
+		sonidos?.stop();
 		analizador?.stopCamera();
 		if (imagenUrl) URL.revokeObjectURL(imagenUrl);
+	});
+
+	// La canción de Gigachad suena mientras la calificación esté en 8 o más; al bajar se pausa y luego continúa
+	$effect(() => {
+		sonidos?.setMusic(gigachad);
 	});
 
 	// Enciende la cámara al entrar a ese modo o al cambiar de cámara
@@ -321,12 +329,6 @@
 					{/if}
 				</div>
 			</div>
-
-			{#if gigachad}
-				<div class="rounded-2xl bg-purple-600 px-4 py-3 text-center text-white shadow-md animate-pulse">
-					<p class="text-lg font-extrabold uppercase tracking-wider">Gigachad</p>
-				</div>
-			{/if}
 
 			{#if bono}
 				<div class="rounded-2xl border border-purple-200 bg-white/70 p-4 space-y-3">

@@ -26,6 +26,6 @@ Solo en esta web:
 |---|---|
 | `landmarker.ts` | Carga MediaPipe Face Landmarker desde esta misma web (`static/mogops/face_landmarker.task`) |
 | `analysis.ts` | El pipeline de foto y cámara (equivale a `useFaceAnalysis.ts`, sin React ni MogNet) |
-| `sounds.ts` | "Boom" sintetizado con Web Audio |
+| `sounds.ts` | Canción de Gigachad (8 o más) y "vine boom" de la ceja, desde `static/mogops/audio/` |
 
 MogNet, la red neuronal de MogOps (89 MB), no se incluye: es demasiado pesada para la web.
