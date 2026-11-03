@@ -79,6 +79,18 @@ Archivos clave:
 - [src/routes/comunidad/+page.svelte](src/routes/comunidad/+page.svelte)
 - [src/lib/Footer.svelte](src/lib/Footer.svelte)
 
+### Galería de Proyectos y MogOps
+
+Módulo público (no requiere iniciar sesión) que muestra los proyectos del equipo. La vista `/galeria` presenta un proyecto destacado y una cuadrícula de tarjetas con enlace a cada repositorio en GitHub; para agregar un proyecto basta con añadir un objeto a la lista `proyectos` de la página.
+
+El proyecto destacado es MogOps, un juego que califica una cara del 0 al 10 desde una foto o la cámara en `/galeria/mogops`. Todo el procesamiento ocurre en el navegador con MediaPipe Face Landmarker (WebAssembly): las imágenes nunca salen del dispositivo. Usa la versión ligera de los motores de MogOps (proporciones faciales, ratios "PSL" y bonos del modo meme); la red neuronal MogNet no se incluye por su tamaño. Los archivos `.wasm` se sirven desde la propia web y el modelo facial (unos 4 MB) vive en `static/mogops/`.
+
+Archivos clave:
+- [src/routes/galeria/+page.svelte](src/routes/galeria/+page.svelte)
+- [src/routes/galeria/mogops/+page.svelte](src/routes/galeria/mogops/+page.svelte)
+- [src/lib/mogops/LEEME.md](src/lib/mogops/LEEME.md)
+- [static/mogops/face_landmarker.task](static/mogops/face_landmarker.task)
+
 ### Navegación y Layout Adaptativo
 
 El componente de navegación `Navbar.svelte` ofrece una experiencia adaptativa (responsive) con menú desplegable tipo hamburguesa para dispositivos móviles. Evalúa el estado global `$page.data.user` para alternar dinámicamente entre el botón de inicio de sesión y la insignia con el nombre o correo del usuario.
@@ -99,6 +111,7 @@ Archivos clave:
 - @tailwindcss/vite 4.3.3
 - TypeScript 6.0.3
 - Vite 8.0.16
+- MediaPipe Tasks Vision 1.1.0 (MogOps, en el navegador)
 
 ### Backend y BaaS
 
@@ -162,6 +175,7 @@ PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 │   │   ├── Navbar.svelte
 │   │   ├── Footer.svelte
 │   │   ├── supabaseClient.ts
+│   │   ├── mogops/
 │   │   └── assets/
 │   │       └── qr.jpg
 │   └── routes/
@@ -170,6 +184,10 @@ PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 │       ├── +page.svelte
 │       ├── cerrar_sesion/
 │       │   └── +page.server.ts
+│       ├── galeria/
+│       │   ├── +page.svelte
+│       │   └── mogops/
+│       │       └── +page.svelte
 │       ├── comunidad/
 │       │   └── +page.svelte
 │       ├── iniciar_sesion/
