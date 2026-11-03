@@ -1,5 +1,5 @@
 // Autor: Miguel Tovar
-// Pipeline de MogOps para una foto o la cámara en vivo, sin redes neuronales
+// Pipeline de MogOps para la cámara en vivo, sin redes neuronales
 // pesadas (MogNet pesa 89 MB y no está en la web):
 //   landmarks de MediaPipe -> revisión de pose -> ratios de geometría
 //   (+ ventana de 30 cuadros en cámara) -> ratios "PSL" -> bonos de
@@ -95,36 +95,6 @@ export class FaceAnalyzer {
 
   preload = () => landmarker().then((m) => m.preloadLandmarker());
 
-  async analyzeImage(image: HTMLImageElement): Promise<void> {
-    this.stopCamera();
-    this.onUpdate({ ...EMPTY, status: "analyzing", message: "Analizando" });
-    try {
-      const w = image.naturalWidth;
-      const h = image.naturalHeight;
-      const face = await (await landmarker()).detectImage(image);
-      if (!face) {
-        this.overlay = { landmarks: null, width: w, height: h };
-        this.onUpdate({ ...EMPTY, status: "noface", message: "No se encontró una cara" });
-        return;
-      }
-      const { landmarks } = face;
-      this.overlay = { landmarks, width: w, height: h };
-      const pose = checkPose(landmarks, w, h);
-      this.onUpdate({
-        ...EMPTY,
-        ...scoreGeometry(computeMetrics(landmarks, w, h)),
-        ...scorePsl(pslMetrics(landmarks, w, h)),
-        bonus: scoreBonuses(face.blendshapes),
-        status: pose.ok ? "ready" : "adjust",
-        message: pose.ok ? "Listo" : "Calificado, pero la pose no es buena",
-        reasons: pose.reasons,
-        frames: 1,
-      });
-    } catch (e) {
-      this.onUpdate({ ...EMPTY, status: "error", message: e instanceof Error ? e.message : String(e) });
-    }
-  }
-
   async startCamera(video: HTMLVideoElement, deviceId?: string): Promise<void> {
     this.stopCamera();
     this.onUpdate({ ...EMPTY, status: "loading", message: "Iniciando cámara" });
@@ -205,11 +175,5 @@ export class FaceAnalyzer {
     cancelAnimationFrame(state.raf);
     state.stream?.getTracks().forEach((t) => t.stop());
     state.stream = null;
-  }
-
-  reset(): void {
-    this.stopCamera();
-    this.overlay = { landmarks: null, width: 0, height: 0 };
-    this.onUpdate(EMPTY);
   }
 }

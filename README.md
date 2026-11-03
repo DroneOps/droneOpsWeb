@@ -83,11 +83,15 @@ Archivos clave:
 
 Módulo público (no requiere iniciar sesión) que muestra los proyectos del equipo. La vista `/galeria` presenta un proyecto destacado y una cuadrícula de tarjetas con enlace a cada repositorio en GitHub; para agregar un proyecto basta con añadir un objeto a la lista `proyectos` de la página.
 
-El proyecto destacado es MogOps, un juego que califica una cara del 0 al 10 desde una foto o la cámara en `/galeria/mogops`. Todo el procesamiento ocurre en el navegador con MediaPipe Face Landmarker (WebAssembly): las imágenes nunca salen del dispositivo. Usa la versión ligera de los motores de MogOps (proporciones faciales, ratios "PSL" y bonos del modo meme); la red neuronal MogNet no se incluye por su tamaño. Los archivos `.wasm` se sirven desde la propia web y el modelo facial (unos 4 MB) vive en `static/mogops/`.
+El proyecto destacado es MogOps, un juego en `/galeria/mogops` que califica una cara del 0 al 10 con la cámara, en modo competencia: 5 segundos de calentamiento, 8 segundos de batalla en los que se promedia la calificación y un ranking semanal con los 15 mejores. El análisis ocurre en el navegador con MediaPipe Face Landmarker (WebAssembly); solo si la persona registra su puntuación se envían su nombre y la foto de su trofeo a la API `/api/mogops/ranking`, que los guarda en la tabla `mogops_ranking` de Supabase durante 7 días (una entrada por dispositivo). Usa la versión ligera de los motores de MogOps (proporciones faciales, ratios "PSL" y bonos del modo meme); la red neuronal MogNet no se incluye por su tamaño.
+
+Para activar el ranking hay que crear la tabla una sola vez ejecutando [src/lib/mogops/ranking.sql](src/lib/mogops/ranking.sql) en el SQL Editor de Supabase. La documentación completa del juego está en [src/lib/mogops/LEEME.md](src/lib/mogops/LEEME.md).
 
 Archivos clave:
 - [src/routes/galeria/+page.svelte](src/routes/galeria/+page.svelte)
 - [src/routes/galeria/mogops/+page.svelte](src/routes/galeria/mogops/+page.svelte)
+- [src/routes/api/mogops/ranking/+server.ts](src/routes/api/mogops/ranking/+server.ts)
+- [src/lib/mogops/ranking.sql](src/lib/mogops/ranking.sql)
 - [src/lib/mogops/LEEME.md](src/lib/mogops/LEEME.md)
 - [static/mogops/face_landmarker.task](static/mogops/face_landmarker.task)
 
