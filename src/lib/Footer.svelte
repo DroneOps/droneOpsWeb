@@ -107,7 +107,7 @@
         color: #ffffff;
         font-size: 0.8rem;
         letter-spacing: 0.05em;
-        margin-bottom: 1rem;
+        margin-bottom: 0.25rem;
     }
 
     /*Organiza los enlaces de redes sociales en una lista vertical*/
