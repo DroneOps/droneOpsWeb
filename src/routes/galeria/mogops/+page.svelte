@@ -1,11 +1,12 @@
 <script lang="ts">
 	// Autor: Miguel Tovar
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy, onMount, untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { scale } from 'svelte/transition';
 	import gigachadImg from '$lib/assets/gigachad.png';
 	import theRockImg from '$lib/assets/the-rock.png';
 	import { EMPTY, ENGINE_LABEL, FaceAnalyzer, headlineScore, MOG_THRESHOLD, type Analysis, type Engine } from '$lib/mogops/analysis';
+	import { colorPuntuacion, Competencia } from '$lib/mogops/competencia.svelte';
 	import { percentileOf, pslFromScore, pslTier } from '$lib/mogops/display';
 	import { countsInOverall, GEOMETRY_ACCURACY, METRIC_KEYS, TRAITS, traitWeight } from '$lib/mogops/geometry';
 	import { PSL_ACCURACY, PSL_IDEALS, PSL_LABELS } from '$lib/mogops/psl';
@@ -30,16 +31,33 @@
 
 	// Estado del juego
 	let analysis = $state<Analysis>(EMPTY);
-	let modo = $state<'foto' | 'camara'>('camara');
 	let motor = $state<Engine>('geometry');
 	let mostrarPuntos = $state(false);
 	let modelosListos = $state(false);
 	let errorModelos = $state<string | null>(null);
 	let errorCamara = $state<string | null>(null);
-	let imagenUrl = $state<string | null>(null);
+	let camaraActiva = $state(false);
 	let camaras = $state<MediaDeviceInfo[]>([]);
 	let camaraId = $state('');
 	let cejaFlash = $state(false);
+
+	// Modo competencia
+	const competencia = new Competencia();
+	const TROFEO_PX = 256; // lado mayor de la foto del trofeo
+	const MARGEN_TROFEO = 0.16; // 16% alrededor de la cara
+	let lienzoTrofeo: HTMLCanvasElement | null = null;
+	let fotoTrofeo = $state<string | null>(null);
+
+	// Ranking semanal
+	type FilaRanking = { nombre: string; puntuacion: number; foto: string; registradoEn: string; esMio: boolean };
+	type Ranking = { ranking: FilaRanking[]; mio: { nombre: string; puntuacion: number } | null };
+	let ranking = $state<Ranking | null>(null);
+	let errorRanking = $state<string | null>(null);
+	let expandido = $state(false);
+	let nombre = $state('');
+	let enviando = $state(false);
+	let errorRegistro = $state<string | null>(null);
+	let registrado = $state(false);
 
 	// Elementos del DOM
 	let video = $state<HTMLVideoElement>();
@@ -50,18 +68,43 @@
 	let sonidos: Sounds | null = null;
 	let timerCeja = 0;
 	let raf = 0;
+	let reloj = 0;
 
 	const titular = $derived(headlineScore(analysis, motor, true));
-	const calificado = $derived(analysis.status === 'ready' || analysis.status === 'adjust');
-	const gigachad = $derived(calificado && titular !== null && titular >= MOG_THRESHOLD);
 	const bono = $derived(analysis[motor] !== null ? analysis.bonus : null);
+	const enJuego = $derived(competencia.fase === 'calentamiento' || competencia.fase === 'batalla');
+	const conPromedio = $derived(competencia.fase === 'batalla' || competencia.fase === 'final');
+
+	// El número grande: en la batalla y al final es el promedio; antes, la calificación en vivo
+	const numero = $derived(conPromedio ? competencia.promedio : titular);
+	// Los efectos meme usan el promedio de la batalla, no la calificación del momento
+	const puntajeMeme = $derived(conPromedio ? competencia.promedio : null);
+	const gigachad = $derived(puntajeMeme !== null && puntajeMeme >= MOG_THRESHOLD);
+
+	// Puntuación final redondeada como la guarda el servidor
+	const final = $derived(
+		competencia.fase === 'final' && competencia.promedio !== null ? Math.round(competencia.promedio * 100) / 100 : null
+	);
+	const puedeRegistrar = $derived(
+		final !== null &&
+			fotoTrofeo !== null &&
+			ranking !== null &&
+			!registrado &&
+			(ranking.mio === null || final > ranking.mio.puntuacion)
+	);
 
 	onMount(() => {
 		mostrarPuntos = leerAjuste('mogops.puntos', false);
 		sonidos = createSounds();
+		lienzoTrofeo = document.createElement('canvas');
 
 		const nuevo = new FaceAnalyzer(
-			(a) => (analysis = a),
+			(a) => {
+				analysis = a;
+				// Cada calificación válida de la batalla entra al promedio; la más alta se guarda como trofeo
+				const valida = a.status === 'ready' ? headlineScore(a, motor, true) : null;
+				if (competencia.registrar(valida, performance.now())) capturarTrofeo();
+			},
 			() => {
 				sonidos?.boom();
 				cejaFlash = true;
@@ -74,6 +117,9 @@
 			.preload()
 			.then(() => (modelosListos = true))
 			.catch((e: unknown) => (errorModelos = e instanceof Error ? e.message : String(e)));
+
+		// Avanza las fases aunque no lleguen cuadros (por ejemplo, si no hay cara)
+		reloj = window.setInterval(() => competencia.avanzar(performance.now()), 100);
 
 		// Dibuja los puntos faciales encima de la vista previa
 		const dibujar = () => {
@@ -94,45 +140,121 @@
 			raf = requestAnimationFrame(dibujar);
 		};
 		raf = requestAnimationFrame(dibujar);
+
+		cargarRanking();
 	});
 
 	onDestroy(() => {
 		if (typeof window === 'undefined') return;
 		cancelAnimationFrame(raf);
+		clearInterval(reloj);
 		clearTimeout(timerCeja);
 		sonidos?.stop();
 		analizador?.stopCamera();
-		if (imagenUrl) URL.revokeObjectURL(imagenUrl);
 	});
 
-	// La canción de Gigachad suena mientras la calificación esté en 8 o más; al bajar se pausa y luego continúa
+	// La canción de Gigachad suena mientras el promedio esté en 8 o más; al bajar se pausa y luego continúa
 	$effect(() => {
 		sonidos?.setMusic(gigachad);
 	});
 
-	// Enciende la cámara al entrar a ese modo o al cambiar de cámara
+	// Al terminar la batalla, la mejor captura se convierte en la foto del trofeo
 	$effect(() => {
-		if (modo !== 'camara' || !modelosListos || !analizador || !video) return;
-		const a = analizador;
-		errorCamara = null;
-		a.startCamera(video, camaraId || undefined)
-			.then(() => navigator.mediaDevices.enumerateDevices())
-			.then((todas) => (camaras = todas.filter((d) => d.kind === 'videoinput')))
-			.catch((e: unknown) => (errorCamara = e instanceof Error ? e.message : String(e)));
-		return () => a.stopCamera();
+		if (competencia.fase === 'final' && competencia.mejor !== null && lienzoTrofeo && !fotoTrofeo) {
+			fotoTrofeo = lienzoTrofeo.toDataURL('image/jpeg', 0.85);
+		}
 	});
 
-	function cambiarModo(siguiente: 'foto' | 'camara') {
-		if (siguiente === modo) return;
-		analizador?.reset();
-		modo = siguiente;
+	// Enciende la cámara cuando el modelo está listo, y otra vez al cambiar de cámara.
+	// Solo depende de esos cuatro valores: startCamera ya hace una actualización al arrancar,
+	// y si el efecto también siguiera la fase de la competencia, "Iniciar" reiniciaría la cámara.
+	$effect(() => {
+		const [listo, a, v, id] = [modelosListos, analizador, video, camaraId];
+		if (!listo || !a || !v) return;
+		untrack(() => {
+			errorCamara = null;
+			a.startCamera(v, id || undefined)
+				.then(() => {
+					camaraActiva = true;
+					return navigator.mediaDevices.enumerateDevices();
+				})
+				.then((todas) => (camaras = todas.filter((d) => d.kind === 'videoinput')))
+				.catch((e: unknown) => {
+					camaraActiva = false;
+					errorCamara = e instanceof Error ? e.message : String(e);
+				});
+		});
+		return () =>
+			untrack(() => {
+				a.stopCamera();
+				camaraActiva = false;
+				reiniciarCompetencia();
+			});
+	});
+
+	// Copia la cara del cuadro actual (más un 16% alrededor), en espejo como la vista previa
+	function capturarTrofeo() {
+		const landmarks = analizador?.overlay.landmarks;
+		if (!video || !landmarks || !lienzoTrofeo) return;
+		const w = video.videoWidth;
+		const h = video.videoHeight;
+		const xs = landmarks.map((p) => p.x * w);
+		const ys = landmarks.map((p) => p.y * h);
+		let [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+		const [mx, my] = [(x1 - x0) * MARGEN_TROFEO, (y1 - y0) * MARGEN_TROFEO];
+		[x0, x1, y0, y1] = [Math.max(0, x0 - mx), Math.min(w, x1 + mx), Math.max(0, y0 - my), Math.min(h, y1 + my)];
+		const escala = Math.min(1, TROFEO_PX / Math.max(x1 - x0, y1 - y0));
+		lienzoTrofeo.width = Math.round((x1 - x0) * escala);
+		lienzoTrofeo.height = Math.round((y1 - y0) * escala);
+		const ctx = lienzoTrofeo.getContext('2d')!;
+		ctx.setTransform(-1, 0, 0, 1, lienzoTrofeo.width, 0);
+		ctx.drawImage(video, x0, y0, x1 - x0, y1 - y0, 0, 0, lienzoTrofeo.width, lienzoTrofeo.height);
 	}
 
-	function alElegirFoto(e: Event) {
-		const archivo = (e.currentTarget as HTMLInputElement).files?.[0];
-		if (!archivo) return;
-		if (imagenUrl) URL.revokeObjectURL(imagenUrl);
-		imagenUrl = URL.createObjectURL(archivo);
+	function iniciarCompetencia() {
+		reiniciarCompetencia();
+		competencia.iniciar(performance.now());
+	}
+
+	function reiniciarCompetencia() {
+		competencia.reiniciar();
+		fotoTrofeo = null;
+		registrado = false;
+		errorRegistro = null;
+	}
+
+	async function cargarRanking() {
+		try {
+			const res = await fetch('/api/mogops/ranking');
+			const datos = await res.json();
+			if (!res.ok) throw new Error(datos.error || 'No se pudo cargar el ranking');
+			ranking = datos;
+			errorRanking = null;
+			if (datos.mio && !nombre) nombre = datos.mio.nombre;
+		} catch (e) {
+			errorRanking = e instanceof Error ? e.message : String(e);
+		}
+	}
+
+	async function registrarPuntuacion(e: Event) {
+		e.preventDefault();
+		if (!puedeRegistrar || final === null || !fotoTrofeo) return;
+		enviando = true;
+		errorRegistro = null;
+		try {
+			const res = await fetch('/api/mogops/ranking', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ nombre, puntuacion: final, foto: fotoTrofeo })
+			});
+			const datos = await res.json();
+			if (!res.ok) throw new Error(datos.error || 'No se pudo registrar la puntuación');
+			ranking = datos;
+			registrado = true;
+		} catch (err) {
+			errorRegistro = err instanceof Error ? err.message : String(err);
+		}
+		enviando = false;
 	}
 
 	function alternar(clave: string, valor: boolean): boolean {
@@ -142,6 +264,15 @@
 
 	const fmt = (v: number | null) => (v === null ? '–' : v.toFixed(1));
 	const conSigno = (v: number) => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}`;
+
+	// Cuándo se registró, en días del calendario local: "Hoy", "Ayer", "Hace 3 días"
+	function cuando(iso: string): string {
+		const dia = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+		const dias = Math.round((dia(new Date()) - dia(new Date(iso))) / 86_400_000);
+		if (dias <= 0) return 'Hoy';
+		if (dias === 1) return 'Ayer';
+		return `Hace ${dias} días`;
+	}
 
 	const ESTADO: Record<Analysis['status'], string> = {
 		idle: 'border-slate-300 bg-slate-100 text-slate-600',
@@ -174,7 +305,7 @@
 			<h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-950 mt-1">MogOps</h1>
 		</div>
 		<p class="text-sm sm:text-base text-slate-600 max-w-3xl leading-relaxed">
-			Sube una foto o usa tu cámara y recibe una calificación del 0 al 10. Todo se procesa en tu dispositivo: tu cara nunca sale de tu navegador.
+			Todo se corre en tu dispositivo, a menos que elijas registrar tu puntuación en el ranking.
 		</p>
 	</section>
 
@@ -183,28 +314,28 @@
 		<!-- Entrada: foto o cámara -->
 		<div class="lg:col-span-7 rounded-2xl sm:rounded-[32px] border border-slate-200 bg-white p-5 sm:p-8 shadow-[0_12px_30px_rgba(0,0,0,0.08)] space-y-5">
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-				<div class="flex flex-col gap-1.5">
-					<span class="text-xs font-bold uppercase tracking-wider text-slate-500">Entrada</span>
-					<div class="flex rounded-xl bg-stone-200/80 p-1">
-						{#each [['foto', 'Foto'], ['camara', 'Cámara']] as [valor, texto] (valor)}
-							<button
-								type="button"
-								onclick={() => cambiarModo(valor as 'foto' | 'camara')}
-								class={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition-colors ${modo === valor ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-700 hover:bg-stone-300/80'}`}
-							>
-								{texto}
-							</button>
-						{/each}
-					</div>
-				</div>
 				<label class="flex flex-col gap-1.5">
 					<span class="text-xs font-bold uppercase tracking-wider text-slate-500">Calificación principal</span>
 					<select
 						bind:value={motor}
-						class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-purple-600 focus:outline-none"
+						disabled={enJuego}
+						class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-purple-600 focus:outline-none disabled:opacity-50"
 					>
 						<option value="geometry">Geometría (aprendida de humanos)</option>
 						<option value="psl">Ratios PSL (lore de looksmaxxing)</option>
+					</select>
+				</label>
+				<label class="flex flex-col gap-1.5">
+					<span class="text-xs font-bold uppercase tracking-wider text-slate-500">Cámara</span>
+					<select
+						bind:value={camaraId}
+						disabled={enJuego}
+						class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-purple-600 focus:outline-none disabled:opacity-50"
+					>
+						<option value="">Cámara predeterminada</option>
+						{#each camaras as c, i (c.deviceId)}
+							<option value={c.deviceId}>{c.label || `Cámara ${i + 1}`}</option>
+						{/each}
 					</select>
 				</label>
 			</div>
@@ -222,56 +353,55 @@
 				</button>
 			</div>
 
-			{#if modo === 'camara'}
-				<label class="flex flex-col gap-1.5">
-					<span class="text-xs font-bold uppercase tracking-wider text-slate-500">Cámara</span>
-					<select
-						bind:value={camaraId}
-						class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-purple-600 focus:outline-none"
-					>
-						<option value="">Cámara predeterminada</option>
-						{#each camaras as c, i (c.deviceId)}
-							<option value={c.deviceId}>{c.label || `Cámara ${i + 1}`}</option>
-						{/each}
-					</select>
-				</label>
-			{:else}
-				<label class="flex flex-col gap-1.5">
-					<span class="text-xs font-bold uppercase tracking-wider text-slate-500">Foto</span>
-					<input
-						type="file"
-						accept="image/*"
-						disabled={!modelosListos}
-						onchange={alElegirFoto}
-						class="text-sm text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-purple-600 file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-purple-700 disabled:opacity-50"
-					/>
-				</label>
-			{/if}
 
 			<div class="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl bg-slate-950">
-				{#if modo === 'camara'}
-					<video bind:this={video} playsinline muted class="h-full w-full object-contain -scale-x-100"></video>
-				{:else if imagenUrl}
-					<img
-						src={imagenUrl}
-						alt="Foto seleccionada"
-						onload={(e) => analizador?.analyzeImage(e.currentTarget as HTMLImageElement)}
-						class="h-full w-full object-contain"
-					/>
-				{/if}
+				<video bind:this={video} playsinline muted class="h-full w-full object-contain -scale-x-100"></video>
 				<canvas
 					bind:this={lienzo}
-					class={`pointer-events-none absolute inset-0 h-full w-full object-contain ${modo === 'camara' ? '-scale-x-100' : ''}`}
+					class="pointer-events-none absolute inset-0 h-full w-full object-contain -scale-x-100"
 				></canvas>
 
 				{#if errorModelos}
 					<p class="absolute inset-x-6 text-center text-sm text-slate-400">No se pudieron cargar los modelos: {errorModelos}</p>
 				{:else if !modelosListos}
 					<p class="absolute inset-x-6 text-center text-sm text-slate-400">Cargando modelo facial (4 MB)…</p>
-				{:else if errorCamara}
-					<p class="absolute inset-x-6 text-center text-sm text-slate-400">Cámara no disponible: {errorCamara}</p>
-				{:else if modo === 'foto' && !imagenUrl}
-					<p class="absolute inset-x-6 text-center text-sm text-slate-400">Elige una foto de frente para empezar.</p>
+				{:else if !camaraActiva}
+					<div class="absolute inset-x-6 text-center">
+						<p class="text-base sm:text-lg font-bold text-white">Permite el uso de la cámara para jugar.</p>
+						{#if errorCamara}
+							<p class="mt-1 text-xs text-slate-400">No se pudo usar la cámara: {errorCamara}</p>
+						{/if}
+					</div>
+				{/if}
+
+				<!-- Controles de la competencia sobre la cámara -->
+				{#if camaraActiva}
+					{#if competencia.fase === 'listo'}
+						<button
+							type="button"
+							onclick={iniciarCompetencia}
+							class="absolute rounded-xl bg-purple-600 px-10 py-3.5 text-lg font-extrabold text-white shadow-lg hover:bg-purple-700 transition-colors"
+						>
+							Iniciar
+						</button>
+					{:else if competencia.fase === 'calentamiento'}
+						<span class="absolute bottom-3 rounded-full bg-slate-950/75 px-4 py-1.5 text-sm font-bold text-white">
+							La batalla empieza en <span class="font-mono tabular-nums">{competencia.restante}</span>
+						</span>
+					{:else if competencia.fase === 'batalla'}
+						<span class="absolute bottom-3 flex items-center gap-2 rounded-full bg-red-600 px-4 py-1.5 text-sm font-bold uppercase tracking-wider text-white shadow-md">
+							<span class="h-2 w-2 animate-pulse rounded-full bg-white"></span>
+							Batalla · <span class="font-mono tabular-nums">{competencia.restante} s</span>
+						</span>
+					{:else}
+						<button
+							type="button"
+							onclick={reiniciarCompetencia}
+							class="absolute bottom-3 rounded-xl bg-white px-6 py-2.5 text-sm font-bold text-slate-900 shadow-lg hover:bg-slate-100 transition-colors"
+						>
+							Reiniciar
+						</button>
+					{/if}
 				{/if}
 
 				<!-- The Rock durante un segundo cada vez que se levanta una ceja -->
@@ -284,7 +414,7 @@
 					/>
 				{/if}
 
-				<!-- Sello de Gigachad sobre la vista previa mientras la calificación esté en 8 o más -->
+				<!-- Sello de Gigachad sobre la vista previa mientras el promedio esté en 8 o más -->
 				{#if gigachad}
 					<img
 						src={gigachadImg}
@@ -302,6 +432,58 @@
 					{/each}
 				</ul>
 			{/if}
+
+			<!-- Registro de la puntuación al terminar la batalla -->
+			{#if final !== null}
+				{#if puedeRegistrar}
+					<form onsubmit={registrarPuntuacion} class="flex flex-col items-center gap-4 rounded-2xl border border-purple-200 bg-purple-50/60 p-5 sm:p-6">
+						<span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-purple-600">Tu trofeo</span>
+						<div class="rounded-2xl border-4 border-purple-300 bg-white p-1.5 shadow-md">
+							<img src={fotoTrofeo} alt="Tu cara en el mejor momento de la batalla" class="h-36 w-36 rounded-xl object-cover" />
+						</div>
+						<p class="font-mono text-3xl font-extrabold tabular-nums {colorPuntuacion(final)}">{final.toFixed(1)}</p>
+						<label class="flex w-full max-w-sm flex-col gap-1.5">
+							<span class="text-xs font-bold uppercase tracking-wider text-slate-500">Tu nombre</span>
+							<input
+								type="text"
+								bind:value={nombre}
+								required
+								maxlength="24"
+								placeholder="Ej. Gigachad"
+								class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-purple-600 focus:outline-none"
+							/>
+						</label>
+						{#if errorRegistro}
+							<p class="text-sm font-semibold text-red-600">{errorRegistro}</p>
+						{/if}
+						<button
+							type="submit"
+							disabled={enviando || !nombre.trim()}
+							class="rounded-xl bg-purple-600 px-6 py-3 font-bold text-white shadow-md hover:bg-purple-700 transition-colors disabled:opacity-50"
+						>
+							{enviando ? 'Registrando…' : 'Registrar puntuación'}
+						</button>
+						<p class="max-w-sm text-center text-xs leading-relaxed text-slate-500">
+							<strong class="text-slate-700">Privacidad:</strong> la foto de arriba solo se guarda si decides registrar tu puntuación.
+							Si no la registras, nunca sale de tu dispositivo. Al registrarla, tu nombre y esta foto se publican en el ranking durante
+							7 días y luego se borran. Solo se guarda la mejor puntuación de este dispositivo.
+						</p>
+					</form>
+				{:else if registrado}
+					<p class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm font-semibold text-emerald-800">
+						¡Puntuación registrada! Ya apareces en el ranking semanal.
+					</p>
+				{:else if ranking?.mio && final <= ranking.mio.puntuacion}
+					<p class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center text-sm text-slate-600">
+						Tu récord de esta semana es <span class="font-mono font-bold">{ranking.mio.puntuacion.toFixed(1)}</span>. Supéralo para
+						volver a registrarte.
+					</p>
+				{/if}
+			{:else if competencia.fase === 'final'}
+				<p class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-800">
+					No se detectó tu cara durante la batalla. Pulsa Reiniciar para intentarlo de nuevo.
+				</p>
+			{/if}
 		</div>
 
 		<!-- Calificación -->
@@ -314,12 +496,28 @@
 			</div>
 
 			<div class="flex flex-col items-center gap-2 text-center">
-				<div class="font-mono text-7xl font-extrabold tabular-nums tracking-tight text-purple-950">
-					{titular === null ? '0.0' : titular.toFixed(1)}
+				<!-- Gris y pequeño antes de la batalla; grande y con color al empezar el promedio -->
+				<div
+					class="font-mono font-extrabold tabular-nums tracking-tight transition-all duration-500 {conPromedio
+						? `text-8xl ${colorPuntuacion(numero)}`
+						: 'text-5xl text-slate-400'}"
+				>
+					{numero === null ? '0.0' : numero.toFixed(1)}
 				</div>
-				{#if titular !== null}
-					{@const psl = pslFromScore(titular)}
-					{@const top = Math.max(0.1, (1 - percentileOf(titular)) * 100)}
+				<p class="text-xs font-bold uppercase tracking-wider text-slate-500">
+					{#if competencia.fase === 'listo'}
+						En vivo · pulsa Iniciar
+					{:else if competencia.fase === 'calentamiento'}
+						Calentando
+					{:else if competencia.fase === 'batalla'}
+						Promedio de la batalla · ahora {fmt(titular)}
+					{:else}
+						Puntuación final
+					{/if}
+				</p>
+				{#if numero !== null}
+					{@const psl = pslFromScore(numero)}
+					{@const top = Math.max(0.1, (1 - percentileOf(numero)) * 100)}
 					<p class="text-sm font-semibold text-slate-800">PSL {psl.toFixed(1)} · {pslTier(psl)}</p>
 					<p class="text-xs text-slate-500">Top {top < 1 ? top.toFixed(1) : Math.round(top)}% de las caras</p>
 				{/if}
@@ -428,7 +626,60 @@
 		</div>
 	</section>
 
-	<!-- 3. CÓMO FUNCIONA -->
+	<!-- 3. RANKING SEMANAL -->
+	<section class="space-y-4 sm:space-y-6">
+		<div>
+			<span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-purple-600">Competencia</span>
+			<h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 mt-1">Ranking semanal</h2>
+			<p class="text-slate-600 mt-2 max-w-3xl text-sm sm:text-base">
+				Las mejores puntuaciones de los últimos 7 días.
+			</p>
+		</div>
+
+		<div class="rounded-2xl sm:rounded-[32px] border border-purple-200 bg-purple-50/60 p-5 sm:p-8">
+			{#if errorRanking}
+				<p class="text-sm text-slate-500">{errorRanking}</p>
+			{:else if !ranking}
+				<p class="text-sm text-slate-500">Cargando ranking…</p>
+			{:else if ranking.ranking.length === 0}
+				<p class="text-sm text-slate-500">Todavía nadie se ha registrado esta semana. ¡Sé el primero!</p>
+			{:else}
+				<ol class="space-y-2 sm:space-y-3">
+					{#each ranking.ranking.slice(0, expandido ? 15 : 5) as fila, i (i)}
+						<li
+							class={`flex items-center gap-3 sm:gap-4 rounded-2xl border bg-white px-3 py-2.5 sm:px-4 sm:py-3 ${fila.esMio ? 'border-purple-400 shadow-sm' : 'border-purple-100'}`}
+						>
+							<span class="w-7 shrink-0 text-center font-mono text-lg font-extrabold text-purple-950">{i + 1}</span>
+							<img src={fila.foto} alt={`Trofeo de ${fila.nombre}`} class="h-12 w-12 shrink-0 rounded-xl object-cover sm:h-14 sm:w-14" />
+							<div class="min-w-0 flex-1">
+								<p class="flex items-center gap-2 truncate font-bold text-slate-900">
+									<span class="truncate">{fila.nombre}</span>
+									{#if fila.esMio}
+										<span class="shrink-0 rounded-full border border-purple-300 bg-purple-100 px-2 py-0.5 text-[10px] font-bold uppercase text-purple-700">Tú</span>
+									{/if}
+								</p>
+								<p class="text-xs text-slate-500">{cuando(fila.registradoEn)}</p>
+							</div>
+							<span class="shrink-0 font-mono text-2xl sm:text-3xl font-extrabold tabular-nums {colorPuntuacion(fila.puntuacion)}">
+								{fila.puntuacion.toFixed(1)}
+							</span>
+						</li>
+					{/each}
+				</ol>
+				{#if ranking.ranking.length > 5}
+					<button
+						type="button"
+						onclick={() => (expandido = !expandido)}
+						class="mt-4 rounded-xl border border-slate-400 bg-transparent px-5 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100 transition-colors"
+					>
+						{expandido ? 'Contraer' : 'Expandir'}
+					</button>
+				{/if}
+			{/if}
+		</div>
+	</section>
+
+	<!-- 4. CÓMO FUNCIONA -->
 	<section class="space-y-3 sm:space-y-4">
 		<div class="rounded-2xl sm:rounded-3xl bg-stone-200/80 overflow-hidden shadow-sm transition-all">
 			<button
@@ -441,6 +692,11 @@
 			</button>
 			{#if abiertas.has(1)}
 				<div class="p-5 sm:p-8 pt-0 text-xs sm:text-base text-slate-700 space-y-3 max-w-4xl">
+					<p>
+						<strong>Competencia.</strong> Pulsa Iniciar: durante 5 segundos solo ves tu calificación en vivo. Luego empieza la batalla
+						de 8 segundos, en la que se calcula el promedio de tu calificación ponderado por tiempo. Al terminar, la puntuación queda
+						congelada y puedes registrarla con tu nombre y la foto de tu mejor momento.
+					</p>
 					<p>
 						<strong>Puntos faciales.</strong> MediaPipe Face Landmarker encuentra 478 puntos de la cara directamente en tu navegador
 						(WebAssembly). El modelo pesa unos 4 MB y se descarga una sola vez de esta misma página.
@@ -470,3 +726,27 @@
 		</p>
 	</section>
 </div>
+
+<style>
+	/* Amarillo legible sobre fondo claro */
+	:global(.puntuacion-contorno) {
+		text-shadow: 0 1px 0 rgba(120, 53, 15, 0.35);
+	}
+
+	/* Plata brillante para 9.3 o más */
+	:global(.puntuacion-plata) {
+		background: linear-gradient(110deg, #94a3b8 0%, #f8fafc 22%, #cbd5e1 40%, #ffffff 50%, #94a3b8 68%, #e2e8f0 100%);
+		background-size: 200% auto;
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		filter: drop-shadow(0 1px 1px rgba(51, 65, 85, 0.55)) drop-shadow(0 0 10px rgba(226, 232, 240, 0.95));
+		animation: brillo-plata 2.2s linear infinite;
+	}
+
+	@keyframes brillo-plata {
+		to {
+			background-position: -200% center;
+		}
+	}
+</style>
