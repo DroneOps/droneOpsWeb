@@ -59,7 +59,7 @@
                     <h3 class="rol-miembro">MENTOR</h3>
                 </div>
                 <div class="tarjeta-miembro">
-                    <img src={cuadro} alt="Mentor Manuel" class="foto-cuadrada" />
+                    <img src={manu} alt="Mentor Manuel" class="foto-cuadrada" />
                     <h2 class="nombre-miembro">Manuel</h2>
                     <h3 class="rol-miembro">MENTOR</h3>
                 </div>
