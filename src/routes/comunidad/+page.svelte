@@ -10,6 +10,7 @@
 	import alexin from '$lib/assets/alexin.png'
 	import omar from '$lib/assets/omar.png'
 	import yaya from '$lib/assets/mariana.jfif'
+    import manu from '$lib/assets/Manu.jfif'
 </script>
 
 <div class="pagina-comunidad">
@@ -53,8 +54,8 @@
                     <h3 class="rol-miembro">MENTOR</h3>
                 </div>
                 <div class="tarjeta-miembro">
-                    <img src={cuadro} alt="Mentor Viktor" class="foto-cuadrada" />
-                    <h2 class="nombre-miembro">Viktor</h2>
+                    <img src={cuadro} alt="Mentor Victor" class="foto-cuadrada" />
+                    <h2 class="nombre-miembro">Victor</h2>
                     <h3 class="rol-miembro">MENTOR</h3>
                 </div>
                 <div class="tarjeta-miembro">
@@ -165,13 +166,13 @@
             <div class="grid-miembros">
                 <!-- Se agregaron atributos 'alt' para corregir la advertencia de accesibilidad -->
                 <div class="tarjeta-miembro"><img src={cuadro} alt="Juan Carlos" class="foto-cuadrada" /><h2 class="nombre-miembro">Juan Carlos</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
-                <div class="tarjeta-miembro"><img src={cuadro} alt="Marco" class="foto-cuadrada" /><h2 class="nombre-miembro">Marco Tec</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
+                <div class="tarjeta-miembro"><img src={cuadro} alt="Marco" class="foto-cuadrada" /><h2 class="nombre-miembro">Marco</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
                 <div class="tarjeta-miembro"><img src={cuadro} alt="Juan Pablo" class="foto-cuadrada" /><h2 class="nombre-miembro">Juan Pablo</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
                 <div class="tarjeta-miembro"><img src={cuadro} alt="Fernando" class="foto-cuadrada" /><h2 class="nombre-miembro">Fernando</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
                 <div class="tarjeta-miembro"><img src={cuadro} alt="Homero" class="foto-cuadrada" /><h2 class="nombre-miembro">Homero</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
                 <div class="tarjeta-miembro"><img src={cuadro} alt="Diego" class="foto-cuadrada" /><h2 class="nombre-miembro">Diego</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
                 <div class="tarjeta-miembro"><img src={cuadro} alt="Fernanda" class="foto-cuadrada" /><h2 class="nombre-miembro">Fernanda</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
-                <div class="tarjeta-miembro"><img src={cuadro} alt="Aaron" class="foto-cuadrada" /><h2 class="nombre-miembro">Aaron</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
+                <div class="tarjeta-miembro"><img src={cuadro} alt="Pablo" class="foto-cuadrada" /><h2 class="nombre-miembro">Pablo</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
                 <div class="tarjeta-miembro"><img src={cuadro} alt="Mariana" class="foto-cuadrada" /><h2 class="nombre-miembro">Mariana</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
                 <div class="tarjeta-miembro"><img src={cuadro} alt="Miguel" class="foto-cuadrada" /><h2 class="nombre-miembro">Miguel</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
             </div>
