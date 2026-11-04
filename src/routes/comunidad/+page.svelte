@@ -55,22 +55,6 @@
         <section class="seccion-lider">
             <img src={lider} alt="Dr. Hernán Abaunza González" class="foto-lider" />
 
-			<div class="info-lider">
-				<h2 class="nombre-lider">Hernán Abaunza González</h2>
-				<h3 class="rol-lider">Líder</h3>
-				<div class="bio-lider">
-					<p>
-						El Dr. Hernán Abaunza González es Ingeniero en Mecatrónica por el Tecnológico de Monterrey (2012), Maestro en Ciencias por el CINVESTAV-IPN (2014) y Doctor en Robótica y Automatización por la <em>Université de Technologie de Compiègne</em> en Francia (2019).
-					</p>
-					<p>
-						Cuenta con trayectoria de investigación internacional en instituciones europeas como la UTC e Institut Pascal (Francia) y FADA-CATEC (España). Sus líneas de investigación se especializan en el control de vuelo ágil, la navegación autónoma, la generación de trayectorias y el vuelo en formación para flotas de drones, con múltiples publicaciones científicas en revistas y conferencias internacionales.
-					</p>
-					<p>
-						Desde 2021 es Profesor de Tiempo Completo y Director del programa de Ingeniería en Robótica y Sistemas Digitales (IRS) en el Tecnológico de Monterrey, Campus Guadalajara, además de ser miembro del Sistema Nacional de Investigadores (SNI-1) en México.
-					</p>
-				</div>
-			</div>
-		</section>
             <div class="info-lider">
                 <h2 class="nombre-lider">Hernán Abaunza-González</h2>
                 <p class="rol-lider">Líder</p>
