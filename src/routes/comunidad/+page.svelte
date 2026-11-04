@@ -11,6 +11,7 @@
 	import omar from '$lib/assets/omar.png'
 	import yaya from '$lib/assets/mariana.jfif'
     import manu from '$lib/assets/Manu.jfif'
+    import vic from '$lib/assets/victor.jfif'
 </script>
 
 <div class="pagina-comunidad">
@@ -54,7 +55,7 @@
                     <h3 class="rol-miembro">MENTOR</h3>
                 </div>
                 <div class="tarjeta-miembro">
-                    <img src={cuadro} alt="Mentor Victor" class="foto-cuadrada" />
+                    <img src={vic} alt="Mentor Victor" class="foto-cuadrada" />
                     <h2 class="nombre-miembro">Victor</h2>
                     <h3 class="rol-miembro">MENTOR</h3>
                 </div>
