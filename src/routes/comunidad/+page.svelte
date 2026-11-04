@@ -12,7 +12,7 @@
     import manu from '$lib/assets/Manu.jfif';
     import vic from '$lib/assets/victor.jfif';
     import ferb from '$lib/assets/ferb.jpeg';
-    import kevin from '$lib/assets/kevin.jpeg'
+    import kevin from '$lib/assets/kevin.jpeg';
 
     type Persona = { nombre: string; rol: string; foto: string; instagram?: string };
 
@@ -74,9 +74,9 @@
 
         <hr class="separador" />
 
-        <!-- 2. MENTORES -->
+        <!-- 2. AGRADECIMIENTOS (mentores) -->
         <section>
-            <h2 class="titulo-seccion">Mentores</h2>
+            <h2 class="titulo-seccion">Agradecimientos</h2>
             <div class="grid grid-4">
                 {#each mentores as p}
                     <article class="tarjeta">
@@ -227,8 +227,13 @@
         gap: 24px;
     }
 
+    /* Tarjetas del mismo ancho que las de agradecimientos (4 columnas, gap 24px).
+       space-between pega la primera al borde izquierdo y la última al derecho,
+       así quedan alineadas con Manuel y Victor, con más espacio en medio. */
     .grid-3 {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, calc((100% - 72px) / 4));
+        justify-content: space-between;
+        gap: 56px 24px;
     }
 
     .grid-4 {
@@ -301,6 +306,11 @@
         .foto-lider {
             max-width: 380px;
             margin: 0 auto;
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px 24px;
         }
 
         .grid-4,
