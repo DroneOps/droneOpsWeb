@@ -12,6 +12,7 @@
 	import yaya from '$lib/assets/mariana.jfif'
     import manu from '$lib/assets/Manu.jfif'
     import vic from '$lib/assets/victor.jfif'
+    import ferb from '$lib/assets/ferb.jpeg'
 </script>
 
 <div class="pagina-comunidad">
@@ -169,7 +170,7 @@
                 <div class="tarjeta-miembro"><img src={cuadro} alt="Juan Carlos" class="foto-cuadrada" /><h2 class="nombre-miembro">Juan Carlos</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
                 <div class="tarjeta-miembro"><img src={cuadro} alt="Marco" class="foto-cuadrada" /><h2 class="nombre-miembro">Marco</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
                 <div class="tarjeta-miembro"><img src={cuadro} alt="Juan Pablo" class="foto-cuadrada" /><h2 class="nombre-miembro">Juan Pablo</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
-                <div class="tarjeta-miembro"><img src={cuadro} alt="Fernando" class="foto-cuadrada" /><h2 class="nombre-miembro">Fernando</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
+                <div class="tarjeta-miembro"><img src={ferb} alt="Fernando" class="foto-cuadrada" /><h2 class="nombre-miembro">Fernando</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
                 <div class="tarjeta-miembro"><img src={cuadro} alt="Homero" class="foto-cuadrada" /><h2 class="nombre-miembro">Homero</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
                 <div class="tarjeta-miembro"><img src={cuadro} alt="Diego" class="foto-cuadrada" /><h2 class="nombre-miembro">Diego</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
                 <div class="tarjeta-miembro"><img src={cuadro} alt="Fernanda" class="foto-cuadrada" /><h2 class="nombre-miembro">Fernanda</h2><h3 class="rol-miembro">MIEMBRO</h3></div>
