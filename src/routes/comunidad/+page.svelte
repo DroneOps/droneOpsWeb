@@ -1,21 +1,59 @@
 <script lang="ts">
-	// Importación temporal única para simular todas las imágenes del equipo
-	import cuadro from '$lib/assets/cuadro.png';
+    // Estas fotos van a cambiar, pero así quedan de momento
+    import cuadro from '$lib/assets/cuadro.png';
     import lider from '$lib/assets/theLida.jfif';
-    import grupo from '$lib/assets/DJI_D_RIRO.JPG.jpeg'
+    import rodrigo from '$lib/assets/rodrigo.jfif';
+    import ricky from '$lib/assets/ricky.png';
+    import carlos from '$lib/assets/carlos.jpeg';
+    import chewin from '$lib/assets/chewin.png';
+    import alexin from '$lib/assets/alexin.png';
+    import omar from '$lib/assets/omar.png';
+    import yaya from '$lib/assets/mariana.jfif';
+    import manu from '$lib/assets/Manu.jfif';
+    import vic from '$lib/assets/victor.jfif';
+    import ferb from '$lib/assets/ferb.jpeg';
+    import kevin from '$lib/assets/kevin.jpeg'
+
+    type Persona = { nombre: string; rol: string; foto: string; instagram?: string };
+
+    // Orden: refundadores, mentor en doctorado, laboratorista y colaborador
+    const mentores: Persona[] = [
+        { nombre: 'Manuel', rol: 'MENTOR Y REFUNDADOR', foto: manu },
+        { nombre: 'Edwin', rol: 'MENTOR Y REFUNDADOR', foto: chewin },
+        { nombre: 'Kevin', rol: 'MENTOR Y DOCTORANTE', foto: kevin },
+        { nombre: 'Victor', rol: 'LABORATORISTA Y COLABORADOR', foto: vic }
+    ];
+
+    const directiva: Persona[] = [
+        { nombre: 'Rodrigo Reveles', rol: 'PRESIDENTE', foto: rodrigo, instagram: 'rodrigo_vvvvv' },
+        { nombre: 'Carlos Lopez', rol: 'VICEPRESIDENTE', foto: carlos, instagram: 'elcharlie226' },
+        { nombre: 'Alejandro Díaz', rol: 'FINANZAS', foto: alexin },
+        { nombre: 'Ricardo González', rol: 'LOGÍSTICA Y OP.', foto: ricky, instagram: 'rickster_2004' },
+        { nombre: 'Mariana Martínez', rol: 'IMAGEN', foto: yaya, instagram: 'llaya_06' },
+        { nombre: 'Omar Verduzco', rol: 'RRHH', foto: omar, instagram: 'overduzc_0003' }
+    ];
+
+    const miembros: Persona[] = [
+        { nombre: 'Juan Carlos', rol: 'MIEMBRO', foto: cuadro },
+        { nombre: 'Marco', rol: 'MIEMBRO', foto: cuadro },
+        { nombre: 'Juan Pablo', rol: 'MIEMBRO', foto: cuadro },
+        { nombre: 'Fernando', rol: 'MIEMBRO', foto: ferb },
+        { nombre: 'Homero', rol: 'MIEMBRO', foto: cuadro },
+        { nombre: 'Diego', rol: 'MIEMBRO', foto: cuadro },
+        { nombre: 'Fernanda', rol: 'MIEMBRO', foto: cuadro },
+        { nombre: 'Pablo', rol: 'MIEMBRO', foto: cuadro },
+        { nombre: 'Mariana', rol: 'MIEMBRO', foto: cuadro },
+        { nombre: 'Miguel', rol: 'MIEMBRO', foto: cuadro }
+    ];
 </script>
 
 <div class="pagina-comunidad">
-	<div class="Framework-equipo">
-		<!-- Título Principal -->
-		<h1 class="Meet">MEET THE TEAM</h1>
-		<hr class="separador" />
+    <div class="contenedor">
+        <h1 class="titulo-principal">Conoce el equipo</h1>
 
-		<!-- 1. SECCIÓN LÍDER / ASESOR (Hernán Abaunza) -->
-		<section class="seccion-lider">
-			<div class="foto-lider-container">
-				<img src={lider} alt="Dr. Hernán Abaunza González" class="foto-lider" />
-			</div>
+        <!-- 1. LÍDER -->
+        <section class="seccion-lider">
+            <img src={lider} alt="Dr. Hernán Abaunza González" class="foto-lider" />
 
 			<div class="info-lider">
 				<h2 class="nombre-lider">Hernán Abaunza González</h2>
@@ -33,397 +71,265 @@
 				</div>
 			</div>
 		</section>
+            <div class="info-lider">
+                <h2 class="nombre-lider">Hernán Abaunza-González</h2>
+                <p class="rol-lider">Líder</p>
+                <div class="bio-lider">
+                    <p>
+                        El Dr. Hernán Abaunza González es Ingeniero en Mecatrónica por el Tecnológico de Monterrey (2012), Maestro en Ciencias por el CINVESTAV-IPN (2014) y Doctor en Robótica y Automatización por la <em>Université de Technologie de Compiègne</em> en Francia (2019).
+                    </p>
+                    <p>
+                        Cuenta con trayectoria de investigación internacional en instituciones europeas como la UTC e Institut Pascal (Francia) y FADA-CATEC (España). Sus líneas de investigación se especializan en el control de vuelo ágil, la navegación autónoma, la generación de trayectorias y el vuelo en formación para flotas de drones, con múltiples publicaciones científicas en revistas y conferencias internacionales.
+                    </p>
+                    <p>
+                        Desde 2021 es Profesor de Tiempo Completo y Director del programa de Ingeniería en Robótica y Sistemas Digitales (IRS) en el Tecnológico de Monterrey, Campus Guadalajara, además de ser miembro del Sistema Nacional de Investigadores (SNI-1) en México.
+                    </p>
+                </div>
+            </div>
+        </section>
 
-		<hr class="separador" />
+        <hr class="separador" />
 
-		<!-- 2. SECCIÓN MENTORES -->
-		<section class="seccion-mentores">
-			<h2 class="titulo-seccion">Mentores</h2>
-			<div class="grid-mentores">
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Mentor 1" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Kevin</h2>
-					<h3 class="rol-miembro">MENTOR</h3>
-				</div>
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Mentor 2" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Victor</h2>
-					<h3 class="rol-miembro">MENTOR</h3>
-				</div>
-			</div>
-		</section>
+        <!-- 2. MENTORES -->
+        <section>
+            <h2 class="titulo-seccion">Mentores</h2>
+            <div class="grid grid-4">
+                {#each mentores as p}
+                    <article class="tarjeta">
+                        <img src={p.foto} alt={`${p.nombre}, ${p.rol.toLowerCase()}`} class="foto" />
+                        <h3 class="nombre">{p.nombre}</h3>
+                        <p class="rol">{p.rol}</p>
+                    </article>
+                {/each}
+            </div>
+        </section>
 
-		<hr class="separador" />
+        <hr class="separador" />
 
-		<!-- 3. SECCIÓN MESA DIRECTIVA Y FOTO DE GRUPO -->
-		<section class="seccion-directiva">
-			<div class="grid-directiva">
-				<!-- Foto principal del equipo (Ocupa 2 columnas) -->
-				<div class="tarjeta-grupo">
-					<img src={grupo} alt="Equipo Principal" class="foto-grupo" />
-				</div>
+        <!-- 3. MESA DIRECTIVA -->
+        <section>
+            <h2 class="titulo-seccion">Mesa directiva</h2>
+            <div class="grid grid-3">
+                {#each directiva as p}
+                    <article class="tarjeta">
+                        <img src={p.foto} alt={p.nombre} class="foto" />
+                        <h3 class="nombre">{p.nombre}</h3>
+                        <p class="rol">{p.rol}</p>
+                        {#if p.instagram}
+                            <a
+                                href={`https://instagram.com/${p.instagram}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="redes"
+                            >
+                                <svg class="ig-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                                    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                                </svg>
+                                <span>@{p.instagram}</span>
+                            </a>
+                        {/if}
+                    </article>
+                {/each}
+            </div>
+        </section>
 
-				<!-- Presidente -->
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Rodrigo Reveles" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Rodrigo Reveles</h2>
-					<h3 class="rol-miembro">PRESIDENTE</h3>
-					<a href="https://instagram.com/rodrigo_vvvvv" target="_blank" rel="noopener noreferrer" class="Redes">
-						<svg class="ig-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-							<path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-							<line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-						</svg>
-						<span>@rodrigo_vvvvv</span>
-					</a>
-				</div>
+        <hr class="separador" />
 
-				<!-- Vicepresidente -->
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Alejandro Mojarras" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Alejandro Mojarras</h2>
-					<h3 class="rol-miembro">VICEPRESIDENTE</h3>
-					<a href="https://instagram.com/alejandro_mojarras" target="_blank" rel="noopener noreferrer" class="Redes">
-						<svg class="ig-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-							<path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-							<line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-						</svg>
-						<span>@alejandro_mojarras</span>
-					</a>
-				</div>
-
-				<!-- Finanzas -->
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Carlos Lopez" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Carlos Lopez</h2>
-					<h3 class="rol-miembro">FINANZAS</h3>
-					<a href="https://instagram.com/elcharlie226" target="_blank" rel="noopener noreferrer" class="Redes">
-						<svg class="ig-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-							<path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-							<line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-						</svg>
-						<span>@elcharlie226</span>
-					</a>
-				</div>
-
-				<!-- Logística y Operaciones -->
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Ricardo González" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Ricardo González</h2>
-					<h3 class="rol-miembro">LOGÍSTICA Y OPERACIONES</h3>
-					<a href="https://instagram.com/rickster_2004" target="_blank" rel="noopener noreferrer" class="Redes">
-						<svg class="ig-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-							<path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-							<line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-						</svg>
-						<span>@rickster_2004</span>
-					</a>
-				</div>
-
-				<!-- Imagen -->
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Mariana Martínez" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Mariana Martínez</h2>
-					<h3 class="rol-miembro">IMAGEN</h3>
-					<a href="https://instagram.com/llaya_06" target="_blank" rel="noopener noreferrer" class="Redes">
-						<svg class="ig-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-							<path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-							<line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-						</svg>
-						<span>@llaya_06</span>
-					</a>
-				</div>
-
-				<!-- Recursos Humanos -->
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Omar Verduzco" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Omar Verduzco</h2>
-					<h3 class="rol-miembro">RECURSOS HUMANOS</h3>
-					<a href="https://instagram.com/overduzc_0003" target="_blank" rel="noopener noreferrer" class="Redes">
-						<svg class="ig-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-							<path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-							<line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-						</svg>
-						<span>@overduzc_0003</span>
-					</a>
-				</div>
-			</div>
-		</section>
-
-		<hr class="separador" />
-
-		<!-- 4. NUEVOS MIEMBROS -->
-		<section class="seccion-miembros">
-			<div class="grid-miembros">
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Juan Carlos" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Juan Carlos</h2>
-					<h3 class="rol-miembro">MIEMBRO</h3>
-				</div>
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Alejandro" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Alejandro</h2>
-					<h3 class="rol-miembro">MIEMBRO</h3>
-				</div>
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Juan Pablo" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Juan Pablo</h2>
-					<h3 class="rol-miembro">MIEMBRO</h3>
-				</div>
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Fernando" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Fernando</h2>
-					<h3 class="rol-miembro">MIEMBRO</h3>
-				</div>
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Homero" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Homero</h2>
-					<h3 class="rol-miembro">MIEMBRO</h3>
-				</div>
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Diego" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Diego</h2>
-					<h3 class="rol-miembro">MIEMBRO</h3>
-				</div>
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Fernanda" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Fernanda</h2>
-					<h3 class="rol-miembro">MIEMBRO</h3>
-				</div>
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Aaron" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Aaron</h2>
-					<h3 class="rol-miembro">MIEMBRO</h3>
-				</div>
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Mariana" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Mariana</h2>
-					<h3 class="rol-miembro">MIEMBRO</h3>
-				</div>
-				<div class="tarjeta-miembro">
-					<img src={cuadro} alt="Miguel" class="foto-cuadrada" />
-					<h2 class="nombre-miembro">Miguel</h2>
-					<h3 class="rol-miembro">MIEMBRO</h3>
-				</div>
-			</div>
-		</section>
-	</div>
+        <!-- 4. MIEMBROS -->
+        <section>
+            <h2 class="titulo-seccion">Miembros</h2>
+            <div class="grid grid-5">
+                {#each miembros as p}
+                    <article class="tarjeta">
+                        <img src={p.foto} alt={p.nombre} class="foto" />
+                        <h3 class="nombre">{p.nombre}</h3>
+                        <p class="rol">{p.rol}</p>
+                    </article>
+                {/each}
+            </div>
+        </section>
+    </div>
 </div>
 
 <style>
-	/* Importación de Kite One desde Google Fonts */
-	@import url('https://fonts.googleapis.com/css2?family=Kite+One&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Kite+One&display=swap');
 
-	/* Aplicación global de Kite One para toda la comunidad */
-	.pagina-comunidad,
-	.pagina-comunidad * {
-		font-family: 'Kite One', sans-serif;
-	}
+    .pagina-comunidad,
+    .pagina-comunidad * {
+        font-family: 'Kite One', sans-serif;
+        box-sizing: border-box;
+    }
 
-	.pagina-comunidad {
-		background-color: #ffffff;
-		color: #1a1a1a;
-		width: 100%;
-	}
+    .pagina-comunidad {
+        background-color: #ffffff;
+        color: #1a1a1a;
+        width: 100%;
+    }
 
-	.Framework-equipo {
-		padding: 30px 40px;
-		max-width: 1440px;
-		margin: 0 auto;
-	}
+    .contenedor {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 40px 40px 80px;
+    }
 
-	/* Títulos de sección */
-	.Meet {
-		font-size: 48px;
-		font-weight: 400;
-		color: #1a1a1a;
-		margin-bottom: 20px;
-	}
+    h1, h2, h3, p {
+        margin: 0;
+        font-weight: 400;
+    }
 
-	.titulo-seccion {
-		font-size: 32px;
-		font-weight: 400;
-		color: #1a1a1a;
-		text-align: center;
-		margin-bottom: 24px;
-	}
+    /* Títulos */
+    .titulo-principal {
+        font-size: 36px;
+        margin-bottom: 24px;
+    }
 
-	.separador {
-		border: none;
-		border-top: 1px solid #1a1a1a;
-		margin: 35px 0;
-	}
+    .titulo-seccion {
+        font-size: 26px;
+        text-align: center;
+        margin-bottom: 24px;
+    }
 
-	/* 1. SECCIÓN LÍDER */
-	.seccion-lider {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 40px;
-		align-items: start;
-	}
+    .separador {
+        border: none;
+        border-top: 3px solid #e0e0e0;
+        margin: 48px 0;
+    }
 
-	.foto-lider {
-		width: 100%;
-		aspect-ratio: 1 / 1;
-		object-fit: cover;
-		background-color: #d1d1d1;
-		display: block;
-	}
+    /* Líder */
+    .seccion-lider {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 40px;
+        align-items: center;
+    }
 
-	.info-lider {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-		padding-top: 10px;
-	}
+    .foto-lider {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 8px;
+        background-color: #f0f0f0;
+    }
 
-	.nombre-lider {
-		font-size: 32px;
-		font-weight: 400;
-		color: #1a1a1a;
-		margin: 0;
-		text-align: center;
-	}
+    .info-lider {
+        text-align: center;
+    }
 
-	.rol-lider {
-		font-size: 16px;
-		font-weight: 400;
-		color: #333333;
-		margin: 10px 0 24px 0;
-		text-align: center;
-	}
+    .nombre-lider {
+        font-size: 30px;
+    }
 
-	.bio-lider {
-		font-size: 16px;
-		color: #1a1a1a;
-		line-height: 1.5;
-		text-align: center;
-		max-width: 92%;
-	}
+    .rol-lider {
+        font-size: 15px;
+        color: #666;
+        margin: 6px 0 18px;
+    }
 
-	.bio-lider p {
-		margin: 0 0 20px 0;
-	}
+    .bio-lider {
+        font-size: 16px;
+        color: #333;
+        line-height: 1.6;
+    }
 
-	/* 2. SECCIÓN MENTORES */
-	.grid-mentores {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 30px;
-	}
+    .bio-lider p + p {
+        margin-top: 12px;
+    }
 
-	/* 3. MESA DIRECTIVA */
-	.grid-directiva {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 30px;
-	}
+    /* Grids */
+    .grid {
+        display: grid;
+        gap: 24px;
+    }
 
-	.tarjeta-grupo {
-		grid-column: span 2;
-	}
+    .grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
 
-	.foto-grupo {
-		width: 100%;
-		height: 100%;
-		min-height: 250px;
-		object-fit: cover;
-		background-color: #d1d1d1;
-		display: block;
-	}
+    .grid-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
 
-	/* 4. NUEVOS MIEMBROS */
-	.grid-miembros {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 30px;
-	}
+    .grid-5 {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+    }
 
-	/* Tarjeta individual reutilizable para mentores y miembros */
-	.tarjeta-miembro {
-		display: flex;
-		flex-direction: column;
-	}
+    /* Tarjetas */
+    .tarjeta {
+        display: flex;
+        flex-direction: column;
+    }
 
-	.foto-cuadrada {
-		width: 100%;
-		aspect-ratio: 1 / 1;
-		object-fit: cover;
-		background-color: #d1d1d1;
-		display: block;
-	}
+    .foto {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 8px;
+        background-color: #f0f0f0;
+    }
 
-	.nombre-miembro {
-		font-size: 22px;
-		font-weight: 400;
-		color: #1a1a1a;
-		margin: 10px 0 0 0;
-	}
+    .nombre {
+        font-size: 18px;
+        margin-top: 10px;
+    }
 
-	.rol-miembro {
-		font-size: 11px;
-		font-weight: 400;
-		color: #444;
-		margin: 3px 0 0 0;
-		text-transform: uppercase;
-	}
+    .rol {
+        font-size: 12px;
+        color: #666;
+        margin-top: 2px;
+        letter-spacing: 0.5px;
+    }
 
-	.Redes {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		font-size: 12px;
-		color: #666;
-		margin-top: 4px;
-		text-decoration: none;
-		transition: color 0.2s ease;
-	}
+    .redes {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        align-self: flex-start;
+        font-size: 12px;
+        color: #888;
+        margin-top: 6px;
+        text-decoration: none;
+    }
 
-	.Redes:hover {
-		color: #e1306c;
-	}
+    .redes:hover,
+    .redes:focus-visible {
+        color: #e1306c;
+    }
 
-	.ig-icon {
-		width: 14px;
-		height: 14px;
-	}
+    .ig-icon {
+        width: 13px;
+        height: 13px;
+    }
 
-    /* Centra los sobrantes (elemento 9 y 10) al iniciar el noveno en la 2da columna */
-	.grid-miembros > .tarjeta-miembro:nth-child(9) {
-		grid-column-start: 2;
-	}
+    /* Responsivo */
+    @media (max-width: 900px) {
+        .contenedor {
+            padding: 28px 20px 60px;
+        }
 
-	/* RESPONSIVE */
-	@media (max-width: 900px) {
-		.Framework-equipo {
-			padding: 20px;
-		}
+        .seccion-lider {
+            grid-template-columns: 1fr;
+        }
 
-		.seccion-lider {
-			grid-template-columns: 1fr;
-			gap: 20px;
-		}
+        .foto-lider {
+            max-width: 380px;
+            margin: 0 auto;
+        }
 
-		.grid-directiva,
-		.grid-miembros,
-		.grid-mentores {
-			grid-template-columns: repeat(2, 1fr);
-		}
+        .grid-4,
+        .grid-5 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
 
-		.tarjeta-grupo {
-			grid-column: span 2;
-		}
-	}
-
-	@media (max-width: 600px) {
-		.grid-mentores {
-			grid-template-columns: 1fr;
-		}
-	}
+    @media (max-width: 600px) {
+        .grid-3,
+        .grid-4,
+        .grid-5 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
 </style>

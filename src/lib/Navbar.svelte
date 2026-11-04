@@ -96,12 +96,14 @@
     <div class="nav-links" class:abierto={menuAbierto}>
         <a href="/" on:click={() => menuAbierto = false}>Inicio</a>
         <a href="/#objetivo" on:click={() => menuAbierto = false}>Objetivo</a>
+        <a href="/galeria" on:click={() => menuAbierto = false}>Galería</a>
         <a href="/unete" on:click={() => menuAbierto = false}>Unirse</a>
         
         <!--Muestra la seccion si el usuario ha iniciado sesion-->
         {#if user}
             <a href="/por-hacer" on:click={() => menuAbierto = false}>Por hacer</a>
             <a href="/inventario" on:click={() => menuAbierto = false}>Inventario</a>
+            <a href="/docs/" data-sveltekit-reload on:click={() => menuAbierto = false}>Docs</a>
         {/if}
         
         <a href="/comunidad" on:click={() => menuAbierto = false}>Comunidad</a>
