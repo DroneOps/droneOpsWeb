@@ -168,7 +168,7 @@
 
 				<!-- Descripción -->
 				<p class="text-base sm:text-lg text-slate-600 max-w-xl xl:max-w-[60%] leading-relaxed">
-					Somos un equipo apasionado por la tecnología robótica, la innovación y la captura de datos desde las alturas. Diseñamos, operamos y optimizamos soluciones con drones para llevar cualquier proyecto al siguiente nivel.
+					Somos un equipo apasionado por la creacion de drones, la Investigación y participar en competencias. Diseñamos y fabricamos nuestros propios diseños, a su vez que su codigo, llevando la creacion de drones a otro nivel.
 				</p>
 
 				<!-- Botones -->
