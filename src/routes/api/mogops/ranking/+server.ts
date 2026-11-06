@@ -27,6 +27,10 @@ const TOP = 20;
 const MAX_NOMBRE = 24;
 const MAX_FOTO = 120_000; // caracteres del data URL (~90 KB de JPEG)
 const ANONIMO = 'Anónimo';
+// Inicio del ranking actual. Lo registrado antes no se muestra ni cuenta como récord
+// (eran puntuaciones de antes de la curva de dificultad). Esas filas no se borran
+// aquí: siguen en la tabla hasta que expiren.
+const RANKING_DESDE = '2026-11-06T04:00:00Z';
 
 type Fila = {
 	dispositivo: string;
@@ -60,13 +64,16 @@ function almacenSupabase(llave: string): Almacen {
 					.from(TABLA)
 					.select('*')
 					.gt('expira_en', new Date().toISOString())
+					.gte('registrado_en', RANKING_DESDE)
 					.order('puntuacion', { ascending: false })
 					.order('registrado_en', { ascending: true })
 					.limit(TOP)
 			) as Fila[];
 		},
 		async buscar(dispositivo) {
-			return revisar(await db.from(TABLA).select('*').eq('dispositivo', dispositivo).maybeSingle()) as Fila | null;
+			return revisar(
+				await db.from(TABLA).select('*').eq('dispositivo', dispositivo).gte('registrado_en', RANKING_DESDE).maybeSingle()
+			) as Fila | null;
 		},
 		async guardar(fila) {
 			revisar(await db.from(TABLA).upsert(fila, { onConflict: 'dispositivo' }));
