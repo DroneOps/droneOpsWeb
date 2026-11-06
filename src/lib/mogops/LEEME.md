@@ -178,8 +178,11 @@ nada (+0.03 en promedio). Detalles en [expressions.ts](expressions.ts).
   luego continúa donde iba. Antes de la batalla no se activa.
 - **Ceja levantada.** Cada ceja levantada hace sonar `vine-boom.mp3` y muestra la imagen de The Rock arriba a
   la izquierda durante un segundo. Funciona en cualquier fase.
-- **Silencio al terminar.** Los sonidos siguen un máximo de 10 segundos después de acabar la batalla, y no
-  vuelven hasta la siguiente partida. La imagen de Gigachad se queda.
+- **Silencio al terminar.** Los sonidos siguen un máximo de 15 segundos después de acabar la batalla, lo mismo que
+  el plazo del nombre en Modo Arcade, y no vuelven hasta la siguiente partida. La imagen de Gigachad se queda.
+- **Tarjeta 3D (solo escritorio).** La calificación flota sobre la cabeza en una tarjeta con grosor, que sigue la
+  posición, la inclinación, el giro y la distancia de la cara en cada cuadro ([tarjeta3d.ts](tarjeta3d.ts)). En la
+  pantalla final queda fija sobre la cara congelada. No aparece en celulares.
 - **Puntos faciales.** Botón para dibujar los 478 puntos sobre la vista previa.
 
 El detector de ceja compara la altura de cada ceja (sobre las esquinas de los ojos, dividida entre la distancia
@@ -234,6 +237,7 @@ src/routes/api/mogops/arcade/+server.ts   Desbloquea y bloquea el Modo Arcade (G
 src/lib/mogops/
   analysis.ts             Bucle de la cámara: landmarks -> pose -> geometría, PSL, bonos; detecta la ceja
   curva.ts                Curva de dificultad arriba de 8
+  tarjeta3d.ts            Posición y giro de la tarjeta 3D a partir de los puntos de la cara
   arcade.server.ts        Hash de la contraseña y cookie firmada del Modo Arcade (solo servidor)
   competencia.svelte.ts   Fases de la competencia, promedio ponderado por tiempo y escala de colores
   landmarker.ts           Carga MediaPipe Face Landmarker (modo VIDEO, GPU con respaldo en CPU)
@@ -368,7 +372,7 @@ traducidos al español: `geometry.ts`, `psl.ts`, `display.ts`, `pose.ts`, `expre
 sus comentarios se refieren a ese repo. Si allá se reentrenan los modelos, vuelve a copiar `model-params.json`
 y los archivos que hayan cambiado.
 
-Solo existen en esta web: `analysis.ts`, `competencia.svelte.ts`, `curva.ts`, `arcade.server.ts`, `landmarker.ts`,
+Solo existen en esta web: `analysis.ts`, `competencia.svelte.ts`, `curva.ts`, `tarjeta3d.ts`, `arcade.server.ts`, `landmarker.ts`,
 `sounds.ts` y `ranking.sql`. `expressions.ts` tiene aquí dos nombres propios ("Ceja levantada" y "Cachetes hundidos").
 
 Para probar el juego sin cámara (por ejemplo en un navegador de pruebas), se puede reemplazar

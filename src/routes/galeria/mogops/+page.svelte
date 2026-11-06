@@ -9,8 +9,9 @@
 	import { colorPuntuacion, Competencia } from '$lib/mogops/competencia.svelte';
 	import { aplicarCurva, DIFICULTAD_MAX, DIFICULTAD_MIN, quitarCurva } from '$lib/mogops/curva';
 	import { percentileOf, pslFromScore, pslTier } from '$lib/mogops/display';
-	import { countsInOverall, GEOMETRY_ACCURACY, METRIC_KEYS, TRAITS, traitWeight } from '$lib/mogops/geometry';
+	import { countsInOverall, GEOMETRY_ACCURACY, METRIC_KEYS, TRAITS, traitWeight, type Landmark } from '$lib/mogops/geometry';
 	import { createSounds, type Sounds } from '$lib/mogops/sounds';
+	import { poseTarjeta, type PoseTarjeta } from '$lib/mogops/tarjeta3d';
 
 	// Lee y guarda un ajuste en este navegador (puede estar bloqueado en modo privado)
 	function leerAjuste(clave: string, inicial: boolean): boolean {
@@ -51,9 +52,9 @@
 
 	// Modo competencia
 	const competencia = new Competencia();
-	const SONIDO_FINAL_MS = 10_000; // lo más que siguen los sonidos al terminar la batalla
 	const PANTALLA_FINAL_MS = 25_000; // tiempo de la cámara congelada en el mejor momento
 	const PLAZO_ARCADE_MS = 15_000; // tiempo para escribir el nombre en Modo Arcade
+	const SONIDO_FINAL_MS = PLAZO_ARCADE_MS; // lo más que siguen los sonidos al terminar la batalla
 	const FIJOS_ARCADE = 3; // primeros lugares que no se mueven en Modo Arcade
 	const MAX_ARCADE = 15; // último lugar que muestra el carrusel
 	const SEGUNDOS_POR_FILA = 3; // velocidad del carrusel
@@ -61,6 +62,7 @@
 	const MARGEN_TROFEO = 0.16; // 16% alrededor de la cara
 	let lienzoMejor: HTMLCanvasElement | null = null; // cuadro completo de la mejor calificación; no sale del navegador
 	let recorteMejor = { x: 0, y: 0, ancho: 0, alto: 0 }; // dónde está la cara en ese cuadro
+	let puntosMejor: Landmark[] | null = null; // los puntos de la cara en ese cuadro
 	let fotoMejor = $state<string | null>(null);
 	let fotoTrofeo = $state<string | null>(null);
 	let pantallaFinal = $state(false);
@@ -93,6 +95,9 @@
 	// Elementos del DOM
 	let video = $state<HTMLVideoElement>();
 	let lienzo = $state<HTMLCanvasElement>();
+	let cajaCamara = $state<HTMLDivElement>();
+	let tarjeta = $state<HTMLDivElement>();
+	let poseSuave: PoseTarjeta | null = null;
 
 	// El analizador se crea solo en el navegador (MediaPipe no corre en el servidor)
 	let analizador = $state<FaceAnalyzer | null>(null);
@@ -171,6 +176,7 @@
 					for (const p of landmarks) ctx.fillRect(p.x * width - r / 2, p.y * height - r / 2, r, r);
 				}
 			}
+			moverTarjeta(landmarks, width, height);
 			raf = requestAnimationFrame(dibujar);
 		};
 		raf = requestAnimationFrame(dibujar);
@@ -192,7 +198,7 @@
 		sonidos?.setMusic(gigachad && !silencio);
 	});
 
-	// Al terminar la batalla los sonidos siguen un máximo de 10 segundos, hasta la siguiente partida
+	// Al terminar la batalla los sonidos siguen lo mismo que el plazo del nombre, hasta la siguiente partida
 	$effect(() => {
 		if (competencia.fase !== 'final') {
 			silencio = false;
@@ -270,6 +276,35 @@
 		lienzoMejor.height = h;
 		lienzoMejor.getContext('2d')!.drawImage(video, 0, 0, w, h);
 		recorteMejor = { x: x0, y: y0, ancho: x1 - x0, alto: y1 - y0 };
+		puntosMejor = landmarks;
+	}
+
+	// Lleva la tarjeta 3D sobre la cabeza; en la pantalla final se queda sobre la cara congelada.
+	// Se escribe directo en el estilo porque corre en cada cuadro.
+	function moverTarjeta(landmarks: Landmark[] | null, width: number, height: number) {
+		if (!tarjeta || !cajaCamara) return;
+		const puntos = pantallaFinal ? puntosMejor : landmarks;
+		if (!puntos || !width || !height) {
+			tarjeta.style.opacity = '0';
+			poseSuave = null;
+			return;
+		}
+		const nueva = poseTarjeta(puntos, width, height, cajaCamara.clientWidth, cajaCamara.clientHeight);
+		const anterior = poseSuave ?? nueva;
+		const mezclar = (a: number, b: number) => a + (b - a) * 0.35;
+		const pose: PoseTarjeta = {
+			x: mezclar(anterior.x, nueva.x),
+			y: mezclar(anterior.y, nueva.y),
+			roll: mezclar(anterior.roll, nueva.roll),
+			yaw: mezclar(anterior.yaw, nueva.yaw),
+			pitch: mezclar(anterior.pitch, nueva.pitch),
+			escala: mezclar(anterior.escala, nueva.escala)
+		};
+		poseSuave = pose;
+		const escala = Math.min(1.5, Math.max(0.7, pose.escala / 300));
+		const y = Math.max(tarjeta.offsetHeight * escala + 12, pose.y); // que no se salga por arriba
+		tarjeta.style.opacity = '1';
+		tarjeta.style.transform = `translate(${pose.x}px, ${y}px) translate(-50%, -100%) rotateZ(${pose.roll}deg) rotateY(${pose.yaw}deg) rotateX(${pose.pitch}deg) scale(${escala})`;
 	}
 
 	// Recorta la cara y la reduce a lo que se publica, en espejo como la vista previa
@@ -506,7 +541,10 @@
 	>
 		<div class="contents lg:row-span-2 lg:flex lg:min-h-0 lg:flex-col lg:gap-3">
 			<!-- Cámara -->
-			<div class="relative order-1 flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-2xl bg-slate-950 sm:aspect-[4/3] lg:order-none lg:aspect-auto lg:min-h-0 lg:flex-1">
+			<div
+				bind:this={cajaCamara}
+				class="relative order-1 flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-2xl bg-slate-950 [perspective:900px] sm:aspect-[4/3] lg:order-none lg:aspect-auto lg:min-h-0 lg:flex-1"
+			>
 				<video bind:this={video} playsinline muted class="absolute inset-0 h-full w-full object-cover -scale-x-100"></video>
 				<canvas
 					bind:this={lienzo}
@@ -539,6 +577,25 @@
 					>
 						Iniciar
 					</button>
+				{/if}
+
+				<!-- Tarjeta 3D sobre la cabeza, solo en escritorio -->
+				{#if camaraActiva}
+					<div bind:this={tarjeta} class="tarjeta3d pointer-events-none absolute left-0 top-0 hidden lg:block" style="opacity: 0">
+						<div class="tarjeta-flota">
+							{#each [5, 4, 3, 2, 1] as capa (capa)}
+								<div class="tarjeta-capa" style="transform: translateZ({-capa * 2.5}px)"></div>
+							{/each}
+							<div class="tarjeta-cara">
+								<span class="font-mono text-5xl font-extrabold leading-none tabular-nums tracking-tight {conPromedio ? colorPuntuacion(numero) : 'text-slate-400'}">
+									{numero === null ? '0.0' : numero.toFixed(1)}
+								</span>
+								{#if numero !== null}
+									<span class="mt-1 text-[10px] font-bold uppercase tracking-wider text-purple-700">{pslTier(pslFromScore(quitarCurva(numero, dificultad)))}</span>
+								{/if}
+							</div>
+						</div>
+					</div>
 				{/if}
 
 				<!-- Calificación sobre la cámara, solo en el celular -->
@@ -992,6 +1049,52 @@
 		}
 		to {
 			transform: scale(1);
+		}
+	}
+
+	/* Tarjeta 3D: la cara va al frente y las capas de atrás le dan grosor */
+	.tarjeta3d {
+		transform-origin: bottom center;
+		transform-style: preserve-3d;
+		will-change: transform;
+	}
+
+	.tarjeta-flota {
+		position: relative;
+		transform-style: preserve-3d;
+		animation: flotar 3s ease-in-out infinite;
+	}
+
+	.tarjeta-cara,
+	.tarjeta-capa {
+		border-radius: 18px;
+	}
+
+	.tarjeta-cara {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		min-width: 150px;
+		padding: 14px 22px 12px;
+		background: linear-gradient(145deg, rgba(255, 255, 255, 0.97), rgba(243, 232, 255, 0.92));
+		border: 2px solid #c084fc;
+		box-shadow: 0 18px 30px rgba(15, 23, 42, 0.45);
+		transform: translateZ(0);
+	}
+
+	.tarjeta-capa {
+		position: absolute;
+		inset: 0;
+		background: #7c3aed;
+	}
+
+	@keyframes flotar {
+		0%,
+		100% {
+			transform: translateY(0) rotateX(4deg);
+		}
+		50% {
+			transform: translateY(-10px) rotateX(-4deg);
 		}
 	}
 
