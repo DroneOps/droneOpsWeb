@@ -172,7 +172,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	if (!Number.isFinite(puntuacion) || puntuacion < 0 || puntuacion > 10) {
 		return json({ error: 'Puntuación inválida' }, { status: 400 });
 	}
-	if (!foto.startsWith('data:image/jpeg;base64,') || foto.length > MAX_FOTO) {
+	// Sin foto se guarda la cadena vacía: la persona eligió no incluirla
+	if (foto && (!foto.startsWith('data:image/jpeg;base64,') || foto.length > MAX_FOTO)) {
 		return json({ error: 'Imagen inválida' }, { status: 400 });
 	}
 
