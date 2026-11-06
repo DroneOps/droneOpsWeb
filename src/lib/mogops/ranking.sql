@@ -2,7 +2,9 @@
 -- Tabla del ranking semanal de MogOps (modo competencia).
 -- Ejecutar una sola vez en Supabase: SQL Editor > New query > Run.
 --
--- Una fila por dispositivo con su mejor puntuación. Cada fila expira 7 días
+-- Una fila por dispositivo con su mejor puntuación. En Modo Arcade cada intento
+-- es una fila con un uuid nuevo en la columna dispositivo y, si no hay nombre,
+-- 'Anónimo' (la tabla no cambia). Cada fila expira 7 días
 -- después de registrarse; la API (src/routes/api/mogops/ranking) borra las
 -- vencidas en cada petición y nunca las muestra.
 

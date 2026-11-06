@@ -5,6 +5,7 @@
 //   (+ ventana de 30 cuadros en cámara) -> ratios "PSL" -> bonos de
 //   expresión del modo meme. En cámara también detecta una ceja levantada.
 // Es el equivalente de web/src/lib/useFaceAnalysis.ts del repo MogOps, sin React.
+import { aplicarCurva } from "./curva";
 import { BlendshapeSmoother, type BonusState, scoreBonuses, withBonus } from "./expressions";
 import { EyebrowDetector } from "./eyebrow";
 import {
@@ -63,11 +64,12 @@ export const EMPTY: Analysis = {
 export const MOG_THRESHOLD = 8.0;
 const UI_INTERVAL_MS = 100;
 
-/** El número grande: el motor elegido, más los bonos si el modo meme está activo. */
-export function headlineScore(a: Analysis, engine: Engine, meme: boolean): number | null {
+/** El número grande: el motor elegido, más los bonos si el modo meme está activo. En geometría pasa por la curva de dificultad. */
+export function headlineScore(a: Analysis, engine: Engine, meme: boolean, dificultad: number): number | null {
   const base = a[engine];
   if (base === null) return null;
-  return meme && a.bonus ? withBonus(base, a.bonus.total) : base;
+  const bonus = meme && a.bonus ? a.bonus.total : 0;
+  return engine === "geometry" ? aplicarCurva(base + bonus, dificultad) : withBonus(base, bonus);
 }
 
 const sourceWidth = (v: HTMLVideoElement) => v.videoWidth;
