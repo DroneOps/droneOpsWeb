@@ -52,14 +52,18 @@
 	// Modo competencia
 	const competencia = new Competencia();
 	const SONIDO_FINAL_MS = 10_000; // lo más que siguen los sonidos al terminar la batalla
+	const PANTALLA_FINAL_MS = 25_000; // tiempo de la cámara congelada en el mejor momento
 	const PLAZO_ARCADE_MS = 15_000; // tiempo para escribir el nombre en Modo Arcade
 	const FIJOS_ARCADE = 3; // primeros lugares que no se mueven en Modo Arcade
 	const MAX_ARCADE = 15; // último lugar que muestra el carrusel
 	const SEGUNDOS_POR_FILA = 3; // velocidad del carrusel
 	const TROFEO_PX = 256; // lado mayor de la foto del trofeo
 	const MARGEN_TROFEO = 0.16; // 16% alrededor de la cara
-	let lienzoTrofeo: HTMLCanvasElement | null = null;
+	let lienzoMejor: HTMLCanvasElement | null = null; // cuadro completo de la mejor calificación; no sale del navegador
+	let recorteMejor = { x: 0, y: 0, ancho: 0, alto: 0 }; // dónde está la cara en ese cuadro
+	let fotoMejor = $state<string | null>(null);
 	let fotoTrofeo = $state<string | null>(null);
+	let pantallaFinal = $state(false);
 	let silencio = $state(false);
 
 	// Ranking semanal
@@ -126,7 +130,7 @@
 	onMount(() => {
 		mostrarPuntos = leerAjuste('mogops.puntos', false);
 		sonidos = createSounds();
-		lienzoTrofeo = document.createElement('canvas');
+		lienzoMejor = document.createElement('canvas');
 
 		const nuevo = new FaceAnalyzer(
 			(a) => {
@@ -205,11 +209,23 @@
 		return () => clearTimeout(espera);
 	});
 
-	// Al terminar la batalla, la mejor captura se convierte en la foto del trofeo
+	// Al terminar la batalla, la mejor captura se convierte en la pantalla final y en la foto del trofeo
 	$effect(() => {
-		if (competencia.fase === 'final' && competencia.mejor !== null && lienzoTrofeo && !fotoTrofeo) {
-			fotoTrofeo = lienzoTrofeo.toDataURL('image/jpeg', 0.85);
+		if (competencia.fase === 'final' && competencia.mejor !== null && lienzoMejor && !fotoTrofeo) {
+			fotoMejor = lienzoMejor.toDataURL('image/jpeg', 0.9);
+			fotoTrofeo = recortarTrofeo(lienzoMejor).toDataURL('image/jpeg', 0.85);
 		}
+	});
+
+	// La pantalla final dura 25 segundos o hasta la siguiente partida
+	$effect(() => {
+		if (!fotoMejor) {
+			pantallaFinal = false;
+			return;
+		}
+		pantallaFinal = true;
+		const espera = setTimeout(() => (pantallaFinal = false), PANTALLA_FINAL_MS);
+		return () => clearTimeout(espera);
 	});
 
 	// Enciende la cámara cuando el modelo está listo, y otra vez al cambiar de cámara.
@@ -239,10 +255,10 @@
 			});
 	});
 
-	// Copia la cara del cuadro actual (más un 16% alrededor), en espejo como la vista previa
+	// Guarda el cuadro actual y dónde está la cara (más un 16% alrededor)
 	function capturarTrofeo() {
 		const landmarks = analizador?.overlay.landmarks;
-		if (!video || !landmarks || !lienzoTrofeo) return;
+		if (!video || !landmarks || !lienzoMejor) return;
 		const w = video.videoWidth;
 		const h = video.videoHeight;
 		const xs = landmarks.map((p) => p.x * w);
@@ -250,12 +266,23 @@
 		let [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
 		const [mx, my] = [(x1 - x0) * MARGEN_TROFEO, (y1 - y0) * MARGEN_TROFEO];
 		[x0, x1, y0, y1] = [Math.max(0, x0 - mx), Math.min(w, x1 + mx), Math.max(0, y0 - my), Math.min(h, y1 + my)];
-		const escala = Math.min(1, TROFEO_PX / Math.max(x1 - x0, y1 - y0));
-		lienzoTrofeo.width = Math.round((x1 - x0) * escala);
-		lienzoTrofeo.height = Math.round((y1 - y0) * escala);
-		const ctx = lienzoTrofeo.getContext('2d')!;
-		ctx.setTransform(-1, 0, 0, 1, lienzoTrofeo.width, 0);
-		ctx.drawImage(video, x0, y0, x1 - x0, y1 - y0, 0, 0, lienzoTrofeo.width, lienzoTrofeo.height);
+		lienzoMejor.width = w;
+		lienzoMejor.height = h;
+		lienzoMejor.getContext('2d')!.drawImage(video, 0, 0, w, h);
+		recorteMejor = { x: x0, y: y0, ancho: x1 - x0, alto: y1 - y0 };
+	}
+
+	// Recorta la cara y la reduce a lo que se publica, en espejo como la vista previa
+	function recortarTrofeo(origen: HTMLCanvasElement): HTMLCanvasElement {
+		const { x, y, ancho, alto } = recorteMejor;
+		const escala = Math.min(1, TROFEO_PX / Math.max(ancho, alto));
+		const trofeo = document.createElement('canvas');
+		trofeo.width = Math.round(ancho * escala);
+		trofeo.height = Math.round(alto * escala);
+		const ctx = trofeo.getContext('2d')!;
+		ctx.setTransform(-1, 0, 0, 1, trofeo.width, 0);
+		ctx.drawImage(origen, x, y, ancho, alto, 0, 0, trofeo.width, trofeo.height);
+		return trofeo;
 	}
 
 	function iniciarCompetencia() {
@@ -267,6 +294,7 @@
 		if (arcade && puedeRegistrar && !enviando) enviarPuntuacion(); // en Arcade todo intento se guarda
 		partida++;
 		competencia.reiniciar();
+		fotoMejor = null;
 		fotoTrofeo = null;
 		registrado = false;
 		errorRegistro = null;
@@ -429,9 +457,10 @@
 {#snippet marcador(grande: string, chico: string)}
 	<!-- Gris y pequeño antes de la batalla; grande y con color al empezar el promedio -->
 	<div
-		class="font-mono font-extrabold leading-none tabular-nums tracking-tight transition-all duration-500 {conPromedio
+		class="font-mono font-extrabold leading-none tabular-nums tracking-tight transition-all duration-500 {pantallaFinal ? 'numero-final' : ''} {conPromedio
 			? `${grande} ${colorPuntuacion(numero)}`
 			: `${chico} text-slate-400`}"
+		style={pantallaFinal ? `animation-duration: ${PANTALLA_FINAL_MS}ms` : undefined}
 	>
 		{numero === null ? '0.0' : numero.toFixed(1)}
 	</div>
@@ -483,6 +512,11 @@
 					bind:this={lienzo}
 					class="pointer-events-none absolute inset-0 h-full w-full object-cover -scale-x-100"
 				></canvas>
+
+				<!-- Pantalla final: la cámara se queda congelada en el cuadro de la mejor calificación -->
+				{#if pantallaFinal}
+					<img src={fotoMejor} alt="" class="absolute inset-0 h-full w-full object-cover -scale-x-100" />
+				{/if}
 
 				{#if errorModelos}
 					<p class="absolute inset-x-6 text-center text-sm text-slate-400">No se pudieron cargar los modelos: {errorModelos}</p>
@@ -895,8 +929,8 @@
 			{#if abiertas.has(1)}
 				<div class="p-5 sm:p-8 pt-0 text-xs sm:text-base text-slate-700 space-y-3 max-w-4xl">
 					<p>
-						<strong>Competencia.</strong> Pulsa Iniciar o Enter: durante 5 segundos solo ves tu calificación en vivo. Luego empieza la
-						batalla de 8 segundos, en la que se calcula el promedio de tu calificación ponderado por tiempo. Al terminar, la puntuación
+						<strong>Competencia.</strong> Pulsa Iniciar o Enter: durante 8 segundos solo ves tu calificación en vivo. Luego empieza la
+						batalla de 15 segundos, en la que se calcula el promedio de tu calificación ponderado por tiempo. Al terminar, la puntuación
 						queda congelada y puedes registrarla con tu nombre y la foto de tu mejor momento.
 					</p>
 					<p>
@@ -944,6 +978,20 @@
 		}
 		to {
 			width: 0;
+		}
+	}
+
+	/* La puntuación crece durante toda la pantalla final */
+	.numero-final {
+		animation: crecer cubic-bezier(0.2, 0.6, 0.4, 1) forwards;
+	}
+
+	@keyframes crecer {
+		from {
+			transform: scale(0.45);
+		}
+		to {
+			transform: scale(1);
 		}
 	}
 

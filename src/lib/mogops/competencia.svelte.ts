@@ -1,7 +1,7 @@
 // Autor: Miguel Tovar
 // Modo competencia de MogOps:
-//   listo -> "Iniciar" -> calentamiento (5 s, solo se muestra la calificación)
-//   -> batalla (8 s, promedio ponderado por tiempo) -> final (queda congelado).
+//   listo -> "Iniciar" -> calentamiento (8 s, solo se muestra la calificación)
+//   -> batalla (15 s, promedio ponderado por tiempo) -> final (queda congelado).
 //
 // El promedio es por tiempo, no por cuadro: cada calificación cuenta durante el
 // tiempo que estuvo en pantalla, hasta que llega la siguiente. Los cuadros sin
@@ -9,8 +9,8 @@
 
 export type Fase = 'listo' | 'calentamiento' | 'batalla' | 'final';
 
-export const CALENTAMIENTO_MS = 5000;
-export const BATALLA_MS = 8000;
+export const CALENTAMIENTO_MS = 8000;
+export const BATALLA_MS = 15000;
 
 export class Competencia {
 	fase = $state<Fase>('listo');
