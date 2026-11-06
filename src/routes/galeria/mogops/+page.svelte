@@ -65,6 +65,7 @@
 	let puntosMejor: Landmark[] | null = null; // los puntos de la cara en ese cuadro
 	let fotoMejor = $state<string | null>(null);
 	let fotoTrofeo = $state<string | null>(null);
+	let incluirFoto = $state(true); // si es false, la puntuación se registra sin foto
 	let pantallaFinal = $state(false);
 	let silencio = $state(false);
 
@@ -333,18 +334,23 @@
 		fotoTrofeo = null;
 		registrado = false;
 		errorRegistro = null;
-		if (arcade) nombre = '';
+		// En Arcade la siguiente partida es de otra persona; fuera de él se conserva su elección
+		if (arcade) {
+			nombre = '';
+			incluirFoto = true;
+		}
 	}
 
 	// Enter inicia o reinicia la partida, salvo que se esté usando un campo o un botón con el teclado.
 	// En Modo Arcade el equipo puede tener Enter como único control, así que en el campo del nombre
-	// también inicia la siguiente partida (reiniciarCompetencia guarda antes la puntuación pendiente).
+	// y en el interruptor de la foto también inicia la siguiente partida (reiniciarCompetencia guarda
+	// antes la puntuación pendiente).
 	function teclaEnter(e: KeyboardEvent) {
 		if (e.key !== 'Enter' || e.repeat || !camaraActiva) return;
 		const destino = e.target as HTMLElement;
-		const enNombreArcade = arcade && destino.matches('[data-nombre]');
-		if (!enNombreArcade && destino.closest('input:not([type="range"]), select, textarea, a')) return;
-		if (destino.closest('button') && destino.matches(':focus-visible')) return;
+		const enFormularioArcade = arcade && destino.matches('[data-nombre], [data-foto]');
+		if (!enFormularioArcade && destino.closest('input:not([type="range"]), select, textarea, a, [data-foto]')) return;
+		if (!enFormularioArcade && destino.closest('button') && destino.matches(':focus-visible')) return;
 		e.preventDefault();
 		iniciarCompetencia();
 	}
@@ -377,7 +383,7 @@
 			const res = await fetch('/api/mogops/ranking', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ nombre, puntuacion: final, foto: fotoTrofeo, arcade })
+				body: JSON.stringify({ nombre, puntuacion: final, foto: incluirFoto ? fotoTrofeo : '', arcade })
 			});
 			const datos = await res.json();
 			if (!res.ok) throw new Error(datos.error || 'No se pudo registrar la puntuación');
@@ -512,10 +518,29 @@
 	</p>
 {/snippet}
 
+{#snippet perilla(activo: boolean)}
+	<span class={`relative h-5 w-9 shrink-0 rounded-full transition-colors duration-200 ${activo ? 'bg-[#34C759]' : 'bg-slate-200'}`}>
+		<span class={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${activo ? 'translate-x-4' : ''}`}></span>
+	</span>
+{/snippet}
+
+{#snippet sinFoto(clases: string)}
+	<span role="img" aria-label="Sin foto" class={`flex shrink-0 items-center justify-center bg-slate-100 text-slate-400 ${clases}`}>
+		<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="h-3/5 w-3/5">
+			<circle cx="12" cy="8" r="4" />
+			<path d="M4 21a8 8 0 0 1 16 0z" />
+		</svg>
+	</span>
+{/snippet}
+
 {#snippet filaRanking(fila: FilaRanking, puesto: number)}
 	<li class={`flex items-center gap-2.5 rounded-xl border bg-white px-2.5 py-1.5 ${fila.esMio ? 'border-purple-400 shadow-sm' : 'border-purple-100'}`}>
 		<span class="w-6 shrink-0 text-center font-mono text-sm font-extrabold text-purple-950">{puesto}</span>
-		<img src={fila.foto} alt={`Trofeo de ${fila.nombre}`} class="h-10 w-10 shrink-0 rounded-lg object-cover" />
+		{#if fila.foto}
+			<img src={fila.foto} alt={`Trofeo de ${fila.nombre}`} class="h-10 w-10 shrink-0 rounded-lg object-cover" />
+		{:else}
+			{@render sinFoto('h-10 w-10 rounded-lg')}
+		{/if}
 		<div class="min-w-0 flex-1">
 			<p class="flex items-center gap-2 truncate text-sm font-bold text-slate-900">
 				<span class="truncate">{fila.nombre}</span>
@@ -650,10 +675,26 @@
 									</div>
 								{/if}
 								<div class="flex items-center gap-3">
-									<img src={fotoTrofeo} alt="Tu cara en el mejor momento de la batalla" class="h-20 w-20 shrink-0 rounded-xl border-2 border-purple-300 object-cover" />
+									{#if incluirFoto}
+										<img src={fotoTrofeo} alt="Tu cara en el mejor momento de la batalla" class="h-20 w-20 shrink-0 rounded-xl border-2 border-purple-300 object-cover" />
+									{:else}
+										{@render sinFoto('h-20 w-20 rounded-xl border-2 border-slate-200')}
+									{/if}
 									<div class="min-w-0 flex-1 space-y-1.5">
 										<div class="flex items-baseline justify-between gap-2">
-											<span class="text-xs font-bold uppercase tracking-wider text-purple-600">Tu trofeo</span>
+											<span class="text-xs font-bold uppercase tracking-wider text-purple-600 max-sm:hidden">Tu trofeo</span>
+											<button
+												type="button"
+												role="switch"
+												aria-checked={incluirFoto}
+												data-foto
+												disabled={enviando}
+												onclick={() => (incluirFoto = !incluirFoto)}
+												class="flex shrink-0 items-center gap-1.5 self-center rounded-full text-[11px] sm:ml-auto font-semibold text-slate-600 disabled:opacity-50"
+											>
+												Incluir foto
+												{@render perilla(incluirFoto)}
+											</button>
 											<span class="font-mono text-2xl font-extrabold leading-none tabular-nums {colorPuntuacion(final)}">{final.toFixed(1)}</span>
 										</div>
 										<div class="flex gap-2">
@@ -683,12 +724,16 @@
 								{/if}
 								<p class="text-[11px] leading-snug text-slate-500">
 									{#if arcade}
-										<strong class="text-slate-700">Privacidad:</strong> esta puntuación y la foto de arriba se publican en el ranking durante 7
+										<strong class="text-slate-700">Privacidad:</strong>
+										{incluirFoto ? 'esta puntuación y la foto de arriba se publican' : 'esta puntuación se publica sin foto'} en el ranking durante 7
 										días, aunque no escribas tu nombre, y luego se borran.
-									{:else}
+									{:else if incluirFoto}
 										<strong class="text-slate-700">Privacidad:</strong> la foto de arriba solo se guarda si decides registrar tu puntuación. Si no
 										la registras, nunca sale de tu dispositivo. Al registrarla, tu nombre y esta foto se publican en el ranking durante 7 días y
 										luego se borran. Solo se guarda la mejor puntuación de este dispositivo.
+									{:else}
+										<strong class="text-slate-700">Privacidad:</strong> tu foto no se guarda ni sale de tu dispositivo. Al registrar tu puntuación,
+										se publica con tu nombre en el ranking durante 7 días y luego se borra. Solo se guarda la mejor puntuación de este dispositivo.
 									{/if}
 								</p>
 							</form>
@@ -741,7 +786,7 @@
 					</p>
 					<p class="text-xs leading-snug text-slate-500">
 						{#if arcade}
-							Modo Arcade: cada puntuación y su foto se publican en el ranking.
+							Modo Arcade: cada puntuación se publica en el ranking, con foto si se deja activada.
 						{:else}
 							Todo se corre en tu dispositivo, a menos que elijas registrar tu puntuación en el ranking.
 						{/if}
@@ -768,10 +813,10 @@
 					role="switch"
 					aria-checked={mostrarPuntos}
 					onclick={() => (mostrarPuntos = alternar('mogops.puntos', !mostrarPuntos))}
-					class={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors ${mostrarPuntos ? 'border-purple-300 bg-purple-50 text-purple-800' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`}
+					class="flex items-center gap-2 rounded-full text-xs font-semibold text-slate-600"
 				>
-					<span class={`h-2 w-2 rounded-full ${mostrarPuntos ? 'bg-purple-600' : 'bg-slate-300'}`}></span>
 					Puntos faciales
+					{@render perilla(mostrarPuntos)}
 				</button>
 
 				<button
@@ -780,10 +825,10 @@
 					aria-checked={arcade}
 					disabled={enJuego}
 					onclick={() => (ajustesAbiertos ? cambiarArcade(!arcade) : (pidiendoClave = !pidiendoClave))}
-					class={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 ${arcade ? 'border-purple-300 bg-purple-50 text-purple-800' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`}
+					class="flex items-center gap-2 rounded-full text-xs font-semibold text-slate-600 disabled:opacity-50"
 				>
-					<span class={`h-2 w-2 rounded-full ${arcade ? 'bg-purple-600' : 'bg-slate-300'}`}></span>
 					Modo Arcade
+					{@render perilla(arcade)}
 				</button>
 
 				{#if pidiendoClave && !ajustesAbiertos}
@@ -988,7 +1033,7 @@
 					<p>
 						<strong>Competencia.</strong> Pulsa Iniciar o Enter: durante 8 segundos solo ves tu calificación en vivo. Luego empieza la
 						batalla de 15 segundos, en la que se calcula el promedio de tu calificación ponderado por tiempo. Al terminar, la puntuación
-						queda congelada y puedes registrarla con tu nombre y la foto de tu mejor momento.
+						queda congelada y puedes registrarla con tu nombre y, si quieres, la foto de tu mejor momento.
 					</p>
 					<p>
 						<strong>Puntos faciales.</strong> MediaPipe Face Landmarker encuentra 478 puntos de la cara directamente en tu navegador

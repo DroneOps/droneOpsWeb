@@ -29,13 +29,22 @@ de proporciones faciales, pero no la red neuronal MogNet (89 MB), que es demasia
 6. **Final.** El promedio queda congelado indefinidamente. Sobre la vista previa aparecen:
    - **Reiniciar**, para volver al paso 2.
    - **Tu trofeo**, si la puntuación supera el récord de este dispositivo: la foto del trofeo, la
-     puntuación, un campo de nombre y el botón **Registrar**, con su aviso de privacidad.
+     puntuación, un interruptor **Incluir foto**, un campo de nombre y el botón **Registrar**, con su aviso de
+     privacidad.
    - Si no supera el récord: "Tu récord de esta semana es X. Supéralo para volver a registrarte."
 
 Durante el calentamiento y la batalla no se puede cambiar la cámara, el Modo Arcade ni la dificultad.
 
+**Incluir foto.** Empieza encendido. Apagado, el formulario muestra una silueta en lugar de la foto y la puntuación
+se registra sin imagen: no se envía al servidor y el ranking muestra la misma silueta. Si la puntuación reemplaza una
+anterior de este dispositivo, la foto anterior también desaparece. La elección se conserva entre partidas del mismo
+dispositivo hasta recargar la página; en Modo Arcade vuelve a encenderse en cada partida, porque juega otra persona.
+Los interruptores de la página (Incluir foto, Puntos faciales y Modo Arcade) comparten el estilo tipo iOS del
+snippet `perilla`.
+
 **Enter.** No actúa mientras se escribe en un campo (en el del nombre, Enter envía el formulario) ni si un botón o
-enlace tiene el foco por haber llegado a él con el teclado. La excepción es el nombre en Modo Arcade, abajo.
+enlace tiene el foco por haber llegado a él con el teclado. El interruptor de la foto tampoco reinicia la partida. La
+excepción es el nombre y ese interruptor en Modo Arcade, abajo.
 
 **Promedio ponderado por tiempo.** Cada calificación cuenta durante el tiempo que estuvo en pantalla, hasta que
 llega la siguiente; así un cuadro que tardó más pesa más, sin importar los cuadros por segundo del dispositivo.
@@ -145,14 +154,18 @@ Funcionamiento:
 - **Todas las puntuaciones se guardan.** El nombre es opcional (sin nombre se guarda como "Anónimo"). El campo se
   enfoca solo y una barra marca 15 segundos; al acabarse, se registra con lo que tenga escrito. Si falla, lo
   reintenta cada 15 segundos.
-- **Enter guarda y sigue.** Con una puntuación pendiente, Enter (también dentro del campo del nombre) la registra e
-  inicia la siguiente partida, así que basta un solo botón. Reiniciar también la guarda.
+- **Enter guarda y sigue.** Con una puntuación pendiente, Enter (también dentro del campo del nombre o en el
+  interruptor de la foto) la registra e inicia la siguiente partida, así que basta un solo botón. Reiniciar también
+  la guarda.
+- **Incluir foto.** El interruptor aparece mientras se muestra el formulario. Se respeta en los tres caminos: el
+  plazo de 15 s, Enter y Reiniciar. Sin mouse se llega a él con Mayús+Tab desde el nombre y se cambia con Espacio, así
+  que un equipo con solo el botón de Enter no puede apagarlo.
 - **El ranking se mueve solo.** Los 3 primeros lugares quedan fijos y del 4 al 15 pasan en un carrusel sin fin
   (3 s por fila). Si caben en la caja, no se mueve. La fila que se acaba de registrar se marca con **Tú**.
 - **Sin navegación a mano.** Toda la pantalla del juego cabe sin desplazarse, ver Diseño.
 
-Como en este modo la foto se publica sin que la persona lo decida, el aviso de privacidad del formulario y la
-frase de la barra de ajustes cambian para decirlo.
+Como en este modo la puntuación se publica sin que la persona lo decida, y con foto si no la apaga, el aviso de
+privacidad del formulario y la frase de la barra de ajustes cambian para decirlo.
 
 ### Gestos (siempre activos)
 
@@ -217,10 +230,11 @@ reciba las teclas.
 ## 2. Privacidad
 
 - El análisis de la cara corre completo en el navegador (WebAssembly). El video de la cámara nunca se envía.
-- En modo normal, solo si la persona pulsa **Registrar** se envían al servidor su nombre, la puntuación y la foto
-  del trofeo. El formulario lo explica junto al botón.
-- En **Modo Arcade** se envían siempre, sin que la persona lo pida, y el formulario lo avisa. Quien opere el evento
-  debe avisar también a los participantes: su foto queda pública 7 días.
+- En modo normal, solo si la persona pulsa **Registrar** se envían al servidor su nombre, la puntuación y, si deja
+  encendido **Incluir foto**, la foto del trofeo. El formulario lo explica junto al botón.
+- En **Modo Arcade** se envían siempre, sin que la persona lo pida, y el formulario lo avisa. La foto se omite solo
+  si se apaga el interruptor antes de que se registre. Quien opere el evento debe avisar también a los participantes:
+  su foto queda pública 7 días.
 - Lo registrado se publica en el ranking y se borra 7 días después.
 - El dispositivo se reconoce con una cookie anónima (`mogops_dispositivo`, un UUID aleatorio). No se guarda
   IP, cuenta ni ningún otro dato.
@@ -301,7 +315,7 @@ de este dispositivo, o `null`.
 |---|---|
 | Nombre de 1 a 24 caracteres (se recortan y unen los espacios) | `400` si no |
 | Puntuación entre 0 y 10 (se redondea a 2 decimales) | `400` si no |
-| Foto en `data:image/jpeg;base64,...`, máximo 120,000 caracteres | `400` si no |
+| Foto vacía (sin foto) o en `data:image/jpeg;base64,...`, máximo 120,000 caracteres | `400` si no |
 | Este dispositivo ya tiene una puntuación igual o mayor (no aplica en Arcade) | `409` |
 | `arcade: true` sin la cookie de Arcade | `403` |
 | Ranking sin configurar en producción | `503` |

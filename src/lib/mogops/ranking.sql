@@ -12,7 +12,7 @@ create table if not exists public.mogops_ranking (
 	dispositivo uuid primary key,
 	nombre text not null check (char_length(nombre) between 1 and 24),
 	puntuacion numeric(4, 2) not null check (puntuacion between 0 and 10),
-	foto text not null, -- JPEG en data URL: la cara al momento de la puntuación más alta
+	foto text not null, -- JPEG en data URL: la cara al momento de la puntuación más alta; vacía si se registró sin foto
 	registrado_en timestamptz not null default now(),
 	expira_en timestamptz not null default now() + interval '7 days'
 );
