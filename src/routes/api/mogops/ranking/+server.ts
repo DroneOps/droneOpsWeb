@@ -6,19 +6,27 @@
 // Cada registro expira 7 días después de guardarse; los vencidos se borran en
 // cada petición. La tabla está en src/lib/mogops/ranking.sql y solo el
 // servidor la lee y escribe (Service Role Key), igual que el inventario.
+//
+// En Modo Arcade (cookie de arcade.server.ts) cada intento es un registro nuevo:
+// se guarda con un identificador propio en vez del del dispositivo, así que no
+// sobrescribe nada y varias personas pueden jugar en el mismo equipo. El nombre
+// es opcional.
+//
 // En desarrollo, sin la llave, se usa una lista en memoria.
 import { json, type Cookies, type RequestHandler } from '@sveltejs/kit';
 import { createClient } from '@supabase/supabase-js';
 import { dev } from '$app/environment';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 import { env } from '$env/dynamic/private';
+import { arcadeAutorizado } from '$lib/mogops/arcade.server';
 
 const TABLA = 'mogops_ranking';
 const COOKIE = 'mogops_dispositivo';
 const DIAS_VIGENCIA = 7;
-const TOP = 15;
+const TOP = 20;
 const MAX_NOMBRE = 24;
 const MAX_FOTO = 120_000; // caracteres del data URL (~90 KB de JPEG)
+const ANONIMO = 'Anónimo';
 
 type Fila = {
 	dispositivo: string;
@@ -134,15 +142,21 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	if (!db) return json({ error: 'El ranking no está configurado' }, { status: 503 });
 	const dispositivo = dispositivoDe(cookies);
 
-	let datos: { nombre?: unknown; puntuacion?: unknown; foto?: unknown };
+	let datos: { nombre?: unknown; puntuacion?: unknown; foto?: unknown; arcade?: unknown };
 	try {
 		datos = await request.json();
 	} catch {
 		return json({ error: 'Datos inválidos' }, { status: 400 });
 	}
 
+	const arcade = datos.arcade === true;
+	if (arcade && !arcadeAutorizado(cookies)) {
+		return json({ error: 'El Modo Arcade no está autorizado en este navegador' }, { status: 403 });
+	}
+
 	// Validar los datos recibidos
-	const nombre = typeof datos.nombre === 'string' ? datos.nombre.trim().replace(/\s+/g, ' ') : '';
+	const escrito = typeof datos.nombre === 'string' ? datos.nombre.trim().replace(/\s+/g, ' ') : '';
+	const nombre = escrito || (arcade ? ANONIMO : '');
 	const puntuacion = typeof datos.puntuacion === 'number' ? Math.round(datos.puntuacion * 100) / 100 : NaN;
 	const foto = typeof datos.foto === 'string' ? datos.foto : '';
 	if (!nombre || nombre.length > MAX_NOMBRE) {
@@ -157,20 +171,21 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	try {
 		await db.limpiar();
-		const anterior = await db.buscar(dispositivo);
+		const anterior = arcade ? null : await db.buscar(dispositivo);
 		if (anterior && Number(anterior.puntuacion) >= puntuacion) {
 			return json({ error: 'Ya registraste una puntuación igual o mayor esta semana' }, { status: 409 });
 		}
 		const ahora = new Date();
+		const id = arcade ? crypto.randomUUID() : dispositivo;
 		await db.guardar({
-			dispositivo,
+			dispositivo: id,
 			nombre,
 			puntuacion,
 			foto,
 			registrado_en: ahora.toISOString(),
 			expira_en: new Date(ahora.getTime() + DIAS_VIGENCIA * 24 * 60 * 60 * 1000).toISOString()
 		});
-		return json(await respuesta(db, dispositivo));
+		return json(await respuesta(db, id));
 	} catch (err) {
 		console.error('Error al guardar en el ranking de MogOps:', err);
 		return json({ error: 'No se pudo guardar la puntuación' }, { status: 500 });

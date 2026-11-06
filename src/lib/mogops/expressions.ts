@@ -31,7 +31,7 @@ const get = (b: Blendshapes, k: string) => b[k] ?? 0;
 export const BONUSES: Bonus[] = [
   {
     id: "rock",
-    label: "The Rock",
+    label: "Ceja levantada",
     hint: "Levanta una ceja",
     points: 1.0,
     from: 0.3,
@@ -50,7 +50,7 @@ export const BONUSES: Bonus[] = [
   },
   {
     id: "cheeks",
-    label: "Mejillas hundidas",
+    label: "Cachetes hundidos",
     hint: "Chupa los cachetes hacia adentro",
     points: 0.75,
     from: 0.7,
