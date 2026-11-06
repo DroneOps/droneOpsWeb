@@ -19,11 +19,14 @@ de proporciones faciales, pero no la red neuronal MogNet (89 MB), que es demasia
    **"Permite el uso de la cámara para jugar."**
 2. Con la cámara activa aparece el botón **Iniciar** sobre la vista previa. La tecla **Enter** hace lo mismo y
    funciona en cualquier fase: inicia una partida, reinicia la actual o empieza una nueva al terminar.
-3. **Calentamiento (5 s).** La calificación se muestra en vivo, pequeña y en gris. Abajo de la vista previa:
+3. **Calentamiento (8 s).** La calificación se muestra en vivo, pequeña y en gris. Abajo de la vista previa:
    "La batalla empieza en N".
-4. **Batalla (8 s).** El número crece, toma color y pasa a mostrar el **promedio ponderado por tiempo** de la
+4. **Batalla (15 s).** El número crece, toma color y pasa a mostrar el **promedio ponderado por tiempo** de la
    batalla, con la calificación del momento al lado ("ahora 7.9"). Una etiqueta roja cuenta los segundos.
-5. **Final.** El promedio queda congelado indefinidamente. Sobre la vista previa aparecen:
+5. **Pantalla final (25 s).** La cámara se queda congelada en el cuadro de la calificación más alta (de ese mismo
+   cuadro sale el trofeo; el cuadro completo no sale del navegador), detrás del formulario y los controles, y el número
+   de la calificación crece durante los 25 segundos. Termina antes si empieza otra partida. Luego regresa la cámara en vivo.
+6. **Final.** El promedio queda congelado indefinidamente. Sobre la vista previa aparecen:
    - **Reiniciar**, para volver al paso 2.
    - **Tu trofeo**, si la puntuación supera el récord de este dispositivo: la foto del trofeo, la
      puntuación, un campo de nombre y el botón **Registrar**, con su aviso de privacidad.
@@ -40,7 +43,7 @@ Si en un momento no hay cara o la pose no sirve, ese tramo no cuenta. El promedi
 inicio de la batalla (el calentamiento no cuenta). Lógica en [competencia.svelte.ts](competencia.svelte.ts).
 
 **Foto del trofeo.** Durante la batalla se guarda el cuadro con la calificación **instantánea** más alta (no el
-promedio). Se recorta la cara con un 16% de margen a cada lado, se reduce a 256 px como máximo, se pone en espejo
+promedio). Al terminar, se recorta la cara con un 16% de margen a cada lado, se reduce a 256 px como máximo, se pone en espejo
 como la vista previa y se convierte en JPEG (calidad 0.85, unos 10–20 KB) al terminar la batalla.
 
 ### Escala de colores del número
