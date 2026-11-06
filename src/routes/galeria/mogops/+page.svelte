@@ -7,7 +7,7 @@
 	import theRockImg from '$lib/assets/the-rock.png';
 	import { EMPTY, FaceAnalyzer, headlineScore, MOG_THRESHOLD, type Analysis, type Engine } from '$lib/mogops/analysis';
 	import { colorPuntuacion, Competencia } from '$lib/mogops/competencia.svelte';
-	import { aplicarCurva, DIFICULTAD_MAX, DIFICULTAD_MIN, quitarCurva } from '$lib/mogops/curva';
+	import { aplicarCurva, DIFICULTAD_INICIAL, DIFICULTAD_MAX, DIFICULTAD_MIN, quitarCurva } from '$lib/mogops/curva';
 	import { percentileOf, pslFromScore, pslTier } from '$lib/mogops/display';
 	import { countsInOverall, GEOMETRY_ACCURACY, METRIC_KEYS, TRAITS, traitWeight, type Landmark } from '$lib/mogops/geometry';
 	import { createSounds, type Sounds } from '$lib/mogops/sounds';
@@ -32,9 +32,9 @@
 	function leerDificultad(): number {
 		try {
 			const valor = Number(localStorage.getItem('mogops.dificultad'));
-			return valor >= DIFICULTAD_MIN && valor <= DIFICULTAD_MAX ? valor : DIFICULTAD_MIN;
+			return valor >= DIFICULTAD_MIN && valor <= DIFICULTAD_MAX ? valor : DIFICULTAD_INICIAL;
 		} catch {
-			return DIFICULTAD_MIN;
+			return DIFICULTAD_INICIAL;
 		}
 	}
 
@@ -90,7 +90,7 @@
 	let errorClave = $state<string | null>(null);
 	let verificando = $state(false);
 	let arcade = $state(false);
-	let dificultad = $state(DIFICULTAD_MIN);
+	let dificultad = $state(DIFICULTAD_INICIAL);
 
 	// Elementos del DOM
 	let video = $state<HTMLVideoElement>();
@@ -443,7 +443,7 @@
 		desbloqueado = false;
 		ajustesAbiertos = false;
 		cambiarArcade(false);
-		dificultad = DIFICULTAD_MIN;
+		dificultad = DIFICULTAD_INICIAL;
 		guardarAjuste('mogops.dificultad', dificultad);
 	}
 

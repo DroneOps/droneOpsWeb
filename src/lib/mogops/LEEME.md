@@ -97,8 +97,7 @@ Panel de calificación: lo más fuerte y lo más débil, y una sola lista con lo
 
 ### Curva de dificultad (solo geometría)
 
-Arriba de 8 cada punto cuesta más ([curva.ts](curva.ts)). Con la dificultad normal (1), comparado con la escala
-original:
+Arriba de 8 cada punto cuesta más ([curva.ts](curva.ts)). Con la dificultad 1, comparado con la escala original:
 
 | Tramo | Esfuerzo extra | Puntos que pide |
 |---|---|---|
@@ -113,7 +112,8 @@ llegar a 10. Una cara sin gestos llega como máximo a 9.57, así que el 10 solo 
 Se aplica a cada calificación instantánea, antes de promediar la batalla. El "Top N%" y la escala PSL deshacen la
 curva antes de buscar el percentil, para no presumir un lugar que la cara no tiene. El umbral de Gigachad (8) no cambia.
 
-La **dificultad** va de 1 a 5 y multiplica el extra de cada tramo:
+La **dificultad** va de 1 a 5 y multiplica el extra de cada tramo. La inicial es **2**, también para el público
+(`DIFICULTAD_INICIAL`): una cara sin gestos llega como máximo a 9.33 y hacen falta 11.3 puntos para llegar a 10.
 
 | Puntos | Dif. 1 | Dif. 2 | Dif. 3 | Dif. 4 | Dif. 5 |
 |---|---|---|---|---|---|
@@ -137,7 +137,7 @@ Para eventos, en un equipo donde juegan muchas personas y Enter puede ser el ún
 - Con los ajustes ocultos, el interruptor pide la contraseña otra vez: sin ella nadie puede apagar el modo ni ver
   la dificultad. Al recargar la página los ajustes también quedan ocultos.
 - El modo y la dificultad siguen activos en ese navegador 3 días, aunque se recargue.
-- **Bloquear** apaga todo y regresa la dificultad a 1.
+- **Bloquear** apaga todo y regresa la dificultad a la inicial.
 
 Funcionamiento:
 
@@ -309,6 +309,11 @@ de este dispositivo, o `null`.
 
 En cada petición se borran primero las entradas vencidas, y nunca se muestran entradas vencidas.
 
+**Reinicio del ranking.** `RANKING_DESDE` en la API marca desde cuándo cuenta el ranking. Lo anterior no se muestra
+ni cuenta como récord, pero sigue en la tabla hasta expirar. Se usó el 6 de noviembre de 2026 para quitar las
+puntuaciones de antes de la curva. Para reiniciar otra vez, cambia la fecha y despliega. Para borrar de verdad, ejecuta
+`delete from public.mogops_ranking;` en Supabase (permanente).
+
 **Modo Arcade.** Con `arcade: true`, el nombre puede ir vacío (se guarda "Anónimo") y la fila se guarda con un UUID
 nuevo en la columna `dispositivo`, en vez del de la cookie. Por eso no sobrescribe nada, y la tabla no necesitó
 cambios. La respuesta marca esa fila como `esMio`.
@@ -352,8 +357,7 @@ Probar en local: `npm install` y `npm run dev` con un `.env` que tenga las dos v
 - **Las puntuaciones se calculan en el navegador**, así que alguien con conocimientos puede enviar una
   puntuación falsa directamente a la API, que solo valida rangos y formato. Si hay premios, confirma en persona
   a quien gane.
-- **El ranking no distingue origen ni dificultad.** Las filas de Arcade, las de internet y las anteriores a la curva
-  (5 de noviembre de 2026) compiten en la misma tabla.
+- **El ranking no distingue origen ni dificultad.** Las filas de Arcade y las de internet compiten en la misma tabla.
 - **Una pantalla con Enter como único control no puede teclear nombres**, así que sus filas salen como "Anónimo".
 - **No hay moderación** de nombres ni fotos. Una entrada se puede borrar a mano en la tabla `mogops_ranking`
   de Supabase.
