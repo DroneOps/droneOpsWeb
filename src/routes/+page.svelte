@@ -185,8 +185,16 @@
 
 			<!-- Recuadro negro (arriba a la derecha) y foto encimada (abajo a la izquierda) -->
 			<div class="relative mt-8 aspect-[1048/603] w-full xl:absolute xl:right-0 xl:top-1/2 xl:mt-0 xl:w-[52%] xl:-translate-y-[45%]">
-				<img src={fotoPiloto} alt="Integrante de DroneOps sosteniendo un dron" class="absolute right-0 top-0 h-[68%] w-[64%] bg-[#1f1f1f]"/>
-				<img src={fototodos} alt="Todos guapos menos JP" class="absolute bottom-0 left-0 h-[68%] w-[64%] bg-[#777777] object-cover xl:-left-[10%]" />
+				<img
+					src={fotoPiloto}
+					alt="Integrante de DroneOps sosteniendo un dron"
+					class="absolute right-0 top-0 h-[68%] w-[64%] bg-[#1f1f1f] object-cover object-[center_40%]"
+				/>
+				<img
+					src={fototodos}
+					alt="Todos guapos menos JP"
+					class="absolute bottom-0 left-0 h-[70%] w-[68%] bg-[#777777] object-cover object-center xl:-left-[10%]"
+				/>
 			</div>
 		</section>
 
