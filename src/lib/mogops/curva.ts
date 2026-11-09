@@ -21,7 +21,7 @@ const INICIO = 8;
 
 export const DIFICULTAD_MIN = 1;
 export const DIFICULTAD_MAX = 5;
-export const DIFICULTAD_INICIAL = 4; // la que tiene todo el público
+export const DIFICULTAD_INICIAL = 3; // la que tiene todo el público
 
 function nudos(dificultad: number) {
   const entrada = [INICIO];

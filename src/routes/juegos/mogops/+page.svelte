@@ -781,7 +781,7 @@
 			<div class="order-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm lg:order-none">
 				<div class="min-w-0 flex-1 basis-56">
 					<p class="flex items-baseline gap-2">
-						<a href="/galeria" class="text-xs font-semibold text-purple-700 hover:text-purple-900 transition-colors">← Galería</a>
+						<a href="/juegos" class="text-xs font-semibold text-purple-700 hover:text-purple-900 transition-colors">← Galería</a>
 						<span class="text-lg font-extrabold tracking-tight text-slate-950"><span class="sr-only">Juego </span>MogOps</span>
 					</p>
 					<p class="text-xs leading-snug text-slate-500">

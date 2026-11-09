@@ -94,7 +94,7 @@
 </script>
 
 <svelte:head>
-	<title>Galería · DroneOps</title>
+	<title>Juegos · DroneOps</title>
 </svelte:head>
 
 <div class="mx-auto max-w-[1440px] px-6 sm:px-12 py-6 sm:py-10 space-y-12 sm:space-y-20 text-slate-900">
@@ -105,7 +105,7 @@
 			Proyectos del equipo
 		</div>
 		<h1 class="text-3xl sm:text-5xl lg:text-[56px] font-extrabold tracking-tight text-slate-950 leading-tight lg:leading-[1.15]">
-			Galería
+			Juegos
 		</h1>
 		<p class="text-base sm:text-lg text-slate-600 max-w-2xl leading-relaxed">
 			Lo que construimos entre competencias: visión computacional, control y herramientas para drones. Algunos proyectos se pueden probar aquí mismo.
@@ -130,7 +130,7 @@
 				{/each}
 			</div>
 			<div class="flex items-center gap-4 pt-2">
-				<a href="/galeria/mogops" class="rounded-xl bg-purple-600 px-6 sm:px-7 py-3 font-bold text-white shadow-md hover:bg-purple-700 transition-colors">
+				<a href="/juegos/mogops" class="rounded-xl bg-purple-600 px-6 sm:px-7 py-3 font-bold text-white shadow-md hover:bg-purple-700 transition-colors">
 					Jugar
 				</a>
 				<a
@@ -147,7 +147,7 @@
 		<!-- Vista previa de la tarjeta de calificación -->
 		<div class="lg:col-span-5 flex justify-center lg:justify-end">
 			<a
-				href="/galeria/mogops"
+				href="/juegos/mogops"
 				class="w-full max-w-md rounded-2xl sm:rounded-[32px] border border-purple-200 bg-purple-50/60 p-6 sm:p-8 shadow-[0_12px_30px_rgba(0,0,0,0.12)] sm:shadow-[0_20px_50px_rgba(0,0,0,0.15)] hover:border-purple-400 transition-colors"
 			>
 				<div class="flex items-center justify-between">

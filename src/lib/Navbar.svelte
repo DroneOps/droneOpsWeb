@@ -96,7 +96,7 @@
     <div class="nav-links" class:abierto={menuAbierto}>
         <a href="/" on:click={() => menuAbierto = false}>Inicio</a>
         <a href="/#objetivo" on:click={() => menuAbierto = false}>Objetivo</a>
-        <a href="/galeria" on:click={() => menuAbierto = false}>Galería</a>
+        <a href="/juegos" on:click={() => menuAbierto = false}>Juegos</a>
         <a href="/unete" on:click={() => menuAbierto = false}>Unirse</a>
         
         <!--Muestra la seccion si el usuario ha iniciado sesion-->
