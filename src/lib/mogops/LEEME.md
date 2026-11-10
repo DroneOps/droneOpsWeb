@@ -17,18 +17,34 @@ de proporciones faciales, pero no la red neuronal MogNet (89 MB), que es demasia
 
 1. Al abrir la página se pide acceso a la cámara. Mientras no se conceda, la vista previa dice
    **"Permite el uso de la cámara para jugar."**
-2. Con la cámara activa aparece el botón **Iniciar** sobre la vista previa.
-3. **Calentamiento (5 s).** La calificación se muestra en vivo, pequeña y en gris. Abajo de la vista previa:
+2. Con la cámara activa aparece el botón **Iniciar** sobre la vista previa. La tecla **Enter** hace lo mismo y
+   funciona en cualquier fase: inicia una partida, reinicia la actual o empieza una nueva al terminar.
+3. **Calentamiento (8 s).** La calificación se muestra en vivo, pequeña y en gris. Abajo de la vista previa:
    "La batalla empieza en N".
-4. **Batalla (8 s).** El número crece, toma color y pasa a mostrar el **promedio ponderado por tiempo** de la
+4. **Batalla (15 s).** El número crece, toma color y pasa a mostrar el **promedio ponderado por tiempo** de la
    batalla, con la calificación del momento al lado ("ahora 7.9"). Una etiqueta roja cuenta los segundos.
-5. **Final.** El promedio queda congelado indefinidamente. Aparecen:
-   - **Reiniciar**, sobre la vista previa, para volver al paso 2.
+5. **Pantalla final (25 s).** La cámara se queda congelada en el cuadro de la calificación más alta (de ese mismo
+   cuadro sale el trofeo; el cuadro completo no sale del navegador), detrás del formulario y los controles, y el número
+   de la calificación crece durante los 25 segundos. Termina antes si empieza otra partida. Luego regresa la cámara en vivo.
+6. **Final.** El promedio queda congelado indefinidamente. Sobre la vista previa aparecen:
+   - **Reiniciar**, para volver al paso 2.
    - **Tu trofeo**, si la puntuación supera el récord de este dispositivo: la foto del trofeo, la
-     puntuación, un campo de nombre y el botón **Registrar puntuación**, con su aviso de privacidad.
+     puntuación, un interruptor **Incluir foto**, un campo de nombre y el botón **Registrar**, con su aviso de
+     privacidad.
    - Si no supera el récord: "Tu récord de esta semana es X. Supéralo para volver a registrarte."
 
-Durante el calentamiento y la batalla no se puede cambiar el motor de calificación ni la cámara.
+Durante el calentamiento y la batalla no se puede cambiar la cámara, el Modo Arcade ni la dificultad.
+
+**Incluir foto.** Empieza encendido. Apagado, el formulario muestra una silueta en lugar de la foto y la puntuación
+se registra sin imagen: no se envía al servidor y el ranking muestra la misma silueta. Si la puntuación reemplaza una
+anterior de este dispositivo, la foto anterior también desaparece. La elección se conserva entre partidas del mismo
+dispositivo hasta recargar la página; en Modo Arcade vuelve a encenderse en cada partida, porque juega otra persona.
+Los interruptores de la página (Incluir foto, Puntos faciales y Modo Arcade) comparten el estilo tipo iOS del
+snippet `perilla`.
+
+**Enter.** No actúa mientras se escribe en un campo (en el del nombre, Enter envía el formulario) ni si un botón o
+enlace tiene el foco por haber llegado a él con el teclado. El interruptor de la foto tampoco reinicia la partida. La
+excepción es el nombre y ese interruptor en Modo Arcade, abajo.
 
 **Promedio ponderado por tiempo.** Cada calificación cuenta durante el tiempo que estuvo en pantalla, hasta que
 llega la siguiente; así un cuadro que tardó más pesa más, sin importar los cuadros por segundo del dispositivo.
@@ -36,7 +52,7 @@ Si en un momento no hay cara o la pose no sirve, ese tramo no cuenta. El promedi
 inicio de la batalla (el calentamiento no cuenta). Lógica en [competencia.svelte.ts](competencia.svelte.ts).
 
 **Foto del trofeo.** Durante la batalla se guarda el cuadro con la calificación **instantánea** más alta (no el
-promedio). Se recorta la cara con un 16% de margen a cada lado, se reduce a 256 px como máximo, se pone en espejo
+promedio). Al terminar, se recorta la cara con un 16% de margen a cada lado, se reduce a 256 px como máximo, se pone en espejo
 como la vista previa y se convierte en JPEG (calidad 0.85, unos 10–20 KB) al terminar la batalla.
 
 ### Escala de colores del número
@@ -54,7 +70,7 @@ Se usa en el número grande durante la batalla y al final, en el trofeo y en el 
 
 ### Ranking semanal
 
-- Muestra los 5 mejores; **Expandir** muestra hasta 15 (y **Contraer** los oculta).
+- Muestra hasta 20 lugares en una caja con desplazamiento propio (en Modo Arcade, abajo, es distinto).
 - Cada fila: posición, foto del trofeo, nombre, cuándo se registró ("Hoy", "Ayer", "Hace 3 días") y la
   puntuación con su color. La fila del
   dispositivo actual se marca con **Tú**.
@@ -65,14 +81,16 @@ Se usa en el número grande durante la batalla y al final, en el trofeo y en el 
 
 ### Calificación
 
-Dos motores, a elegir en "Calificación principal":
+Solo se muestra el motor de **geometría**. Los Ratios PSL siguen en el código ([psl.ts](psl.ts)) y se siguen
+calculando, pero están ocultos mientras se trabaja en ellos: para volver a mostrarlos, cambia la constante `motor`
+de la página y recupera su selector del historial de git. Cada motor:
 
 - **Geometría (aprendida de humanos).** 8 proporciones medidas con los 478 puntos de MediaPipe. Cada una se
   califica con una curva aprendida de las 5,500 caras calificadas de SCUT-FBP5500 y se combinan con pesos
   aprendidos: separación de ojos 39%, ancho de mandíbula 33%, ancho/alto 14%, inclinación cantal 9%, tercio
   inferior 3%, forma de ojos 1% (simetría y tercio medio se muestran pero no cuentan). Coincidencia con
   calificaciones humanas en caras no vistas: r = 0.58.
-- **Ratios PSL (lore de looksmaxxing).** 10 proporciones "ideales" de los foros (inclinación cantal 4–8°, FWHR
+- **Ratios PSL (lore de looksmaxxing, oculto).** 10 proporciones "ideales" de los foros (inclinación cantal 4–8°, FWHR
   1.8–2.0, ESR 0.45–0.47, mentón/filtrum 2.0–2.25, ...). Cada una vale 10 dentro de su rango y baja hasta 0 a
   dos desviaciones estándar fuera. Se probó contra los datos y no predice nada (r = −0.09): es puro meme.
 
@@ -84,24 +102,86 @@ también la escala **PSL 1–8** de los foros (4 es el promedio; Gigachad desde 
 En cámara, las proporciones se suavizan con un promedio recortado de los últimos 30 cuadros (se descarta el 20%
 más alto y el 20% más bajo), y si la cara está girada o inclinada se pausa la calificación en vez de castigarla.
 
-Panel de la derecha: lo más fuerte y lo más débil, barras de cada proporción (o cada ratio PSL con su rango
-ideal) y los bonos del modo meme.
+Panel de calificación: lo más fuerte y lo más débil, y una sola lista con los gestos y las proporciones.
 
-### Modo meme (siempre activo)
+### Curva de dificultad (solo geometría)
+
+Arriba de 8 cada punto cuesta más ([curva.ts](curva.ts)). Con la dificultad 1, comparado con la escala original:
+
+| Tramo | Esfuerzo extra | Puntos que pide |
+|---|---|---|
+| 8 a 9 | +20% | 1.2 |
+| 9 a 9.5 | +40% | 0.7 |
+| 9.5 a 10 | +50% | 0.75 |
+
+Los "puntos" son la calificación más los gestos, **sin tope**. La curva va después de sumar los gestos porque, si
+no, se podría brincar haciendo caras. En cifras: 8 se queda en 8, 9.2 da 9, 9.9 da 9.5 y hacen falta 10.65 para
+llegar a 10. Una cara sin gestos llega como máximo a 9.57, así que el 10 solo se alcanza con gestos.
+
+Se aplica a cada calificación instantánea, antes de promediar la batalla. El "Top N%" y la escala PSL deshacen la
+curva antes de buscar el percentil, para no presumir un lugar que la cara no tiene. El umbral de Gigachad (8) no cambia.
+
+La **dificultad** va de 1 a 5 y multiplica el extra de cada tramo. La inicial es **2**, también para el público
+(`DIFICULTAD_INICIAL`): una cara sin gestos llega como máximo a 9.33 y hacen falta 11.3 puntos para llegar a 10.
+
+| Puntos | Dif. 1 | Dif. 2 | Dif. 3 | Dif. 4 | Dif. 5 |
+|---|---|---|---|---|---|
+| 8.5 | 8.42 | 8.36 | 8.31 | 8.28 | 8.25 |
+| 9 | 8.83 | 8.71 | 8.63 | 8.56 | 8.50 |
+| 9.5 | 9.21 | 9.06 | 8.94 | 8.83 | 8.75 |
+| 10 | 9.57 | 9.33 | 9.18 | 9.08 | 9.00 |
+| 11 | 10.00 | 9.85 | 9.62 | 9.46 | 9.33 |
+| 12 | 10.00 | 10.00 | 10.00 | 9.80 | 9.64 |
+
+La dificultad solo cambia en el navegador donde se ajusta, y el ranking no guarda con cuál se jugó: las
+puntuaciones de dificultades distintas no son comparables. Conviene fijarla antes de un evento y no moverla.
+
+### Modo Arcade (con contraseña)
+
+Para eventos, en un equipo donde juegan muchas personas y Enter puede ser el único control. El interruptor
+**Modo Arcade** pide una contraseña; al acertarla se enciende y aparecen la **Dificultad**, **Bloquear** y
+**Confirmar**.
+
+- **Confirmar** oculta esos ajustes y deja el Modo Arcade encendido, para que el público no los vea.
+- Con los ajustes ocultos, el interruptor pide la contraseña otra vez: sin ella nadie puede apagar el modo ni ver
+  la dificultad. Al recargar la página los ajustes también quedan ocultos.
+- El modo y la dificultad siguen activos en ese navegador 3 días, aunque se recargue.
+- **Bloquear** apaga todo y regresa la dificultad a la inicial.
+
+Funcionamiento:
+
+- **Cada intento es un registro nuevo**, sin el límite de uno por dispositivo y aunque sea más bajo que los anteriores.
+- **Todas las puntuaciones se guardan.** El nombre es opcional (sin nombre se guarda como "Anónimo"). El campo se
+  enfoca solo y una barra marca 15 segundos; al acabarse, se registra con lo que tenga escrito. Si falla, lo
+  reintenta cada 15 segundos.
+- **Enter guarda y sigue.** Con una puntuación pendiente, Enter (también dentro del campo del nombre o en el
+  interruptor de la foto) la registra e inicia la siguiente partida, así que basta un solo botón. Reiniciar también
+  la guarda.
+- **Incluir foto.** El interruptor aparece mientras se muestra el formulario. Se respeta en los tres caminos: el
+  plazo de 15 s, Enter y Reiniciar. Sin mouse se llega a él con Mayús+Tab desde el nombre y se cambia con Espacio, así
+  que un equipo con solo el botón de Enter no puede apagarlo.
+- **El ranking se mueve solo.** Los 3 primeros lugares quedan fijos y del 4 al 15 pasan en un carrusel sin fin
+  (3 s por fila). Si caben en la caja, no se mueve. La fila que se acaba de registrar se marca con **Tú**.
+- **Sin navegación a mano.** Toda la pantalla del juego cabe sin desplazarse, ver Diseño.
+
+Como en este modo la puntuación se publica sin que la persona lo decida, y con foto si no la apaga, el aviso de
+privacidad del formulario y la frase de la barra de ajustes cambian para decirlo.
+
+### Gestos (siempre activos)
 
 MediaPipe estima la fuerza de 52 expresiones faciales. Estas suman o restan puntos a la calificación, con un
 medidor en vivo para cada una:
 
-| Bono | Cara | Puntos |
+| Gesto | Cara | Puntos |
 |---|---|---|
-| The Rock | Levantar una ceja | +1.0 |
+| Ceja levantada | Levantar una ceja | +1.0 |
 | Hunter eyes | Entrecerrar los ojos | +0.75 |
-| Mejillas hundidas | Chupar los cachetes | +0.75 |
+| Cachetes hundidos | Chupar los cachetes | +0.75 |
 | Mewing | Mandíbula al frente, labios apretados | +0.5 |
 | Sonrisa | Sonreír | −0.75 |
 | Cachetes inflados | Inflar los cachetes | −0.5 |
 
-Cada bono crece de 0 a su valor completo entre dos umbrales, elegidos para que una foto normal casi no gane
+Cada gesto crece de 0 a su valor completo entre dos umbrales, elegidos para que una foto normal casi no gane
 nada (+0.03 en promedio). Detalles en [expressions.ts](expressions.ts).
 
 ### Efectos
@@ -111,6 +191,11 @@ nada (+0.03 en promedio). Detalles en [expressions.ts](expressions.ts).
   luego continúa donde iba. Antes de la batalla no se activa.
 - **Ceja levantada.** Cada ceja levantada hace sonar `vine-boom.mp3` y muestra la imagen de The Rock arriba a
   la izquierda durante un segundo. Funciona en cualquier fase.
+- **Silencio al terminar.** Los sonidos siguen un máximo de 15 segundos después de acabar la batalla, lo mismo que
+  el plazo del nombre en Modo Arcade, y no vuelven hasta la siguiente partida. La imagen de Gigachad se queda.
+- **Tarjeta 3D (solo escritorio).** La calificación flota sobre la cabeza en una tarjeta con grosor, que sigue la
+  posición, la inclinación, el giro y la distancia de la cara en cada cuadro ([tarjeta3d.ts](tarjeta3d.ts)). En la
+  pantalla final queda fija sobre la cara congelada. No aparece en celulares.
 - **Puntos faciales.** Botón para dibujar los 478 puntos sobre la vista previa.
 
 El detector de ceja compara la altura de cada ceja (sobre las esquinas de los ojos, dividida entre la distancia
@@ -119,15 +204,37 @@ se rearma al bajar. Como la referencia se recalcula siempre, varias personas pue
 Ver [eyebrow.ts](eyebrow.ts).
 
 Los navegadores bloquean el audio hasta que la persona interactúa con la página. El primer clic o tecla
-desbloquea ambos sonidos (pulsar **Iniciar** basta).
+desbloquea ambos sonidos (pulsar **Iniciar** o Enter basta).
+
+### Diseño
+
+**Escritorio (1024 px o más).** El juego ocupa exactamente la pantalla bajo la barra de navegación: la cámara a la
+izquierda con los ajustes debajo, la calificación arriba a la derecha y el ranking abajo a la derecha. Los mensajes
+("Mira de frente a la cámara"), el formulario y los controles van sobre la cámara. Lo demás ("¿Cómo funciona?") queda
+abajo y es opcional. En pantallas bajas el panel de calificación se compacta para no necesitar desplazamiento:
+
+| Alto de la ventana | Qué se oculta |
+|---|---|
+| 775 px o menos | Lo más fuerte y lo más débil |
+| 700 px o menos | Las barras de las proporciones (quedan los números) |
+| 610 px o menos | Las proporciones (quedan los gestos) |
+
+Probado en el estado más alto (final con formulario) en 1920×1080, 1920×950, 1536×864, 1440×900, 1366×768, 1366×650,
+1280×720, 1280×600 y 1024×700. Para un evento, usa pantalla completa (F11) y haz clic una vez en la página para que
+reciba las teclas.
+
+**Celular.** La calificación va sobre la cámara. Debajo siguen las métricas, el ranking y los ajustes.
 
 ---
 
 ## 2. Privacidad
 
 - El análisis de la cara corre completo en el navegador (WebAssembly). El video de la cámara nunca se envía.
-- Solo si la persona pulsa **Registrar puntuación** se envían al servidor su nombre, la puntuación y la foto
-  del trofeo. El formulario lo explica junto al botón.
+- En modo normal, solo si la persona pulsa **Registrar** se envían al servidor su nombre, la puntuación y, si deja
+  encendido **Incluir foto**, la foto del trofeo. El formulario lo explica junto al botón.
+- En **Modo Arcade** se envían siempre, sin que la persona lo pida, y el formulario lo avisa. La foto se omite solo
+  si se apaga el interruptor antes de que se registre. Quien opere el evento debe avisar también a los participantes:
+  su foto queda pública 7 días.
 - Lo registrado se publica en el ranking y se borra 7 días después.
 - El dispositivo se reconoce con una cookie anónima (`mogops_dispositivo`, un UUID aleatorio). No se guarda
   IP, cuenta ni ningún otro dato.
@@ -140,8 +247,12 @@ desbloquea ambos sonidos (pulsar **Iniciar** basta).
 src/routes/galeria/+page.svelte           Galería: MogOps destacado + tarjetas de los repos del equipo
 src/routes/galeria/mogops/+page.svelte    El juego: cámara, competencia, calificación, trofeo, ranking
 src/routes/api/mogops/ranking/+server.ts  API del ranking (GET y POST)
+src/routes/api/mogops/arcade/+server.ts   Desbloquea y bloquea el Modo Arcade (GET, POST y DELETE)
 src/lib/mogops/
   analysis.ts             Bucle de la cámara: landmarks -> pose -> geometría, PSL, bonos; detecta la ceja
+  curva.ts                Curva de dificultad arriba de 8
+  tarjeta3d.ts            Posición y giro de la tarjeta 3D a partir de los puntos de la cara
+  arcade.server.ts        Hash de la contraseña y cookie firmada del Modo Arcade (solo servidor)
   competencia.svelte.ts   Fases de la competencia, promedio ponderado por tiempo y escala de colores
   landmarker.ts           Carga MediaPipe Face Landmarker (modo VIDEO, GPU con respaldo en CPU)
   geometry.ts             Las 8 proporciones y su calificación con curvas aprendidas
@@ -171,6 +282,10 @@ cambiar de fase aunque no lleguen cuadros.
 propia web (con y sin SIMD, ~13 MB, unos 4 MB comprimidos); el navegador descarga solo uno. No se usa ningún CDN.
 La cámara requiere HTTPS (o `localhost`).
 
+**Varias caras.** `numFaces` es 1, así que solo se analiza una cara. En modo VIDEO, MediaPipe la elige con su
+detector (la de mayor confianza, no la más grande ni la más centrada) y luego la **sigue** cuadro a cuadro sin volver
+a detectar. Otra cara que entre al cuadro no la reemplaza; solo se detecta de nuevo cuando se pierde la que sigue.
+
 **Cámara.** Se pide al cargar la página y otra vez al elegir otra cámara. Ese efecto solo depende del modelo, el
 analizador, el elemento de video y la cámara elegida (`untrack`), porque `startCamera` hace una primera
 actualización síncrona; si el efecto también siguiera la fase, pulsar Iniciar reiniciaría la cámara.
@@ -191,21 +306,43 @@ La crea el servidor en la primera petición. Los identificadores nunca se envía
   "mio": { "nombre": "Ana", "puntuacion": 9.4 }
 }
 ```
-Hasta 15 filas, de mayor a menor puntuación (empates: gana quien registró primero). `mio` es la entrada vigente
+Hasta 20 filas, de mayor a menor puntuación (empates: gana quien registró primero). `mio` es la entrada vigente
 de este dispositivo, o `null`.
 
-**`POST /api/mogops/ranking`** con `{ "nombre", "puntuacion", "foto" }` → la misma respuesta que GET.
+**`POST /api/mogops/ranking`** con `{ "nombre", "puntuacion", "foto", "arcade"? }` → la misma respuesta que GET.
 
 | Regla | Respuesta |
 |---|---|
 | Nombre de 1 a 24 caracteres (se recortan y unen los espacios) | `400` si no |
 | Puntuación entre 0 y 10 (se redondea a 2 decimales) | `400` si no |
-| Foto en `data:image/jpeg;base64,...`, máximo 120,000 caracteres | `400` si no |
-| Este dispositivo ya tiene una puntuación igual o mayor | `409` |
+| Foto vacía (sin foto) o en `data:image/jpeg;base64,...`, máximo 120,000 caracteres | `400` si no |
+| Este dispositivo ya tiene una puntuación igual o mayor (no aplica en Arcade) | `409` |
+| `arcade: true` sin la cookie de Arcade | `403` |
 | Ranking sin configurar en producción | `503` |
 | Error de la base de datos | `500` |
 
 En cada petición se borran primero las entradas vencidas, y nunca se muestran entradas vencidas.
+
+**Reinicio del ranking.** `RANKING_DESDE` en la API marca desde cuándo cuenta el ranking. Lo anterior no se muestra
+ni cuenta como récord, pero sigue en la tabla hasta expirar. Se usó el 6 de noviembre de 2026 para quitar las
+puntuaciones de antes de la curva. Para reiniciar otra vez, cambia la fecha y despliega. Para borrar de verdad, ejecuta
+`delete from public.mogops_ranking;` en Supabase (permanente).
+
+**Modo Arcade.** Con `arcade: true`, el nombre puede ir vacío (se guarda "Anónimo") y la fila se guarda con un UUID
+nuevo en la columna `dispositivo`, en vez del de la cookie. Por eso no sobrescribe nada, y la tabla no necesitó
+cambios. La respuesta marca esa fila como `esMio`.
+
+**`/api/mogops/arcade`.** `GET` responde `{ "desbloqueado": boolean }`. `POST` con `{ "clave" }` compara su scrypt con
+el hash de [arcade.server.ts](arcade.server.ts) y deja la cookie `mogops_arcade` (`httpOnly`, 3 días), o responde
+`403`. `DELETE` la quita. La cookie es una firma HMAC hecha con `SUPABASE_SERVICE_ROLE_KEY`, así que no se puede
+fabricar desde el navegador.
+
+**Cambiar la contraseña.** Nunca la escribas en el código: el repo es público. Calcula el hash nuevo, pégalo en
+`CLAVE_HASH` y despliega:
+
+```bash
+node -e "console.log(require('crypto').scryptSync(process.argv[1], 'mogops-arcade', 32).toString('hex'))" 'contraseña nueva'
+```
 
 **Almacenamiento.** Tabla `mogops_ranking` en Supabase, a la que el servidor accede con
 `SUPABASE_SERVICE_ROLE_KEY` (la misma variable que usa el inventario). La tabla tiene RLS activado y ninguna
@@ -232,7 +369,10 @@ Probar en local: `npm install` y `npm run dev` con un `.env` que tenga las dos v
 ## 6. Limitaciones conocidas
 
 - **Las puntuaciones se calculan en el navegador**, así que alguien con conocimientos puede enviar una
-  puntuación falsa directamente a la API. Es un juego; la API solo valida rangos y formato.
+  puntuación falsa directamente a la API, que solo valida rangos y formato. Si hay premios, confirma en persona
+  a quien gane.
+- **El ranking no distingue origen ni dificultad.** Las filas de Arcade y las de internet compiten en la misma tabla.
+- **Una pantalla con Enter como único control no puede teclear nombres**, así que sus filas salen como "Anónimo".
 - **No hay moderación** de nombres ni fotos. Una entrada se puede borrar a mano en la tabla `mogops_ranking`
   de Supabase.
 - Borrar las cookies (o usar otro navegador) cuenta como un dispositivo nuevo.
@@ -250,8 +390,11 @@ traducidos al español: `geometry.ts`, `psl.ts`, `display.ts`, `pose.ts`, `expre
 sus comentarios se refieren a ese repo. Si allá se reentrenan los modelos, vuelve a copiar `model-params.json`
 y los archivos que hayan cambiado.
 
-Solo existen en esta web: `analysis.ts`, `competencia.svelte.ts`, `landmarker.ts`, `sounds.ts` y `ranking.sql`.
+Solo existen en esta web: `analysis.ts`, `competencia.svelte.ts`, `curva.ts`, `tarjeta3d.ts`, `arcade.server.ts`, `landmarker.ts`,
+`sounds.ts` y `ranking.sql`. `expressions.ts` tiene aquí dos nombres propios ("Ceja levantada" y "Cachetes hundidos").
 
 Para probar el juego sin cámara (por ejemplo en un navegador de pruebas), se puede reemplazar
 `navigator.mediaDevices.getUserMedia` por una función que devuelva `canvas.captureStream()` de un canvas con una
-foto, y luego entrar a la página con navegación interna (desde la Galería) para que la use.
+foto, y luego entrar a la página con navegación interna (desde la Galería) para que la use. Tras editar archivos con
+el servidor de desarrollo, abre la página una vez antes de hacerlo: el primer enlace después de un cambio recarga
+todo y borra el reemplazo.
