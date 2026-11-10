@@ -249,10 +249,10 @@
 				¿Qué hacemos en <br class="hidden sm:inline" /> DroneOps?
 			</h2>
 			<p class="text-sm sm:text-base text-slate-600 leading-relaxed">
-				Lorem veritatis cursus, ambientia stellarum nocte tranquilla refulget. Tempestates antique per silvas resonabant, et silentium profundum omnia tegebat. Nullus metus, nulla cura, sed cursus perpetuus fluminum ad mare festinans. Architectura mentis verba nova creat, paginas implet et spatium graphicum format, ut oculus lectoris formam potius quam sententiam intueatur.
+				En DroneOps somos un grupo estudiantil multidisciplinario apasionado por la robótica, dedicado a la investigación, construcción y control autónomo de drones. Nuestro objetivo es llevar la teoría a la práctica, aplicando principios de física, electrónica y programación para desarrollar aeronaves propias. Vemos en los drones una herramienta clave para diseñar soluciones innovadoras a problemas del mundo real, fomentando un entorno de aprendizaje donde todos crecemos y superamos los retos tecnológicos sobre la marcha.
 			</p>
 			<p class="text-sm sm:text-base text-slate-600 leading-relaxed">
-				Lorem veritatis cursus, ambientia stellarum nocte tranquilla refulget. Tempestates antique per silvas resonabant, et silentium profundum omnia tegebat. Nullus metus, nulla cura, sed cursus perpetuus fluminum ad mare festinans. Architectura mentis verba nova creat, paginas implet et spatium graphicum format, ut oculus lectoris formam potius quam sententiam intueatur.
+				Llevamos nuestras habilidades al límite por eso mismo queremos participar en competencias de prestigio, para ello no solo formamos y entrenamos a nuestros propios pilotos en pistas de obstáculos, sino que desarrollamos algoritmos complejos para misiones autónomas. Desde la navegación entre compuertas y seguimiento de trayectorias, hasta la detección de personas a través de humo y el reconocimiento de sonidos de auxilio, en DroneOps construimos la tecnología que el futuro de la exploración y el rescate necesita.
 			</p>
 		</div>
 	</section>
