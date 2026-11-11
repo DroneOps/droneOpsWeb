@@ -68,7 +68,7 @@ export const DIAS_SIN_AVANCES = 7; // a partir de aquí un proyecto en curso se 
 export const DIAS_HECHO_VISIBLE = 14; // los hechos más viejos salen del tablero
 
 // Cuentas de prueba que no deben aparecer en los selectores de miembros
-export const CORREOS_OCULTOS = ['a0123456@tec.mx'];
+export const CORREOS_OCULTOS = ['b0123456@tec.mx'];
 
 export const ESTADOS: { id: Estado; label: string; clase: string }[] = [
 	{ id: 'not_started', label: 'Por iniciar', clase: 'bg-slate-100 text-slate-700' },
