@@ -99,6 +99,7 @@
         <a href="/juegos" on:click={() => menuAbierto = false}>Juegos</a>
         <a href="/unete" on:click={() => menuAbierto = false}>Unirse</a>
         <a href="/docs/" data-sveltekit-reload on:click={() => menuAbierto = false}>Docs</a>
+        <a href="/proyectos" on:click={() => menuAbierto = false}>Proyectos</a>
         
         <!--Muestra la seccion si el usuario ha iniciado sesion-->
         {#if user}

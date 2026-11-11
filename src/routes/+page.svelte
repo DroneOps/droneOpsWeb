@@ -401,11 +401,16 @@
 
 		<!-- Proyectos destacados -->
 		<div id="investigacion-proyectos" class="space-y-6 sm:space-y-8 scroll-mt-28 lg:scroll-mt-36">
-			<div class="flex items-center justify-between gap-4">
+			<div class="flex flex-wrap items-center justify-between gap-4">
 				<span class="font-mono text-xs sm:text-sm font-bold uppercase tracking-wider text-purple-600">Proyectos destacados</span>
-				<a href={GITHUB} target="_blank" rel="noopener noreferrer" class="shrink-0 rounded-xl border border-slate-300 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-slate-800 hover:bg-slate-100 transition-colors">
-					Ver todo en GitHub →
-				</a>
+				<div class="flex flex-wrap items-center gap-3">
+					<a href="/proyectos" class="shrink-0 rounded-xl bg-purple-600 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-purple-700 transition-colors">
+						Ver todos los proyectos →
+					</a>
+					<a href={GITHUB} target="_blank" rel="noopener noreferrer" class="shrink-0 rounded-xl border border-slate-300 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-slate-800 hover:bg-slate-100 transition-colors">
+						GitHub →
+					</a>
+				</div>
 			</div>
 
 			<!-- Proyecto principal -->
