@@ -107,7 +107,7 @@
 
 		<label class="block space-y-1">
 			<span class="text-xs font-bold tracking-wide text-slate-500 uppercase">Título</span>
-			<input type="text" bind:value={titulo} placeholder="Ej. Detectar bebés en estructuras" class={campo} />
+			<input type="text" bind:value={titulo} placeholder="Ej. Drones asesinos" class={campo} />
 		</label>
 
 		<label class="block space-y-1">
