@@ -5,6 +5,7 @@
 	import ProyectoCard from '$lib/tablero/ProyectoCard.svelte';
 	import ProyectoPanel from '$lib/tablero/ProyectoPanel.svelte';
 	import NuevoProyecto from '$lib/tablero/NuevoProyecto.svelte';
+	import Calendario from '$lib/tablero/Calendario.svelte';
 	import {
 		CORREOS_OCULTOS,
 		DIAS_HECHO_VISIBLE,
@@ -39,6 +40,9 @@
 	let busqueda = $state('');
 	let hechoAbierto = $state(false);
 	let verTodosHechos = $state(false);
+
+	// ----- Calendario -----
+	let vista = $state<'lista' | 'calendario'>('lista');
 
 	// ---- Quién soy ----
 	const miEmail = $derived(data.user?.email ?? '');
@@ -112,7 +116,7 @@
 	const enCurso = $derived(
 		delTablero
 			.filter((p) => p.estado === 'in_progress')
-			.sort((a, b) => rango(a) - rango(b) || a.orden - b.orden)
+			.sort((a, b) => rango(a) - rango(b) || (a.orden ?? 0) - (b.orden ?? 0))
 	);
 	const porIniciar = $derived(delTablero.filter((p) => p.estado === 'not_started'));
 	const hechos = $derived(delTablero.filter((p) => p.estado === 'done'));
@@ -208,6 +212,24 @@
 	<!-- Encabezado -->
 	<header class="flex flex-wrap items-end justify-between gap-4 border-b-[2.5px] border-black pb-2">
 		<h1 class="titulo-tablero text-4xl font-bold tracking-tight uppercase sm:text-5xl">Proyectos</h1>
+		
+		<div class="flex rounded-lg border border-slate-300 bg-slate-100 p-1">
+			<button
+				type="button"
+				onclick={() => (vista = 'lista')}
+				class="rounded-md px-3 py-1 text-xs font-bold transition {vista === 'lista' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}"
+			>
+				Lista
+			</button>
+			<button
+				type="button"
+				onclick={() => (vista = 'calendario')}
+				class="rounded-md px-3 py-1 text-xs font-bold transition {vista === 'calendario' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}"
+			>
+				Calendario
+			</button>
+		</div>
+
 		<div class="flex flex-wrap items-center gap-2 pb-1">
 			<button
 				type="button"
@@ -253,141 +275,147 @@
 			{/each}
 		</nav>
 
-		<!-- Resumen y filtros -->
-		<div class="mt-4 flex flex-wrap items-center gap-2">
-			<span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{nCurso} en curso</span>
-			{#if nRevision > 0}
-				<span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">{nRevision} en revisión</span>
-			{/if}
-			{#if nAtrasados > 0 || foco === 'atrasados'}
-				<button
-					type="button"
-					onclick={() => alternarFoco('atrasados')}
-					aria-pressed={foco === 'atrasados'}
-					class="rounded-full px-3 py-1 text-xs font-semibold transition {foco === 'atrasados'
-						? 'bg-red-600 text-white'
-						: 'bg-red-100 text-red-700 hover:bg-red-200'}"
-				>
-					{nAtrasados} atrasados
-				</button>
-			{/if}
-			{#if nEstancados > 0 || foco === 'estancados'}
-				<button
-					type="button"
-					onclick={() => alternarFoco('estancados')}
-					aria-pressed={foco === 'estancados'}
-					class="rounded-full px-3 py-1 text-xs font-semibold transition {foco === 'estancados'
-						? 'bg-amber-600 text-white'
-						: 'bg-amber-100 text-amber-800 hover:bg-amber-200'}"
-				>
-					{nEstancados} sin avances
-				</button>
-			{/if}
-			<span class="flex-1"></span>
-			<input
-				type="search"
-				bind:value={busqueda}
-				placeholder="Buscar proyecto..."
-				aria-label="Buscar proyecto"
-				class="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm focus:border-purple-500 focus:outline-none sm:w-56"
-			/>
-		</div>
-
-		{#if delTablero.length === 0}
-			<div class="mt-10 rounded-2xl border border-dashed border-slate-300 p-10 text-center">
-				<p class="font-bold text-slate-700">No hay proyectos que mostrar aquí</p>
-				<p class="mt-1 text-sm text-slate-500">
-					{soloMios || foco !== 'todos' || busqueda
-						? 'Prueba quitando los filtros.'
-						: 'Propón una idea con el botón de arriba.'}
-				</p>
-			</div>
-		{/if}
-
-		<!-- Para revisión -->
-		{#if enRevision.length > 0}
-			<section class="mt-6">
-				<h2 class="mb-3 flex items-center gap-2 text-sm font-bold text-sky-700">
-					En revisión · {enRevision.length}
-					<span class="font-normal text-slate-400">esperando la decisión de la mesa</span>
-				</h2>
-				<div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-					{#each enRevision as p (p.id)}
-						<ProyectoCard
-							proyecto={p}
-							categoria={categoriaDe(p)}
-							mostrarCategoria={tab === 'todos' || tab === 'grupo'}
-							{nombreDe}
-							onabrir={() => (abiertoId = p.id)}
-						/>
-					{/each}
-				</div>
-			</section>
-		{/if}
-
-		<!-- En curso -->
-		{#if enCurso.length > 0}
-			<section class="mt-8">
-				<h2 class="mb-3 text-sm font-bold text-purple-700">En curso · {enCurso.length}</h2>
-				<div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-					{#each enCurso as p (p.id)}
-						<ProyectoCard
-							proyecto={p}
-							categoria={categoriaDe(p)}
-							mostrarCategoria={tab === 'todos' || tab === 'grupo'}
-							{nombreDe}
-							onabrir={() => (abiertoId = p.id)}
-						/>
-					{/each}
-				</div>
-			</section>
-		{/if}
-
-		<!-- Por iniciar -->
-		{#if porIniciar.length > 0}
-			<section class="mt-8">
-				<h2 class="mb-3 text-sm font-bold text-slate-600">Por iniciar · {porIniciar.length}</h2>
-				<div class="space-y-2">
-					{#each porIniciar as p (p.id)}
-						{@render fila(p)}
-					{/each}
-				</div>
-			</section>
-		{/if}
-
-		<!-- Hecho (colapsado) -->
-		{#if hechos.length > 0}
-			<section class="mt-8">
-				<button
-					type="button"
-					onclick={() => (hechoAbierto = !hechoAbierto)}
-					aria-expanded={hechoAbierto}
-					class="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900"
-				>
-					<span aria-hidden="true">{hechoAbierto ? '▾' : '▸'}</span>
-					Hecho · {hechosRecientes.length}
-					<span class="font-normal text-slate-400">últimos {DIAS_HECHO_VISIBLE} días</span>
-				</button>
-
-				{#if hechoAbierto}
-					<div class="mt-3 space-y-2">
-						{#each hechosMostrados as p (p.id)}
-							{@render fila(p)}
-						{:else}
-							<p class="text-sm text-slate-400">Nada terminado en este periodo.</p>
-						{/each}
-						{#if hechosAnteriores.length > 0}
-							<button
-								type="button"
-								onclick={() => (verTodosHechos = !verTodosHechos)}
-								class="pt-1 text-xs font-bold text-purple-700 hover:underline"
-							>
-								{verTodosHechos ? 'Ocultar anteriores' : `Mostrar anteriores (${hechosAnteriores.length})`}
-							</button>
-						{/if}
-					</div>
+		{#if vista === 'lista'}
+			<!-- Resumen y filtros -->
+			<div class="mt-4 flex flex-wrap items-center gap-2">
+				<span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{nCurso} en curso</span>
+				{#if nRevision > 0}
+					<span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">{nRevision} en revisión</span>
 				{/if}
-			</section>
+				{#if nAtrasados > 0 || foco === 'atrasados'}
+					<button
+						type="button"
+						onclick={() => alternarFoco('atrasados')}
+						aria-pressed={foco === 'atrasados'}
+						class="rounded-full px-3 py-1 text-xs font-semibold transition {foco === 'atrasados'
+							? 'bg-red-600 text-white'
+							: 'bg-red-100 text-red-700 hover:bg-red-200'}"
+					>
+						{nAtrasados} atrasados
+					</button>
+				{/if}
+				{#if nEstancados > 0 || foco === 'estancados'}
+					<button
+						type="button"
+						onclick={() => alternarFoco('estancados')}
+						aria-pressed={foco === 'estancados'}
+						class="rounded-full px-3 py-1 text-xs font-semibold transition {foco === 'estancados'
+							? 'bg-amber-600 text-white'
+							: 'bg-amber-100 text-amber-800 hover:bg-amber-200'}"
+					>
+						{nEstancados} sin avances
+					</button>
+				{/if}
+				<span class="flex-1"></span>
+				<input
+					type="search"
+					bind:value={busqueda}
+					placeholder="Buscar proyecto..."
+					aria-label="Buscar proyecto"
+					class="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm focus:border-purple-500 focus:outline-none sm:w-56"
+				/>
+			</div>
+
+			{#if delTablero.length === 0}
+				<div class="mt-10 rounded-2xl border border-dashed border-slate-300 p-10 text-center">
+					<p class="font-bold text-slate-700">No hay proyectos que mostrar aquí</p>
+					<p class="mt-1 text-sm text-slate-500">
+						{soloMios || foco !== 'todos' || busqueda
+							? 'Prueba quitando los filtros.'
+							: 'Propón una idea con el botón de arriba.'}
+					</p>
+				</div>
+			{/if}
+
+			<!-- Para revisión -->
+			{#if enRevision.length > 0}
+				<section class="mt-6">
+					<h2 class="mb-3 flex items-center gap-2 text-sm font-bold text-sky-700">
+						En revisión · {enRevision.length}
+						<span class="font-normal text-slate-400">esperando la decisión de la mesa</span>
+					</h2>
+					<div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+						{#each enRevision as p (p.id)}
+							<ProyectoCard
+								proyecto={p}
+								categoria={categoriaDe(p)}
+								mostrarCategoria={tab === 'todos' || tab === 'grupo'}
+								{nombreDe}
+								onabrir={() => (abiertoId = p.id)}
+							/>
+						{/each}
+					</div>
+				</section>
+			{/if}
+
+			<!-- En curso -->
+			{#if enCurso.length > 0}
+				<section class="mt-8">
+					<h2 class="mb-3 text-sm font-bold text-purple-700">En curso · {enCurso.length}</h2>
+					<div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+						{#each enCurso as p (p.id)}
+							<ProyectoCard
+								proyecto={p}
+								categoria={categoriaDe(p)}
+								mostrarCategoria={tab === 'todos' || tab === 'grupo'}
+								{nombreDe}
+								onabrir={() => (abiertoId = p.id)}
+							/>
+						{/each}
+					</div>
+				</section>
+			{/if}
+
+			<!-- Por iniciar -->
+			{#if porIniciar.length > 0}
+				<section class="mt-8">
+					<h2 class="mb-3 text-sm font-bold text-slate-600">Por iniciar · {porIniciar.length}</h2>
+					<div class="space-y-2">
+						{#each porIniciar as p (p.id)}
+							{@render fila(p)}
+						{/each}
+					</div>
+				</section>
+			{/if}
+
+			<!-- Hecho (colapsado) -->
+			{#if hechos.length > 0}
+				<section class="mt-8">
+					<button
+						type="button"
+						onclick={() => (hechoAbierto = !hechoAbierto)}
+						aria-expanded={hechoAbierto}
+						class="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900"
+					>
+						<span aria-hidden="true">{hechoAbierto ? '▾' : '▸'}</span>
+						Hecho · {hechosRecientes.length}
+						<span class="font-normal text-slate-400">últimos {DIAS_HECHO_VISIBLE} días</span>
+					</button>
+
+					{#if hechoAbierto}
+						<div class="mt-3 space-y-2">
+							{#each hechosMostrados as p (p.id)}
+								{@render fila(p)}
+							{:else}
+								<p class="text-sm text-slate-400">Nada terminado en este periodo.</p>
+							{/each}
+							{#if hechosAnteriores.length > 0}
+								<button
+									type="button"
+									onclick={() => (verTodosHechos = !verTodosHechos)}
+									class="pt-1 text-xs font-bold text-purple-700 hover:underline"
+								>
+									{verTodosHechos ? 'Ocultar anteriores' : `Mostrar anteriores (${hechosAnteriores.length})`}
+								</button>
+							{/if}
+						</div>
+					{/if}
+				</section>
+			{/if}
+
+		{:else}
+			<!-- AQUÍ SE RENDERIZA EL CALENDARIO -->
+			<Calendario proyectos={delTablero.filter(p => p.fecha_limite)} />
 		{/if}
 	{/if}
 </div>
