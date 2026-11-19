@@ -6,7 +6,7 @@
 	import fotoControl from '$lib/assets/IMG_0183.jpg';
 	import fotoTello from '$lib/assets/IMG_0194.jpg';
 	import fotoTelloCamara from '$lib/assets/tello-camara.jpg';
-	import posterMexcir from '$lib/assets/mexcir-zacatecas.jpg';
+	import fotoferb from '$lib/assets/elcAMARADA.jpg';
 	import logoImav from '$lib/assets/imav-logo.jpg';
 	import fototodos from '$lib/assets/DJI_D_RIRO.JPG.jpeg'
 
@@ -49,7 +49,7 @@
 			descripcion: 'La competencia de robótica aérea más grande de México, organizada por la federación mexicana de robótica.',
 			estado: 'En Progreso',
 			fotos: [
-				{ src: posterMexcir, alt: 'Póster de MEXCIR Zacatecas, Mexican Conference on Intelligent Robots' },
+				{ src: fotoferb, alt: 'El Camarada supremo: Ferb. La luz de mis dias.' },
 				{ src: 'https://cataas.com/cat?width=600&height=600&v=6', alt: 'Foto de prueba del TMR 2' }
 			]
 		},
