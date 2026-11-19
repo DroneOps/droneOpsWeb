@@ -8,6 +8,7 @@
 	import fotoTelloCamara from '$lib/assets/tello-camara.jpg';
 	import fotoferb from '$lib/assets/elcAMARADA.jpg';
 	import logoImav from '$lib/assets/imav-logo.jpg';
+	import logoMexcir from '$lib/assets/mexcir-zacatecas.jpg'
 	import fototodos from '$lib/assets/DJI_D_RIRO.JPG.jpeg'
 
 	// Logos de la franja bajo el hero (DE PRUEBA: reemplazar por los patrocinadores reales)
@@ -50,7 +51,7 @@
 			estado: 'En Progreso',
 			fotos: [
 				{ src: fotoferb, alt: 'El Camarada supremo: Ferb. La luz de mis dias.' },
-				{ src: 'https://cataas.com/cat?width=600&height=600&v=6', alt: 'Foto de prueba del TMR 2' }
+				{ src: logoMexcir, alt: 'Foto de zacatecas' }
 			]
 		},
 		{

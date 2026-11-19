@@ -1,18 +1,27 @@
 // src/lib/tablero/tipos.ts
 // Tipos, constantes y funciones auxiliares del tablero de proyectos.
 
-export type Estado = 'not_started' | 'in_progress' | 'in_review' | 'done';
+export type Estado = 'idea' | 'not_started' | 'in_progress' | 'in_review' | 'done';
 export type Salud = 'en_tiempo' | 'en_riesgo' | 'atrasado';
 export type Prioridad = 'baja' | 'media' | 'alta' | 'urgente';
-export type TipoAvance = 'avance' | 'bloqueo' | 'nota' | 'aprobado' | 'devuelto';
+export type TipoAvance =
+	| 'avance'
+	| 'bloqueo'
+	| 'nota'
+	| 'aprobado'
+	| 'devuelto'
+	| 'descartado'
+	| 'cambio';
 
 export interface Subtarea {
 	id: string;
 	texto: string;
 	hecho: boolean;
 	asignado: string | null; // correo de quien la tiene asignada
+	departamento_id: number | null; // departamento responsable (opcional)
 }
 
+// "Para qué es" el proyecto: una competencia o algo del grupo
 export interface Categoria {
 	id: number;
 	nombre: string;
@@ -21,6 +30,23 @@ export interface Categoria {
 	color: string;
 	activa: boolean;
 	orden: number;
+}
+
+// "Quién lo hace": un equipo del grupo o un departamento de la mesa
+export interface Departamento {
+	id: number;
+	nombre: string;
+	descripcion: string | null;
+	tipo: 'equipo' | 'mesa';
+	color: string;
+	activo: boolean;
+	orden: number;
+}
+
+export interface Membresia {
+	departamento_id: number;
+	email: string;
+	rol: 'lider' | 'miembro';
 }
 
 export interface Miembro {
@@ -41,9 +67,11 @@ export interface Proyecto {
 	orden: number;
 	subtareas: Subtarea[];
 	categoria_id: number | null;
+	departamentos_ids: number[]; // vacío = proyecto de todo el grupo
 	lider_email: string | null;
 	supervisor_email: string | null;
-	equipo_emails: string[];
+	equipo_emails: string[]; // integrantes extra, fuera de los departamentos
+	intereses: string[]; // quién marcó "me interesa" (solo ideas)
 	salud: Salud;
 	completado_en: string | null;
 	archivado_en: string | null;
@@ -66,11 +94,26 @@ export interface Avance {
 // ---------------------------------------------------------------------
 export const DIAS_SIN_AVANCES = 7; // a partir de aquí un proyecto en curso se marca "estancado"
 export const DIAS_HECHO_VISIBLE = 14; // los hechos más viejos salen del tablero
+export const MINUTOS_BORRAR_AVANCE = 15; // el autor puede borrar su avance durante este tiempo
 
 // Cuentas de prueba que no deben aparecer en los selectores de miembros
 export const CORREOS_OCULTOS = ['b0123456@tec.mx'];
 
+// Paleta de los departamentos: sale de los colores del sitio (morado de la marca, rosa,
+// azul marino y grises) y de sus acentos. Cada uno es distinto para reconocerlo de un vistazo.
+export const COLORES = [
+	'#7c3aed', // violeta: el morado de la marca
+	'#2563eb', // azul
+	'#a78bfa', // lavanda: el morado claro del sitio
+	'#334155', // azul marino / pizarra: el tono del header
+	'#db2777', // rosa: el acento del sitio
+	'#c026d3', // fucsia
+	'#f59e0b', // ámbar
+	'#10b981' // esmeralda
+];
+
 export const ESTADOS: { id: Estado; label: string; clase: string }[] = [
+	{ id: 'idea', label: 'Idea', clase: 'bg-amber-100 text-amber-800' },
 	{ id: 'not_started', label: 'Por iniciar', clase: 'bg-slate-100 text-slate-700' },
 	{ id: 'in_progress', label: 'En curso', clase: 'bg-purple-100 text-purple-700' },
 	{ id: 'in_review', label: 'En revisión', clase: 'bg-sky-100 text-sky-700' },
@@ -95,7 +138,9 @@ export const TIPOS_AVANCE: Record<TipoAvance, { label: string; clase: string }> 
 	bloqueo: { label: 'Bloqueo', clase: 'bg-red-100 text-red-700' },
 	nota: { label: 'Nota', clase: 'bg-slate-100 text-slate-700' },
 	aprobado: { label: 'Aprobado', clase: 'bg-emerald-100 text-emerald-700' },
-	devuelto: { label: 'Devuelto', clase: 'bg-amber-100 text-amber-700' }
+	devuelto: { label: 'Devuelto', clase: 'bg-amber-100 text-amber-700' },
+	descartado: { label: 'Descartado', clase: 'bg-red-100 text-red-700' },
+	cambio: { label: 'Cambio', clase: 'bg-slate-200 text-slate-600' }
 };
 
 // ---------------------------------------------------------------------
@@ -116,7 +161,8 @@ export function parsearSubtareas(raw: unknown): Subtarea[] {
 		id: String(item?.id ?? crypto.randomUUID()),
 		texto: String(item?.texto ?? item?.titulo ?? ''),
 		hecho: Boolean(item?.hecho ?? item?.completado ?? false),
-		asignado: item?.asignado ? String(item.asignado) : null
+		asignado: item?.asignado ? String(item.asignado) : null,
+		departamento_id: item?.departamento_id != null ? Number(item.departamento_id) : null
 	}));
 }
 
@@ -127,8 +173,21 @@ export function normalizarProyecto(raw: any): Proyecto {
 		prioridad: raw.prioridad ?? 'media',
 		salud: raw.salud ?? 'en_tiempo',
 		equipo_emails: Array.isArray(raw.equipo_emails) ? raw.equipo_emails : [],
+		departamentos_ids: Array.isArray(raw.departamentos_ids) ? raw.departamentos_ids.map(Number) : [],
+		intereses: Array.isArray(raw.intereses) ? raw.intereses : [],
 		subtareas: parsearSubtareas(raw.subtareas)
 	} as Proyecto;
+}
+
+// Convierte los errores de Supabase/Postgres en mensajes entendibles
+export function mensajeError(e: { message?: string; code?: string } | null | undefined): string {
+	if (!e) return '';
+	if (e.code === 'PGRST116') return 'No tienes permiso para hacer este cambio.';
+	if (e.code === '23505') return 'Ya existe un registro con ese nombre.';
+	if (e.code === '23503') {
+		return 'No se puede borrar porque todavía se usa en otros registros. Desactívalo en su lugar.';
+	}
+	return e.message ?? 'Ocurrió un error inesperado.';
 }
 
 // ---------------------------------------------------------------------
@@ -177,11 +236,22 @@ export function progreso(p: Proyecto) {
 	return { total, hechas, pct: total ? Math.round((hechas / total) * 100) : 0 };
 }
 
+// Avance solo de las subtareas de un departamento
+export function progresoDepto(p: Proyecto, deptoId: number) {
+	const propias = p.subtareas.filter((s) => s.departamento_id === deptoId);
+	const hechas = propias.filter((s) => s.hecho).length;
+	return {
+		total: propias.length,
+		hechas,
+		pct: propias.length ? Math.round((hechas / propias.length) * 100) : 0
+	};
+}
+
 export function estaVencido(p: Proyecto): boolean {
 	return p.estado !== 'done' && !!p.fecha_limite && diasParaLimite(p.fecha_limite) < 0;
 }
 
-// Si la fecha límite ya pasó cuenta como atrasado, aunque la mesa no lo haya marcado
+// Si la fecha límite ya pasó cuenta como atrasado, aunque el supervisor no lo haya marcado
 export function saludEfectiva(p: Proyecto): Salud {
 	return estaVencido(p) ? 'atrasado' : p.salud;
 }
@@ -202,9 +272,39 @@ export function esReciente(p: Proyecto): boolean {
 	return (Date.now() - Date.parse(p.completado_en)) / DIA <= DIAS_HECHO_VISIBLE;
 }
 
-export function involucrado(p: Proyecto, email: string): boolean {
+// ---------------------------------------------------------------------
+// Personas y departamentos
+// ---------------------------------------------------------------------
+export function departamentosDe(email: string, membresias: Membresia[]): number[] {
+	return membresias.filter((m) => m.email === email).map((m) => m.departamento_id);
+}
+
+export function miembrosDeDepto(deptoId: number, membresias: Membresia[]): Membresia[] {
+	return membresias
+		.filter((m) => m.departamento_id === deptoId)
+		.sort((a, b) => (a.rol === b.rol ? 0 : a.rol === 'lider' ? -1 : 1));
+}
+
+// ¿Trabaja en el proyecto? (líder, equipo extra o miembro de alguno de sus departamentos)
+export function participa(p: Proyecto, email: string, membresias: Membresia[] = []): boolean {
+	if (p.lider_email === email || p.equipo_emails.includes(email)) return true;
+	const mios = departamentosDe(email, membresias);
+	return p.departamentos_ids.some((d) => mios.includes(d));
+}
+
+// Para el filtro "Mis proyectos": participo o lo superviso
+export function involucrado(p: Proyecto, email: string, membresias: Membresia[] = []): boolean {
+	return p.supervisor_email === email || participa(p, email, membresias);
+}
+
+// El autor borra lo suyo durante 15 minutos; la mesa borra cualquier avance.
+// Las decisiones (aprobado/devuelto/descartado) y los cambios no se borran.
+export function puedeBorrarAvance(a: Avance, miEmail: string, esMesa: boolean): boolean {
+	if (a.tipo !== 'avance' && a.tipo !== 'bloqueo' && a.tipo !== 'nota') return false;
+	if (esMesa) return true;
 	return (
-		p.lider_email === email || p.supervisor_email === email || p.equipo_emails.includes(email)
+		a.autor_email === miEmail &&
+		Date.now() - Date.parse(a.creado_en) < MINUTOS_BORRAR_AVANCE * 60_000
 	);
 }
 

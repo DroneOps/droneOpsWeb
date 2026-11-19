@@ -2,6 +2,7 @@
 	import {
 		SALUD,
 		progreso,
+		progresoDepto,
 		saludEfectiva,
 		estaEstancado,
 		diasSinAvances,
@@ -9,24 +10,29 @@
 		formatoFecha,
 		iniciales,
 		type Proyecto,
-		type Categoria
+		type Categoria,
+		type Departamento
 	} from './tipos';
 
 	let {
 		proyecto,
 		categoria,
-		mostrarCategoria = true,
+		departamentos,
+		deptoActivo = null,
 		nombreDe,
 		onabrir
 	}: {
 		proyecto: Proyecto;
 		categoria?: Categoria;
-		mostrarCategoria?: boolean;
+		departamentos: Departamento[]; // los departamentos de ESTE proyecto
+		deptoActivo?: number | null; // si se está viendo la pestaña de un departamento
 		nombreDe: (email: string) => string;
 		onabrir: () => void;
 	} = $props();
 
 	const prog = $derived(progreso(proyecto));
+	const progDepto = $derived(deptoActivo !== null ? progresoDepto(proyecto, deptoActivo) : null);
+	const nombreDepto = $derived(departamentos.find((d) => d.id === deptoActivo)?.nombre ?? '');
 	const salud = $derived(saludEfectiva(proyecto));
 	const sinAvances = $derived(estaEstancado(proyecto) ? diasSinAvances(proyecto) : null);
 	const equipoExtra = $derived(proyecto.equipo_emails.filter((e) => e !== proyecto.lider_email));
@@ -57,14 +63,36 @@
 		{/if}
 	</span>
 
-	{#if mostrarCategoria}
-		<span class="flex items-center gap-1.5 text-xs text-slate-500">
-			<span class="h-2 w-2 rounded-full" style="background-color: {categoria?.color ?? '#cbd5e1'}"></span>
-			{categoria?.nombre ?? 'Sin categoría'}
-		</span>
-	{/if}
+	<!-- Para qué es (categoría) y quién lo hace (departamentos) -->
+	<span class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-500">
+		<span>{categoria?.nombre ?? 'Sin categoría'}</span>
+		{#if departamentos.length === 0}
+			<span class="rounded-full bg-slate-100 px-2 py-0.5 font-semibold text-slate-600">Todo el grupo</span>
+		{:else}
+			{#each departamentos.slice(0, 2) as d (d.id)}
+				<span class="flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 font-semibold text-slate-700">
+					<span class="h-1.5 w-1.5 rounded-full" style="background-color: {d.color}"></span>
+					{d.nombre}
+				</span>
+			{/each}
+			{#if departamentos.length > 2}
+				<span class="font-semibold text-slate-500">+{departamentos.length - 2}</span>
+			{/if}
+		{/if}
+	</span>
 
-	{#if prog.total > 0}
+	<!-- Progreso: en la pestaña de un departamento se destaca su parte -->
+	{#if progDepto && progDepto.total > 0}
+		<span class="space-y-1">
+			<span class="flex items-center gap-2">
+				<span class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+					<span class="block h-full rounded-full bg-purple-600" style="width: {progDepto.pct}%"></span>
+				</span>
+				<span class="font-mono text-xs text-slate-700">{nombreDepto} {progDepto.hechas}/{progDepto.total}</span>
+			</span>
+			<span class="block text-[11px] text-slate-400">Proyecto completo: {prog.hechas}/{prog.total}</span>
+		</span>
+	{:else if prog.total > 0}
 		<span class="flex items-center gap-2">
 			<span class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
 				<span class="block h-full rounded-full bg-purple-600" style="width: {prog.pct}%"></span>
