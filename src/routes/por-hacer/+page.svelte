@@ -201,6 +201,32 @@
 			.sort((a, b) => fechaCierre(b) - fechaCierre(a))
 	);
 
+	// ---- Avisos cuando un filtro está ocultando proyectos ----
+	const hayFiltros = $derived(
+		soloMios || catFiltro !== null || busqueda.trim() !== '' || foco !== 'todos'
+	);
+	const totalEnTab = $derived(
+		tab === 'cumplidos'
+			? proyectos.filter((p) => p.estado === 'done').length + archivados.length
+			: proyectos.filter((p) => perteneceATab(tab, p)).length
+	);
+	const mostradosEnTab = $derived(
+		tab === 'cumplidos' ? cumplidos.length : tab === 'ideas' ? enTab.length : delTablero.length
+	);
+	const ocultos = $derived(hayFiltros ? Math.max(0, totalEnTab - mostradosEnTab) : 0);
+	const filtrosActivos = $derived(
+		[
+			soloMios ? 'Mis proyectos' : '',
+			catFiltro !== null ? 'categoría' : '',
+			busqueda.trim() !== '' ? 'búsqueda' : '',
+			foco !== 'todos' ? 'atrasados o sin avances' : ''
+		]
+			.filter(Boolean)
+			.join(', ')
+	);
+	// En el calendario solo caben los proyectos que tienen fecha límite
+	const sinFecha = $derived(delTablero.filter((p) => !p.fecha_limite && p.estado !== 'done').length);
+
 	// Cabecera cuando se está viendo un departamento
 	const deptoActual = $derived(typeof tab === 'number' ? (mapaDeptos.get(tab) ?? null) : null);
 	const integrantesActual = $derived(deptoActual ? miembrosDeDepto(deptoActual.id, membresias) : []);
@@ -245,6 +271,18 @@
 
 	function alternarFoco(f: Foco) {
 		foco = foco === f ? 'todos' : f;
+	}
+
+	function limpiarFiltros() {
+		soloMios = false;
+		catFiltro = null;
+		busqueda = '';
+		foco = 'todos';
+		try {
+			localStorage.setItem('tablero:soloMios', '0');
+		} catch {
+			/* sin almacenamiento: no pasa nada */
+		}
 	}
 
 	function alternarSoloMios() {
@@ -496,6 +534,18 @@
 			<p class="mt-3 text-sm font-medium text-red-600">{errorAccion}</p>
 		{/if}
 
+		{#if ocultos > 0}
+			<div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
+				<span>
+					{ocultos}
+					{ocultos === 1 ? 'proyecto está oculto' : 'proyectos están ocultos'} por tus filtros ({filtrosActivos}).
+				</span>
+				<button type="button" onclick={limpiarFiltros} class="font-bold underline hover:no-underline">
+					Quitar filtros
+				</button>
+			</div>
+		{/if}
+
 		<!-- ============ IDEAS ============ -->
 		{#if tab === 'ideas'}
 			<section class="mt-6">
@@ -738,6 +788,12 @@
 					</section>
 				{/if}
 			{:else}
+				{#if sinFecha > 0}
+					<p class="mt-4 text-xs text-slate-500">
+						{sinFecha}
+						{sinFecha === 1 ? 'proyecto no tiene' : 'proyectos no tienen'} fecha límite, por eso no aparecen en el calendario.
+					</p>
+				{/if}
 				<!-- AQUÍ SE RENDERIZA EL CALENDARIO -->
 				<Calendario proyectos={delTablero.filter((p) => p.fecha_limite)} />
 			{/if}

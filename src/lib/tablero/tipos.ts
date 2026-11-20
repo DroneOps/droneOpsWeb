@@ -166,15 +166,27 @@ export function parsearSubtareas(raw: unknown): Subtarea[] {
 	}));
 }
 
+// Por si algún arreglo de Postgres llega como texto ("{a,b}") en lugar de arreglo,
+// por ejemplo en los eventos de tiempo real.
+function aArreglo(valor: unknown): unknown[] {
+	if (Array.isArray(valor)) return valor;
+	if (typeof valor === 'string' && valor.startsWith('{') && valor.endsWith('}')) {
+		const interior = valor.slice(1, -1).trim();
+		if (!interior) return [];
+		return interior.split(',').map((x) => x.trim().replace(/^"|"$/g, ''));
+	}
+	return [];
+}
+
 export function normalizarProyecto(raw: any): Proyecto {
 	return {
 		...raw,
 		estado: raw.estado ?? 'not_started',
 		prioridad: raw.prioridad ?? 'media',
 		salud: raw.salud ?? 'en_tiempo',
-		equipo_emails: Array.isArray(raw.equipo_emails) ? raw.equipo_emails : [],
-		departamentos_ids: Array.isArray(raw.departamentos_ids) ? raw.departamentos_ids.map(Number) : [],
-		intereses: Array.isArray(raw.intereses) ? raw.intereses : [],
+		equipo_emails: aArreglo(raw.equipo_emails) as string[],
+		departamentos_ids: aArreglo(raw.departamentos_ids).map(Number),
+		intereses: aArreglo(raw.intereses) as string[],
 		subtareas: parsearSubtareas(raw.subtareas)
 	} as Proyecto;
 }
@@ -292,9 +304,10 @@ export function participa(p: Proyecto, email: string, membresias: Membresia[] = 
 	return p.departamentos_ids.some((d) => mios.includes(d));
 }
 
-// Para el filtro "Mis proyectos": participo o lo superviso
+// Para el filtro "Mis proyectos": participo, lo superviso o lo creé yo
+// (así la idea que acabas de proponer no desaparece de tu vista)
 export function involucrado(p: Proyecto, email: string, membresias: Membresia[] = []): boolean {
-	return p.supervisor_email === email || participa(p, email, membresias);
+	return p.creado_por === email || p.supervisor_email === email || participa(p, email, membresias);
 }
 
 // El autor borra lo suyo durante 15 minutos; la mesa borra cualquier avance.
