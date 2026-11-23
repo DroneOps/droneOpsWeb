@@ -4,7 +4,7 @@
 	import {
 		normalizarProyecto,
 		mensajeError,
-		type Categoria,
+		type Competencia,
 		type Departamento,
 		type Membresia,
 		type Miembro,
@@ -12,7 +12,7 @@
 	} from './tipos';
 
 	let {
-		categorias,
+		competencias,
 		departamentos,
 		membresias,
 		miembros,
@@ -22,7 +22,7 @@
 		oncreado,
 		oncerrar
 	}: {
-		categorias: Categoria[]; // solo las activas
+		competencias: Competencia[]; // solo las activas
 		departamentos: Departamento[]; // solo los activos
 		membresias: Membresia[];
 		miembros: Miembro[];
@@ -35,32 +35,22 @@
 
 	let titulo = $state('');
 	let comentarios = $state('');
-	// Valores iniciales del formulario: se toman una sola vez al abrir el modal (a propósito)
-	let categoriaId = $state<number | null>(
-		untrack(() => categorias.find((c) => c.nombre === 'General')?.id ?? null)
-	);
 	let deptosElegidos = $state<number[]>(untrack(() => (deptoInicial !== null ? [deptoInicial] : [])));
-	let liderEmail = $state('');
-	let supervisorEmail = $state('');
 	let fecha = $state('');
+	let competenciaId = $state<number | null>(null);
+	let encargadoEmail = $state('');
 	let guardando = $state(false);
 	let error = $state('');
 
-	const competencias = $derived(categorias.filter((c) => c.tipo === 'competencia'));
-	const delGrupo = $derived(categorias.filter((c) => c.tipo === 'grupo'));
-
-	// Quienes ya trabajan en el proyecto por sus departamentos no pueden supervisarlo
+	// Quienes ya están en los departamentos elegidos van primero al elegir encargado
 	const enDeptos = $derived(
 		new Set(membresias.filter((m) => deptosElegidos.includes(m.departamento_id)).map((m) => m.email))
 	);
-	const supervisores = $derived(
-		miembros.filter((m) => m.es_superadmin && m.email !== liderEmail && !enDeptos.has(m.email))
-	);
-	const lideres = $derived(miembros.filter((m) => m.email !== supervisorEmail));
+	const encargadosDepto = $derived(miembros.filter((m) => enDeptos.has(m.email)));
+	const encargadosOtros = $derived(miembros.filter((m) => !enDeptos.has(m.email)));
 
-	// La mesa que define líder y supervisor deja el proyecto listo para iniciar;
-	// en cualquier otro caso queda como idea.
-	const listoParaIniciar = $derived(esMesa && !!liderEmail && !!supervisorEmail);
+	// La mesa que elige encargado deja el proyecto en marcha; si no, queda como idea.
+	const enMarcha = $derived(esMesa && !!encargadoEmail);
 
 	const campo =
 		'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 text-sm focus:border-purple-500 focus:outline-none';
@@ -70,8 +60,6 @@
 		deptosElegidos = deptosElegidos.includes(id)
 			? deptosElegidos.filter((d) => d !== id)
 			: [...deptosElegidos, id];
-		// Si el supervisor elegido ya no es válido con estos departamentos, se limpia
-		if (supervisorEmail && enDeptos.has(supervisorEmail)) supervisorEmail = '';
 	}
 
 	async function crear() {
@@ -82,26 +70,25 @@
 		guardando = true;
 		error = '';
 
-		const { data, error: e } = await supabase
-			.from('tareas')
-			.insert([
-				{
-					titulo: titulo.trim(),
-					comentarios: comentarios.trim() || null,
-					estado: listoParaIniciar ? 'not_started' : 'idea',
-					prioridad: 'media',
-					categoria_id: categoriaId,
+		// Cualquier miembro propone una IDEA (solo título y descripción).
+		// Solo la mesa crea proyectos ya con departamentos, fecha, competencia y encargado.
+		const base = {
+			titulo: titulo.trim(),
+			comentarios: comentarios.trim() || null,
+			orden: siguienteOrden
+		};
+		const fila = esMesa
+			? {
+					...base,
+					estado: enMarcha ? 'in_progress' : 'idea',
 					departamentos_ids: deptosElegidos,
-					orden: siguienteOrden,
-					subtareas: [],
-					equipo_emails: [],
-					lider_email: esMesa && liderEmail ? liderEmail : null,
-					supervisor_email: esMesa && supervisorEmail ? supervisorEmail : null,
-					fecha_limite: fecha ? new Date(fecha).toISOString() : null
+					fecha_limite: fecha ? new Date(fecha).toISOString() : null,
+					competencia_id: competenciaId,
+					encargado_email: encargadoEmail || null
 				}
-			])
-			.select()
-			.single();
+			: { ...base, estado: 'idea', departamentos_ids: [] };
+
+		const { data, error: e } = await supabase.from('tareas').insert([fila]).select().single();
 
 		guardando = false;
 		if (e) {
@@ -137,11 +124,11 @@
 
 		<p class="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
 			{#if esMesa}
-				{listoParaIniciar
-					? 'Con líder y supervisor, el proyecto queda en “Por iniciar”.'
-					: 'Sin líder y supervisor queda como idea hasta que lo aprueben.'}
+				{enMarcha
+					? 'Con encargado, el proyecto queda en progreso.'
+					: 'Sin encargado queda como idea hasta que alguien se haga cargo.'}
 			{:else}
-				Tu idea va al área de Ideas. La mesa la revisa y, si la aprueba, le asigna líder y supervisor.
+				Tu idea va al área de Ideas. La mesa la revisa y, si la aprueba, la convierte en proyecto.
 			{/if}
 		</p>
 
@@ -150,83 +137,66 @@
 			<input type="text" bind:value={titulo} placeholder="Ej. Drones asesinos" class={campo} />
 		</label>
 
-		<label class="block space-y-1">
-			<span class={etiqueta}>CATEGORIA</span>
-			<select bind:value={categoriaId} class={campo}>
-				<option value={null}>Sin categoría</option>
-				{#if competencias.length > 0}
-					<optgroup label="Competencias">
+		{#if esMesa}
+			<div class="space-y-2">
+				<span class={etiqueta}>Departamentos</span>
+				<div class="flex flex-wrap gap-2">
+					{#each departamentos as d (d.id)}
+						<button
+							type="button"
+							onclick={() => alternarDepto(d.id)}
+							aria-pressed={deptosElegidos.includes(d.id)}
+							class="flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold transition {deptosElegidos.includes(d.id)
+								? 'border-slate-900 bg-slate-900 text-white'
+								: 'border-slate-200 text-slate-600 hover:border-slate-400'}"
+						>
+							<span class="h-2 w-2 rounded-full" style="background-color: {d.color}"></span>
+							{d.nombre}
+						</button>
+					{/each}
+				</div>
+				<p class="text-xs text-slate-400">
+					{deptosElegidos.length === 0
+						? 'Ninguno seleccionado: es un proyecto de todo el grupo.'
+						: 'El equipo del proyecto son los integrantes de estos departamentos.'}
+				</p>
+			</div>
+
+			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+				<label class="block space-y-1">
+					<span class={etiqueta}>Fecha de entrega</span>
+					<input type="date" bind:value={fecha} class={campo} />
+				</label>
+				<label class="block space-y-1">
+					<span class={etiqueta}>Competencia</span>
+					<select bind:value={competenciaId} class={campo}>
+						<option value={null}>Ninguna (del grupo)</option>
 						{#each competencias as c (c.id)}
 							<option value={c.id}>{c.nombre}</option>
 						{/each}
-					</optgroup>
-				{/if}
-				{#if delGrupo.length > 0}
-					<optgroup label="Del grupo">
-						{#each delGrupo as c (c.id)}
-							<option value={c.id}>{c.nombre}</option>
-						{/each}
-					</optgroup>
-				{/if}
-			</select>
-		</label>
-
-		<div class="space-y-2">
-			<span class={etiqueta}>DEPARTAMENTO</span>
-			<div class="flex flex-wrap gap-2">
-				{#each departamentos as d (d.id)}
-					<button
-						type="button"
-						onclick={() => alternarDepto(d.id)}
-						aria-pressed={deptosElegidos.includes(d.id)}
-						class="flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold transition {deptosElegidos.includes(d.id)
-							? 'border-slate-900 bg-slate-900 text-white'
-							: 'border-slate-200 text-slate-600 hover:border-slate-400'}"
-					>
-						<span class="h-2 w-2 rounded-full" style="background-color: {d.color}"></span>
-						{d.nombre}
-					</button>
-				{/each}
-			</div>
-			<p class="text-xs text-slate-400">
-				{deptosElegidos.length === 0
-					? 'Ninguno seleccionado: es un proyecto de todo el grupo.'
-					: deptosElegidos.length === 1
-						? 'Proyecto de un solo departamento.'
-						: 'Proyecto que depende de varios departamentos.'}
-			</p>
-		</div>
-
-		{#if esMesa}
-			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-				<label class="block space-y-1">
-					<span class={etiqueta}>Líder</span>
-					<select bind:value={liderEmail} class={campo}>
-						<option value="">Sin líder</option>
-						{#each lideres as m (m.email)}
-							<option value={m.email}>{m.user}</option>
-						{/each}
-					</select>
-				</label>
-				<label class="block space-y-1">
-					<span class={etiqueta}>Supervisor</span>
-					<select bind:value={supervisorEmail} class={campo}>
-						<option value="">Sin supervisor</option>
-						{#each supervisores as m (m.email)}
-							<option value={m.email}>{m.user}</option>
-						{/each}
 					</select>
 				</label>
 			</div>
-			<p class="-mt-2 text-xs text-slate-400">
-				El supervisor no puede ser el líder ni pertenecer a un departamento del proyecto.
-			</p>
+
+			<label class="block space-y-1">
+				<span class={etiqueta}>Encargado del proyecto</span>
+				<select bind:value={encargadoEmail} class={campo}>
+					<option value="">Sin encargado</option>
+					{#if encargadosDepto.length > 0}
+						<optgroup label="De los departamentos elegidos">
+							{#each encargadosDepto as m (m.email)}
+								<option value={m.email}>{m.user}</option>
+							{/each}
+						</optgroup>
+					{/if}
+					<optgroup label={encargadosDepto.length > 0 ? 'Otros miembros' : 'Miembros'}>
+						{#each encargadosOtros as m (m.email)}
+							<option value={m.email}>{m.user}</option>
+						{/each}
+					</optgroup>
+				</select>
+			</label>
 		{/if}
-
-		<label class="block space-y-1">
-			<span class={etiqueta}>Fecha límite (opcional)</span>
-			<input type="date" bind:value={fecha} class={campo} />
-		</label>
 
 		<label class="block space-y-1">
 			<span class={etiqueta}>Descripción (opcional)</span>
@@ -247,7 +217,7 @@
 				disabled={guardando || !titulo.trim()}
 				class="rounded-xl bg-purple-600 px-5 py-2 text-sm font-bold text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
 			>
-				{guardando ? 'Creando...' : esMesa && listoParaIniciar ? 'Crear proyecto' : esMesa ? 'Crear idea' : 'Proponer idea'}
+				{guardando ? 'Creando...' : esMesa ? (enMarcha ? 'Crear proyecto' : 'Crear idea') : 'Proponer idea'}
 			</button>
 		</div>
 	</div>

@@ -12,14 +12,13 @@
 		DIAS_HECHO_VISIBLE,
 		normalizarProyecto,
 		mensajeError,
-		saludEfectiva,
-		estaEstancado,
 		esReciente,
 		involucrado,
 		iniciales,
 		miembrosDeDepto,
+		compararEnProgreso,
 		type Proyecto,
-		type Categoria,
+		type Competencia,
 		type Departamento,
 		type Membresia,
 		type Miembro
@@ -28,13 +27,12 @@
 	let { data } = $props();
 
 	type TabId = 'todos' | 'ideas' | 'cumplidos' | number; // number = id de un departamento
-	type Foco = 'todos' | 'atrasados' | 'estancados';
 
 	// ---- Estado ----
 	let proyectos = $state<Proyecto[]>([]); // no archivados
 	let archivados = $state<Proyecto[]>([]); // se cargan al abrir "Cumplidos"
 	let archivadosCargados = $state(false);
-	let categorias = $state<Categoria[]>([]);
+	let competencias = $state<Competencia[]>([]);
 	let departamentos = $state<Departamento[]>([]);
 	let membresias = $state<Membresia[]>([]);
 	let miembros = $state<Miembro[]>([]);
@@ -46,8 +44,7 @@
 	let creando = $state(false);
 	let gestionando = $state(false);
 	let tab = $state<TabId>('todos');
-	let catFiltro = $state<number | null>(null);
-	let foco = $state<Foco>('todos');
+	let compFiltro = $state<number | 'ninguna' | null>(null); // filtro por competencia
 	let soloMios = $state(false);
 	let busqueda = $state('');
 	let hechoAbierto = $state(false);
@@ -60,27 +57,24 @@
 	const miEmail = $derived(data.user?.email ?? '');
 	const yo = $derived(miembros.find((m) => m.email === miEmail) ?? null);
 	const esMesa = $derived(yo?.es_superadmin ?? false);
-	const puedeGestionar = $derived(
-		esMesa || membresias.some((m) => m.email === miEmail && m.rol === 'lider')
-	);
 
 	// ---- Catálogos ----
 	const miembrosVisibles = $derived(miembros.filter((m) => !CORREOS_OCULTOS.includes(m.email)));
-	const categoriasActivas = $derived(
-		categorias.filter((c) => c.activa).sort((a, b) => a.orden - b.orden)
+	const competenciasActivas = $derived(
+		competencias.filter((c) => c.activa).sort((a, b) => a.orden - b.orden)
 	);
 	const deptosActivos = $derived(
 		departamentos.filter((d) => d.activo).sort((a, b) => a.orden - b.orden)
 	);
-	const mapaCategorias = $derived(new Map(categorias.map((c) => [c.id, c])));
+	const mapaCompetencias = $derived(new Map(competencias.map((c) => [c.id, c])));
 	const mapaDeptos = $derived(new Map(departamentos.map((d) => [d.id, d])));
 
 	function nombreDe(email: string): string {
 		return miembros.find((m) => m.email === email)?.user ?? email.split('@')[0];
 	}
 
-	function categoriaDe(p: Proyecto): Categoria | undefined {
-		return p.categoria_id !== null ? mapaCategorias.get(p.categoria_id) : undefined;
+	function competenciaDe(p: Proyecto): Competencia | undefined {
+		return p.competencia_id !== null ? mapaCompetencias.get(p.competencia_id) : undefined;
 	}
 
 	function deptosDe(p: Proyecto): Departamento[] {
@@ -136,7 +130,8 @@
 	// ---- Filtros ----
 	function pasaFiltros(p: Proyecto): boolean {
 		if (soloMios && !involucrado(p, miEmail, membresias)) return false;
-		if (catFiltro !== null && p.categoria_id !== catFiltro) return false;
+		if (compFiltro === 'ninguna' && p.competencia_id !== null) return false;
+		if (typeof compFiltro === 'number' && p.competencia_id !== compFiltro) return false;
 		const q = busqueda.trim().toLowerCase();
 		if (q && !p.titulo.toLowerCase().includes(q)) return false;
 		return true;
@@ -152,46 +147,21 @@
 
 	const enTab = $derived(visibles.filter((p) => perteneceATab(tab, p)));
 
-	const nCurso = $derived(enTab.filter((p) => p.estado === 'in_progress').length);
-	const nRevision = $derived(enTab.filter((p) => p.estado === 'in_review').length);
-	const nAtrasados = $derived(
-		enTab.filter((p) => p.estado !== 'done' && saludEfectiva(p) === 'atrasado').length
+	// En progreso: lo que vence primero va primero
+	const enProgreso = $derived(
+		enTab.filter((p) => p.estado === 'in_progress').sort(compararEnProgreso)
 	);
-	const nEstancados = $derived(enTab.filter((p) => estaEstancado(p)).length);
-
-	const delTablero = $derived(
-		enTab.filter((p) => {
-			if (foco === 'atrasados') return p.estado !== 'done' && saludEfectiva(p) === 'atrasado';
-			if (foco === 'estancados') return estaEstancado(p);
-			return true;
-		})
-	);
-
-	// Lo urgente primero: atrasados, luego estancados, luego el resto
-	function rango(p: Proyecto): number {
-		return saludEfectiva(p) === 'atrasado' ? 0 : estaEstancado(p) ? 1 : 2;
-	}
-
-	const enRevision = $derived(delTablero.filter((p) => p.estado === 'in_review'));
-	const enCurso = $derived(
-		delTablero
-			.filter((p) => p.estado === 'in_progress')
-			.sort((a, b) => rango(a) - rango(b) || (a.orden ?? 0) - (b.orden ?? 0))
-	);
-	const porIniciar = $derived(delTablero.filter((p) => p.estado === 'not_started'));
-	const hechos = $derived(delTablero.filter((p) => p.estado === 'done'));
+	const hechos = $derived(enTab.filter((p) => p.estado === 'done'));
 	const hechosRecientes = $derived(hechos.filter(esReciente));
 	const hechosAnteriores = $derived(hechos.filter((p) => !esReciente(p)));
 	const hechosMostrados = $derived(verTodosHechos ? hechos : hechosRecientes);
 
 	// Ideas: las que más interesan primero
 	const ideas = $derived(
-		[...enTab].sort(
-			(a, b) => b.intereses.length - a.intereses.length || (b.id ?? 0) - (a.id ?? 0)
-		)
+		[...enTab].sort((a, b) => b.intereses.length - a.intereses.length || (b.id ?? 0) - (a.id ?? 0))
 	);
 
-	// Cumplidos: lo aprobado más lo archivado (incluye ideas descartadas)
+	// Cumplidos: lo completado más lo archivado (incluye ideas descartadas)
 	function fechaCierre(p: Proyecto): number {
 		return Date.parse(p.archivado_en ?? p.completado_en ?? p.creado_en);
 	}
@@ -202,37 +172,34 @@
 	);
 
 	// ---- Avisos cuando un filtro está ocultando proyectos ----
-	const hayFiltros = $derived(
-		soloMios || catFiltro !== null || busqueda.trim() !== '' || foco !== 'todos'
-	);
+	const hayFiltros = $derived(soloMios || compFiltro !== null || busqueda.trim() !== '');
 	const totalEnTab = $derived(
 		tab === 'cumplidos'
 			? proyectos.filter((p) => p.estado === 'done').length + archivados.length
 			: proyectos.filter((p) => perteneceATab(tab, p)).length
 	);
-	const mostradosEnTab = $derived(
-		tab === 'cumplidos' ? cumplidos.length : tab === 'ideas' ? enTab.length : delTablero.length
-	);
+	const mostradosEnTab = $derived(tab === 'cumplidos' ? cumplidos.length : enTab.length);
 	const ocultos = $derived(hayFiltros ? Math.max(0, totalEnTab - mostradosEnTab) : 0);
 	const filtrosActivos = $derived(
 		[
 			soloMios ? 'Mis proyectos' : '',
-			catFiltro !== null ? 'categoría' : '',
-			busqueda.trim() !== '' ? 'búsqueda' : '',
-			foco !== 'todos' ? 'atrasados o sin avances' : ''
+			compFiltro !== null ? 'competencia' : '',
+			busqueda.trim() !== '' ? 'búsqueda' : ''
 		]
 			.filter(Boolean)
 			.join(', ')
 	);
-	// En el calendario solo caben los proyectos que tienen fecha límite
-	const sinFecha = $derived(delTablero.filter((p) => !p.fecha_limite && p.estado !== 'done').length);
+	// En el calendario solo caben los proyectos que tienen fecha de entrega
+	const sinFecha = $derived(enTab.filter((p) => !p.fecha_limite && p.estado !== 'done').length);
 
 	// Cabecera cuando se está viendo un departamento
 	const deptoActual = $derived(typeof tab === 'number' ? (mapaDeptos.get(tab) ?? null) : null);
 	const integrantesActual = $derived(deptoActual ? miembrosDeDepto(deptoActual.id, membresias) : []);
-	const liderActual = $derived(integrantesActual.find((m) => m.rol === 'lider') ?? null);
+	const jefeActual = $derived(integrantesActual.find((m) => m.rol === 'lider') ?? null);
 	const activosActual = $derived(
-		deptoActual ? proyectos.filter((p) => perteneceATab(deptoActual.id, p) && p.estado !== 'done').length : 0
+		deptoActual
+			? proyectos.filter((p) => perteneceATab(deptoActual.id, p) && p.estado === 'in_progress').length
+			: 0
 	);
 
 	const proyectoAbierto = $derived(
@@ -265,19 +232,13 @@
 
 	async function seleccionarTab(t: TabId) {
 		tab = t;
-		foco = 'todos';
 		if (t === 'cumplidos' && !archivadosCargados) await cargarArchivados();
-	}
-
-	function alternarFoco(f: Foco) {
-		foco = foco === f ? 'todos' : f;
 	}
 
 	function limpiarFiltros() {
 		soloMios = false;
-		catFiltro = null;
+		compFiltro = null;
 		busqueda = '';
-		foco = 'todos';
 		try {
 			localStorage.setItem('tablero:soloMios', '0');
 		} catch {
@@ -331,8 +292,8 @@
 	async function cargar() {
 		const [pRes, cRes, mRes, dRes, memRes] = await Promise.all([
 			supabase.from('tareas').select('*').is('archivado_en', null).order('orden', { ascending: true }),
-			supabase.from('categorias').select('*').order('orden', { ascending: true }),
-			supabase.from('admins').select('email, user, es_superadmin, area').order('user', { ascending: true }),
+			supabase.from('competencias').select('*').order('orden', { ascending: true }),
+			supabase.from('admins').select('email, user, es_superadmin').order('user', { ascending: true }),
 			supabase.from('departamentos').select('*').order('orden', { ascending: true }),
 			supabase.from('departamento_miembros').select('departamento_id, email, rol')
 		]);
@@ -342,7 +303,7 @@
 			errorCarga = fallo.message;
 		} else {
 			proyectos = (pRes.data ?? []).map((fila: unknown) => normalizarProyecto(fila));
-			categorias = (cRes.data ?? []) as Categoria[];
+			competencias = (cRes.data ?? []) as Competencia[];
 			miembros = (mRes.data ?? []) as Miembro[];
 			departamentos = (dRes.data ?? []) as Departamento[];
 			membresias = (memRes.data ?? []) as Membresia[];
@@ -419,7 +380,7 @@
 			>
 				Mis proyectos
 			</button>
-			{#if puedeGestionar}
+			{#if esMesa}
 				<button
 					type="button"
 					onclick={() => (gestionando = true)}
@@ -446,7 +407,7 @@
 			<p class="mt-1">{errorCarga}</p>
 		</div>
 	{:else}
-		<!-- Vistas (Todos · Ideas · Cumplidos), categorías y búsqueda: todo junto en una fila -->
+		<!-- Vistas (Todos · Ideas · Cumplidos), competencias y búsqueda: todo junto en una fila -->
 		<div class="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
 			<div class="flex flex-wrap items-center gap-2" role="group" aria-label="Vistas">
 				{#each VISTAS as v (v.id)}
@@ -469,29 +430,39 @@
 
 			<span class="hidden h-6 w-px bg-slate-300 md:block" aria-hidden="true"></span>
 
-			<div class="flex flex-wrap items-center gap-2" role="group" aria-label="Categorías">
+			<div class="flex flex-wrap items-center gap-2" role="group" aria-label="Competencias">
 				<button
 					type="button"
-					onclick={() => (catFiltro = null)}
-					aria-pressed={catFiltro === null}
-					class="rounded-full px-3 py-1 text-xs font-semibold transition {catFiltro === null
+					onclick={() => (compFiltro = null)}
+					aria-pressed={compFiltro === null}
+					class="rounded-full px-3 py-1 text-xs font-semibold transition {compFiltro === null
 						? 'bg-slate-900 text-white'
 						: 'bg-slate-100 text-slate-600 hover:bg-slate-200'}"
 				>
-					Todas las categorías
+					Todas las competencias
 				</button>
-				{#each categoriasActivas as c (c.id)}
+				{#each competenciasActivas as c (c.id)}
 					<button
 						type="button"
-						onclick={() => (catFiltro = catFiltro === c.id ? null : c.id)}
-						aria-pressed={catFiltro === c.id}
-						class="rounded-full px-3 py-1 text-xs font-semibold transition {catFiltro === c.id
+						onclick={() => (compFiltro = compFiltro === c.id ? null : c.id)}
+						aria-pressed={compFiltro === c.id}
+						class="rounded-full px-3 py-1 text-xs font-semibold transition {compFiltro === c.id
 							? 'bg-slate-900 text-white'
 							: 'bg-slate-100 text-slate-600 hover:bg-slate-200'}"
 					>
 						{c.nombre}
 					</button>
 				{/each}
+				<button
+					type="button"
+					onclick={() => (compFiltro = compFiltro === 'ninguna' ? null : 'ninguna')}
+					aria-pressed={compFiltro === 'ninguna'}
+					class="rounded-full px-3 py-1 text-xs font-semibold transition {compFiltro === 'ninguna'
+						? 'bg-slate-900 text-white'
+						: 'bg-slate-100 text-slate-600 hover:bg-slate-200'}"
+				>
+					Sin competencia
+				</button>
 			</div>
 
 			<span class="flex-1"></span>
@@ -550,7 +521,7 @@
 		{#if tab === 'ideas'}
 			<section class="mt-6">
 				<p class="mb-3 text-sm text-slate-500">
-					Cualquiera puede proponer una idea. Marca “Me interesa” en las que quieras ver arrancar: la mesa decide cuáles se aprueban.
+					Cualquiera puede proponer una idea. Marca “Me interesa” en las que quieras ver arrancar: la mesa decide cuáles pasan a proyecto.
 				</p>
 				{#if ideas.length === 0}
 					<div class="rounded-2xl border border-dashed border-slate-300 p-10 text-center">
@@ -568,10 +539,12 @@
 								>
 									<span class="block text-sm font-semibold text-slate-900">{p.titulo}</span>
 									<span class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
-										<span>{categoriaDe(p)?.nombre ?? 'Sin categoría'}</span>
 										{#each deptosDe(p) as d (d.id)}
 											<span class="rounded-full bg-slate-100 px-2 py-0.5 font-semibold text-slate-700">{d.nombre}</span>
 										{/each}
+										{#if competenciaDe(p)}
+											<span>{competenciaDe(p)?.nombre}</span>
+										{/if}
 										{#if p.creado_por}
 											<span>Propuesta de {nombreDe(p.creado_por)}</span>
 										{/if}
@@ -598,7 +571,7 @@
 		{:else if tab === 'cumplidos'}
 			<section class="mt-6">
 				<p class="mb-3 text-sm text-slate-500">
-					Todo lo que ya se aprobó, incluido lo archivado y las ideas descartadas. Lo archivado ya no se puede volver a ver.
+					Todo lo que ya se completó, incluido lo archivado y las ideas descartadas. La mesa puede restaurar un proyecto para devolverlo al tablero.
 				</p>
 				{#if !archivadosCargados}
 					<p class="py-10 text-center text-sm text-slate-400">Cargando...</p>
@@ -623,8 +596,8 @@
 					<div class="min-w-0 flex-1">
 						<p class="text-base font-extrabold text-slate-900">{deptoActual.nombre}</p>
 						<p class="text-xs text-slate-500">
-							{#if liderActual}Líder: {nombreDe(liderActual.email)} · {/if}{integrantesActual.length}
-							integrantes · {activosActual} proyectos activos
+							{#if jefeActual}Jefe: {nombreDe(jefeActual.email)} · {/if}{integrantesActual.length}
+							integrantes · {activosActual} en progreso
 						</p>
 					</div>
 					<div class="flex">
@@ -644,7 +617,7 @@
 							</span>
 						{/if}
 					</div>
-					{#if puedeGestionar}
+					{#if esMesa}
 						<button
 							type="button"
 							onclick={() => (gestionando = true)}
@@ -657,63 +630,27 @@
 			{/if}
 
 			{#if vista === 'lista'}
-				<!-- Resumen y filtros -->
-				<div class="mt-4 flex flex-wrap items-center gap-2">
-					<span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{nCurso} en curso</span>
-					{#if nRevision > 0}
-						<span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">{nRevision} en revisión</span>
-					{/if}
-					{#if nAtrasados > 0 || foco === 'atrasados'}
-						<button
-							type="button"
-							onclick={() => alternarFoco('atrasados')}
-							aria-pressed={foco === 'atrasados'}
-							class="rounded-full px-3 py-1 text-xs font-semibold transition {foco === 'atrasados'
-								? 'bg-red-600 text-white'
-								: 'bg-red-100 text-red-700 hover:bg-red-200'}"
-						>
-							{nAtrasados} atrasados
-						</button>
-					{/if}
-					{#if nEstancados > 0 || foco === 'estancados'}
-						<button
-							type="button"
-							onclick={() => alternarFoco('estancados')}
-							aria-pressed={foco === 'estancados'}
-							class="rounded-full px-3 py-1 text-xs font-semibold transition {foco === 'estancados'
-								? 'bg-amber-600 text-white'
-								: 'bg-amber-100 text-amber-800 hover:bg-amber-200'}"
-						>
-							{nEstancados} sin avances
-						</button>
-					{/if}
-				</div>
-
-				{#if delTablero.length === 0}
+				{#if enTab.length === 0}
 					<div class="mt-10 rounded-2xl border border-dashed border-slate-300 p-10 text-center">
 						<p class="font-bold text-slate-700">No hay proyectos que mostrar aquí</p>
 						<p class="mt-1 text-sm text-slate-500">
-							{soloMios || foco !== 'todos' || busqueda || catFiltro !== null
+							{hayFiltros
 								? 'Prueba quitando los filtros.'
 								: 'La mesa asigna los proyectos a cada departamento. También puedes proponer una idea.'}
 						</p>
 					</div>
 				{/if}
 
-				<!-- En revisión -->
-				{#if enRevision.length > 0}
+				<!-- En progreso -->
+				{#if enProgreso.length > 0}
 					<section class="mt-6">
-						<h2 class="mb-3 flex items-center gap-2 text-sm font-bold text-sky-700">
-							En revisión · {enRevision.length}
-							<span class="font-normal text-slate-400">esperando la decisión del supervisor</span>
-						</h2>
+						<h2 class="mb-3 text-sm font-bold text-purple-700">En progreso · {enProgreso.length}</h2>
 						<div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-							{#each enRevision as p (p.id)}
+							{#each enProgreso as p (p.id)}
 								<ProyectoCard
 									proyecto={p}
-									categoria={categoriaDe(p)}
+									competencia={competenciaDe(p)}
 									departamentos={deptosDe(p)}
-									deptoActivo={typeof tab === 'number' ? tab : null}
 									{nombreDe}
 									onabrir={() => (abiertoId = p.id)}
 								/>
@@ -722,38 +659,7 @@
 					</section>
 				{/if}
 
-				<!-- En curso -->
-				{#if enCurso.length > 0}
-					<section class="mt-8">
-						<h2 class="mb-3 text-sm font-bold text-purple-700">En curso · {enCurso.length}</h2>
-						<div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-							{#each enCurso as p (p.id)}
-								<ProyectoCard
-									proyecto={p}
-									categoria={categoriaDe(p)}
-									departamentos={deptosDe(p)}
-									deptoActivo={typeof tab === 'number' ? tab : null}
-									{nombreDe}
-									onabrir={() => (abiertoId = p.id)}
-								/>
-							{/each}
-						</div>
-					</section>
-				{/if}
-
-				<!-- Por iniciar -->
-				{#if porIniciar.length > 0}
-					<section class="mt-8">
-						<h2 class="mb-3 text-sm font-bold text-slate-600">Por iniciar · {porIniciar.length}</h2>
-						<div class="space-y-2">
-							{#each porIniciar as p (p.id)}
-								{@render fila(p)}
-							{/each}
-						</div>
-					</section>
-				{/if}
-
-				<!-- Hecho (colapsado) -->
+				<!-- Completados (aparte, colapsado) -->
 				{#if hechos.length > 0}
 					<section class="mt-8">
 						<button
@@ -763,7 +669,7 @@
 							class="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900"
 						>
 							<span aria-hidden="true">{hechoAbierto ? '▾' : '▸'}</span>
-							Hecho · {hechosRecientes.length}
+							Completados · {hechosRecientes.length}
 							<span class="font-normal text-slate-400">últimos {DIAS_HECHO_VISIBLE} días</span>
 						</button>
 
@@ -772,7 +678,7 @@
 								{#each hechosMostrados as p (p.id)}
 									{@render fila(p)}
 								{:else}
-									<p class="text-sm text-slate-400">Nada terminado en este periodo.</p>
+									<p class="text-sm text-slate-400">Nada completado en este periodo.</p>
 								{/each}
 								{#if hechosAnteriores.length > 0}
 									<button
@@ -791,11 +697,11 @@
 				{#if sinFecha > 0}
 					<p class="mt-4 text-xs text-slate-500">
 						{sinFecha}
-						{sinFecha === 1 ? 'proyecto no tiene' : 'proyectos no tienen'} fecha límite, por eso no aparecen en el calendario.
+						{sinFecha === 1 ? 'proyecto no tiene' : 'proyectos no tienen'} fecha de entrega, por eso no aparecen en el calendario.
 					</p>
 				{/if}
 				<!-- AQUÍ SE RENDERIZA EL CALENDARIO -->
-				<Calendario proyectos={delTablero.filter((p) => p.fecha_limite)} />
+				<Calendario proyectos={enTab.filter((p) => p.fecha_limite)} />
 			{/if}
 		{/if}
 	{/if}
@@ -829,7 +735,7 @@
 	</svg>
 {/snippet}
 
-<!-- Fila compacta para "Por iniciar", "Hecho" y "Cumplidos" -->
+<!-- Fila compacta para "Completados" y "Cumplidos" -->
 {#snippet fila(p: Proyecto)}
 	<button
 		type="button"
@@ -837,17 +743,17 @@
 		class="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-purple-400"
 	>
 		<span class="min-w-0 flex-1">
-			<span class="block text-sm font-semibold {p.estado === 'done' || p.archivado_en ? 'text-slate-500' : 'text-slate-900'}">
-				{p.titulo}
-			</span>
+			<span class="block text-sm font-semibold text-slate-500">{p.titulo}</span>
 			<span class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
-				<span>{categoriaDe(p)?.nombre ?? 'Sin categoría'}</span>
 				{#if deptosDe(p).length === 0}
 					<span class="rounded-full bg-slate-100 px-2 py-0.5 font-semibold text-slate-600">Todo el grupo</span>
 				{:else}
 					{#each deptosDe(p).slice(0, 3) as d (d.id)}
 						<span class="rounded-full bg-slate-100 px-2 py-0.5 font-semibold text-slate-700">{d.nombre}</span>
 					{/each}
+				{/if}
+				{#if competenciaDe(p)}
+					<span>{competenciaDe(p)?.nombre}</span>
 				{/if}
 			</span>
 		</span>
@@ -856,15 +762,13 @@
 				{p.estado === 'idea' ? 'Descartada' : 'Archivado'}
 			</span>
 		{/if}
-		{#if p.lider_email}
+		{#if p.encargado_email}
 			<span
-				title="Líder: {nombreDe(p.lider_email)}"
+				title="Encargado: {nombreDe(p.encargado_email)}"
 				class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-purple-600 bg-purple-100 text-[10px] font-bold text-purple-800"
 			>
-				{iniciales(nombreDe(p.lider_email))}
+				{iniciales(nombreDe(p.encargado_email))}
 			</span>
-		{:else if !p.archivado_en}
-			<span class="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">Sin líder</span>
 		{/if}
 	</button>
 {/snippet}
@@ -873,7 +777,7 @@
 	{#key proyectoAbierto.id}
 		<ProyectoPanel
 			proyecto={proyectoAbierto}
-			{categorias}
+			{competencias}
 			{departamentos}
 			{membresias}
 			miembros={miembrosVisibles}
@@ -889,7 +793,7 @@
 
 {#if creando}
 	<NuevoProyecto
-		categorias={categoriasActivas}
+		competencias={competenciasActivas}
 		departamentos={deptosActivos}
 		{membresias}
 		miembros={miembrosVisibles}

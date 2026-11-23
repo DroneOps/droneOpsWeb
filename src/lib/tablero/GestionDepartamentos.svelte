@@ -43,17 +43,15 @@
 
 	const sel = $derived(departamentos.find((d) => d.id === seleccionadoId) ?? null);
 	const integrantes = $derived(sel ? miembrosDeDepto(sel.id, membresias) : []);
-	const soyLiderDeSel = $derived(
-		sel !== null && integrantes.some((m) => m.email === miEmail && m.rol === 'lider')
-	);
-	const puedeAdministrar = $derived(esMesa || soyLiderDeSel);
+	// Solo la mesa asigna los departamentos
+	const puedeAdministrar = $derived(esMesa);
 	const candidatos = $derived(
 		miembros.filter((m) => !integrantes.some((i) => i.email === m.email))
 	);
 
 	const grupos = $derived([
-		{ titulo: 'Equipos', lista: departamentos.filter((d) => d.tipo === 'equipo') },
-		{ titulo: 'Departamentos de la mesa', lista: departamentos.filter((d) => d.tipo === 'mesa') }
+		{ titulo: 'Departamentos', lista: departamentos.filter((d) => d.tipo === 'equipo') },
+		{ titulo: 'Áreas de la mesa', lista: departamentos.filter((d) => d.tipo === 'mesa') }
 	]);
 
 	const campo =
@@ -126,7 +124,7 @@
 		ocupado = false;
 	}
 
-	// Solo la mesa. Primero se baja al líder actual (solo puede haber uno) y luego se sube al nuevo.
+	// Solo la mesa. Primero se baja al jefe actual (solo puede haber uno) y luego se sube al nuevo.
 	async function hacerLider(email: string) {
 		if (!sel || !esMesa) return;
 		const depId = sel.id;
@@ -170,14 +168,14 @@
 	<div
 		role="dialog"
 		aria-modal="true"
-		aria-label="Departamentos y equipos"
+		aria-label="Departamentos y áreas de la mesa"
 		class="relative flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
 	>
 		<header class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
 			<div>
-				<h2 class="text-lg font-extrabold text-slate-900">Departamentos y equipos</h2>
+				<h2 class="text-lg font-extrabold text-slate-900">Departamentos y áreas de la mesa</h2>
 				<p class="text-xs text-slate-500">
-					Una persona puede estar en varios departamentos. Los líderes de cada uno agregan y quitan a su gente.
+					Una persona puede estar en varios departamentos. Solo la mesa asigna los departamentos.
 				</p>
 			</div>
 			<button type="button" onclick={oncerrar} aria-label="Cerrar" class="text-slate-400 hover:text-slate-900">✕</button>
@@ -212,8 +210,8 @@
 						<p class={etiqueta}>Nuevo departamento</p>
 						<input type="text" bind:value={nuevoNombre} placeholder="Nombre" class={campo} aria-label="Nombre del departamento" />
 						<select bind:value={nuevoTipo} class={campo} aria-label="Tipo de departamento">
-							<option value="equipo">Equipo del grupo</option>
-							<option value="mesa">Departamento de la mesa</option>
+							<option value="equipo">Departamento del grupo</option>
+							<option value="mesa">Área de la mesa</option>
 						</select>
 						<div class="flex flex-wrap gap-1.5">
 							{#each COLORES as c (c)}
@@ -282,8 +280,8 @@
 								class="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900"
 								aria-label="Tipo"
 							>
-								<option value="equipo">Equipo del grupo</option>
-								<option value="mesa">Departamento de la mesa</option>
+								<option value="equipo">Departamento del grupo</option>
+								<option value="mesa">Área de la mesa</option>
 							</select>
 							<label class="flex items-center gap-2 text-xs font-semibold text-slate-600">
 								<input
@@ -314,7 +312,7 @@
 									</span>
 									<span class="flex-1 text-sm font-semibold text-slate-800">{nombreDe(m.email)}</span>
 									{#if m.rol === 'lider'}
-										<span class="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-bold text-purple-700">Líder</span>
+										<span class="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-bold text-purple-700">Jefe</span>
 									{:else if esMesa}
 										<button
 											type="button"
@@ -322,16 +320,16 @@
 											disabled={ocupado}
 											class="text-xs font-bold text-purple-700 hover:underline disabled:opacity-40"
 										>
-											Hacer líder
+											Hacer jefe
 										</button>
 									{/if}
-									{#if (puedeAdministrar && (m.rol === 'miembro' || esMesa)) || m.email === miEmail}
+									{#if puedeAdministrar}
 										<button
 											type="button"
 											onclick={() => quitarMiembro(m.email)}
 											disabled={ocupado}
-											aria-label={m.email === miEmail ? 'Salir del departamento' : `Quitar a ${nombreDe(m.email)}`}
-											title={m.email === miEmail ? 'Salir del departamento' : 'Quitar'}
+											aria-label={`Quitar a ${nombreDe(m.email)}`}
+											title="Quitar"
 											class="text-slate-300 hover:text-red-600 disabled:opacity-40"
 										>
 											✕
@@ -361,7 +359,7 @@
 							</select>
 						{:else if !puedeAdministrar}
 							<p class="text-xs text-slate-400">
-								Solo la mesa y el líder de este departamento pueden agregar integrantes.
+								Solo la mesa puede agregar o quitar integrantes.
 							</p>
 						{/if}
 					</div>
