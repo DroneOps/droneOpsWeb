@@ -23,7 +23,7 @@
 	}: {
 		departamentos: Departamento[];
 		membresias: Membresia[];
-		miembros: Miembro[]; // sin cuentas de prueba
+		miembros: Miembro[]; 
 		miEmail: string;
 		esMesa: boolean;
 		inicial?: number | null;
