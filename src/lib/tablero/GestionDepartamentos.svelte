@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { supabase } from '$lib/supabaseClient';
+	import { portal } from './portal';
 	import {
 		COLORES,
 		mensajeError,
@@ -23,7 +24,7 @@
 	}: {
 		departamentos: Departamento[];
 		membresias: Membresia[];
-		miembros: Miembro[]; 
+		miembros: Miembro[]; // sin cuentas de prueba
 		miEmail: string;
 		esMesa: boolean;
 		inicial?: number | null;
@@ -43,7 +44,7 @@
 
 	const sel = $derived(departamentos.find((d) => d.id === seleccionadoId) ?? null);
 	const integrantes = $derived(sel ? miembrosDeDepto(sel.id, membresias) : []);
-	// Solo la mesa asigna los departamentos
+	// Solo la mesa asigna los equipos
 	const puedeAdministrar = $derived(esMesa);
 	const candidatos = $derived(
 		miembros.filter((m) => !integrantes.some((i) => i.email === m.email))
@@ -157,7 +158,7 @@
 
 <svelte:window onkeydown={(e) => e.key === 'Escape' && oncerrar()} />
 
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+<div use:portal class="fixed inset-0 z-[1500] flex items-center justify-center p-4">
 	<button
 		type="button"
 		aria-label="Cerrar"
@@ -168,14 +169,14 @@
 	<div
 		role="dialog"
 		aria-modal="true"
-		aria-label="Departamentos y áreas de la mesa"
+		aria-label="Departamentos y áreas"
 		class="relative flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
 	>
 		<header class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
 			<div>
-				<h2 class="text-lg font-extrabold text-slate-900">Departamentos y áreas de la mesa</h2>
+				<h2 class="text-lg font-extrabold text-slate-900">Departamentos y áreas</h2>
 				<p class="text-xs text-slate-500">
-					Una persona puede estar en varios departamentos. Solo la mesa asigna los departamentos.
+					Una persona puede estar en varios departamentos o áreas. Solo la mesa asigna los equipos.
 				</p>
 			</div>
 			<button type="button" onclick={oncerrar} aria-label="Cerrar" class="text-slate-400 hover:text-slate-900">✕</button>
@@ -207,10 +208,10 @@
 
 				{#if esMesa}
 					<div class="space-y-2 border-t border-slate-200 pt-4">
-						<p class={etiqueta}>Nuevo departamento</p>
+						<p class={etiqueta}>Nuevo departamento o área</p>
 						<input type="text" bind:value={nuevoNombre} placeholder="Nombre" class={campo} aria-label="Nombre del departamento" />
 						<select bind:value={nuevoTipo} class={campo} aria-label="Tipo de departamento">
-							<option value="equipo">Departamento del grupo</option>
+							<option value="equipo">Departamento</option>
 							<option value="mesa">Área de la mesa</option>
 						</select>
 						<div class="flex flex-wrap gap-1.5">
@@ -231,7 +232,7 @@
 							disabled={ocupado || !nuevoNombre.trim()}
 							class="w-full rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white hover:bg-slate-700 disabled:opacity-40"
 						>
-							Crear departamento
+							Crear
 						</button>
 					</div>
 				{/if}
@@ -240,7 +241,7 @@
 			<!-- Detalle -->
 			<section class="space-y-5 overflow-y-auto p-6">
 				{#if !sel}
-					<p class="text-sm text-slate-500">Elige un departamento de la lista.</p>
+					<p class="text-sm text-slate-500">Elige un departamento o área de la lista.</p>
 				{:else}
 					<div class="flex flex-wrap items-center gap-3">
 						<span class="h-4 w-4 rounded-full" style="background-color: {sel.color}"></span>
@@ -280,7 +281,7 @@
 								class="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900"
 								aria-label="Tipo"
 							>
-								<option value="equipo">Departamento del grupo</option>
+								<option value="equipo">Departamento</option>
 								<option value="mesa">Área de la mesa</option>
 							</select>
 							<label class="flex items-center gap-2 text-xs font-semibold text-slate-600">
@@ -337,7 +338,7 @@
 									{/if}
 								</li>
 							{:else}
-								<li class="text-xs text-slate-400">Este departamento todavía no tiene integrantes.</li>
+								<li class="text-xs text-slate-400">Todavía no tiene integrantes.</li>
 							{/each}
 						</ul>
 
